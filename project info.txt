@@ -1,0 +1,12 @@
+{
+    "apache_commons-lang": {
+        "git url": "https://github.com/apache/commons-lang.git",
+        "jira url": "http://issues.apache.org/jira",
+        "jira query symbol": "LANG"
+    },
+    "apache_commons-math": {
+        "git url": "https://github.com/apache/commons-math.git",
+       	"jira url": "http://issues.apache.org/jira",
+       	"jira query symbol": "MATH"
+    }
+}
