@@ -44,6 +44,7 @@ jobs:
       - name: Run
         run: |
               cd `git rev-parse --show-toplevel`
+              ls
               python Run.py ${{matrix.project_folder_name}}
       # Runs a set of commands using the runners shell
 
