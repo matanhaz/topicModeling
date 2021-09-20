@@ -58,10 +58,10 @@ def main():
         jira_url = data[selected_project]['jira url']
         jira_query_symbol = data[selected_project]['jira query symbol']
 
-        if not (os.path.exists("projects")):
+        if not os.path.exists("projects"):
             os.mkdir("projects")
-        if not (os.path.exists("projects\\" + selected_project)):
-            os.mkdir("projects\\" + selected_project)
+        if not os.path.exists(os.path.join("projects" ,selected_project)):
+            os.mkdir(os.path.join("projects" ,selected_project))
 
         print("**********Gathering commits data**********")
         GatherCommitsData(git_url,selected_project).gather()

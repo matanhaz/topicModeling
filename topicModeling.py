@@ -232,7 +232,8 @@ class TopicModeling:
                 # returns the table of bug to max index for NUM TOPICS
                 num_topics_to_table.extend(
                     self.bug_to_func_and_similarity(ldamodel, dictionary, func_to_prepared_commit_messages, NUM_TOPICS))
-                ldamodel.save(self.project_path +'\\topicModeling\\topics\\model'+ str(NUM_TOPICS)+'.gensim')
+
+                ldamodel.save(os.path.join(self.project_path ,'topicModeling','topics','model'+ str(NUM_TOPICS)+'.gensim'))
 
                 #topics = ldamodel.print_topics(num_words=4)
                 #for topic in topics:
@@ -246,10 +247,10 @@ class TopicModeling:
 
 
     def bug_to_func_and_similarity(self,  lda,dictionary,prepared_commit_messages, NUM_TOPICS):
-        with open(self.project_path + "\\analysis\\bug_to_commit_that_solved.txt") as outfile:
+        with open(os.path.join(self.project_path , "analysis","bug_to_commit_that_solved.txt")) as outfile:
             bugs = json.load(outfile)['bugs to commit']
 
-        if not (os.path.exists(self.project_path + "\\topicModeling\\bug to funcion and similarity\\bug to functions and similarity " + str(NUM_TOPICS) + " topics.txt")):
+        if not os.path.exists(os.path.join(self.project_path , "topicModeling","bug to funcion and similarity","bug to functions and similarity " + str(NUM_TOPICS) + " topics.txt")):
             all_bugs = []  # del
 
             bugs_filtered_and_document_topics = []
@@ -303,12 +304,12 @@ class TopicModeling:
                 i-=1
 
             print("finished " + str(NUM_TOPICS) + " topics")
-            self.save_into_file("bug to funcion and similarity\\bug to functions and similarity " + str(NUM_TOPICS) + " topics" ,bug_to_func_and_similarity,'bugs')
+            self.save_into_file(os.path.join("bug to funcion and similarity","bug to functions and similarity " + str(NUM_TOPICS) + " topics") ,bug_to_func_and_similarity,'bugs')
 
 
-        with open(self.project_path + "\\topicModeling\\bug to funcion and similarity\\bug to functions and similarity " + str(NUM_TOPICS) + " topics.txt") as outfile:
+        with open(os.path.join(self.project_path , "topicModeling","bug to funcion and similarity","bug to functions and similarity " + str(NUM_TOPICS) + " topics.txt")) as outfile:
             bug_to_func_and_similarity = json.load(outfile)['bugs']
-        with open(self.project_path + "\\analysis\\commitId to all functions.txt") as outfile:
+        with open(os.path.join(self.project_path ,"analysis","commitId to all functions.txt")) as outfile:
             commit_to_exist_functions = json.load(outfile)['commit id']
 
         return self.fill_table(NUM_TOPICS,bugs,bug_to_func_and_similarity, commit_to_exist_functions)
@@ -447,7 +448,7 @@ class TopicModeling:
 
 
     def create_table(self, rows):
-        with open(self.project_path +'\\topicModeling\\table.csv', 'w', newline='', ) as file:
+        with open(os.path.join(self.project_path ,'topicModeling','table.csv', 'w', newline='') ) as file:
             writer = csv.writer(file)
             writer.writerows(rows)
 
@@ -456,15 +457,15 @@ class TopicModeling:
     def save_into_file(self, file_name, new_data, dictionary_value):
         data = {}
         data[dictionary_value] = new_data
-        with open(self.project_path + "\\topicModeling\\" + file_name + ".txt", 'w') as outfile:
+        with open(os.path.join(self.project_path , "topicModeling", file_name + ".txt"), 'w') as outfile:
             json.dump(data, outfile, indent=4)
 
 
     def visualize(self, NUM_TOPICS):
 
-        dictionary = gensim.corpora.Dictionary.load(self.project_path +'\\topicModeling\\dictionary.gensim')
-        corpus = pickle.load(open(self.project_path +'\\topicModeling\\corpus.pkl', 'rb'))
-        lda = gensim.models.ldamodel.LdaModel.load(self.project_path +'\\topicModeling\\topics\\model'+ str(NUM_TOPICS)+'.gensim')
+        dictionary = gensim.corpora.Dictionary.load(os.path.join(self.project_path ,'topicModeling','dictionary.gensim'))
+        corpus = pickle.load(open(os.path.join(self.project_path ,'topicModeling','corpus.pkl'), 'rb'))
+        lda = gensim.models.ldamodel.LdaModel.load(os.path.join(self.project_path ,'topicModeling','topics','model'+ str(NUM_TOPICS)+'.gensim'))
         lda_display = pyLDAvis.gensim_models.prepare(lda, corpus, dictionary, sort_topics=False)
         pyLDAvis.display(lda_display)
 
