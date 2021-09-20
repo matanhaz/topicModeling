@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 from gensim import corpora
 import pickle
 import gensim
-import pyLDAvis.gensim
+import pyLDAvis.gensim_models
 
 def tokenize(text):
     lda_tokens = []
@@ -465,7 +465,7 @@ class TopicModeling:
         dictionary = gensim.corpora.Dictionary.load(self.project_path +'\\topicModeling\\dictionary.gensim')
         corpus = pickle.load(open(self.project_path +'\\topicModeling\\corpus.pkl', 'rb'))
         lda = gensim.models.ldamodel.LdaModel.load(self.project_path +'\\topicModeling\\topics\\model'+ str(NUM_TOPICS)+'.gensim')
-        lda_display = pyLDAvis.gensim.prepare(lda, corpus, dictionary, sort_topics=False)
+        lda_display = pyLDAvis.gensim_models.prepare(lda, corpus, dictionary, sort_topics=False)
         pyLDAvis.display(lda_display)
 
 if __name__ == "__main__":
