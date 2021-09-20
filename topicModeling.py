@@ -448,7 +448,7 @@ class TopicModeling:
 
 
     def create_table(self, rows):
-        with open(os.path.join(self.project_path ,'topicModeling','table.csv', 'w', newline='') ) as file:
+        with open(os.path.join(self.project_path ,'topicModeling','table.csv'), 'w', newline='' ) as file:
             writer = csv.writer(file)
             writer.writerows(rows)
 
