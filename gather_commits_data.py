@@ -7,7 +7,7 @@ from pydriller import repository
 
 class GatherCommitsData:
     def __init__(self, git_url, project_name):
-        self.project_path = os.path.join(os.getcwd(), "projects", project_name)
+        self.project_path = os.path.join("projects", project_name)
         self.data_path = os.path.join(self.project_path, "data")
         self.analysis_path = os.path.join(self.project_path, "analysis")
         self.git = git_url

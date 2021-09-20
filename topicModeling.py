@@ -136,7 +136,7 @@ def clean_list_of_strings(old):
 class TopicModeling:
 
     def __init__(self, project_name):
-        self.project_path = os.path.join(os.getcwd(), "projects", project_name)
+        self.project_path = os.path.join("projects", project_name)
         self.topicModeling_path = os.path.join(self.project_path, "topicModeling")
         self.analysis_path = os.path.join(self.project_path, "analysis")
 

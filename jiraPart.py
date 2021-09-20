@@ -9,7 +9,7 @@ class GatherJiraData:
         self.project_name = project_name
         self.block_size = 100
 
-        self.project_path = os.path.join(os.getcwd(), "projects", project_name)
+        self.project_path = os.path.join("projects", project_name)
         self.data_path = os.path.join(self.project_path, "data")
 
 

@@ -44,26 +44,24 @@ def main():
     #         }
     #         with open(os.getcwd() + "\\project info.txt", 'w') as outfile:
     #             json.dump(data, outfile, indent=4)
-    print(os.getcwd())
-    print(os.listdir())
-    if not (os.path.exists(os.getcwd() + "\\project info.txt")):
+    if not (os.path.exists("project info.txt")):
         print("missing project info")
         exit()
     if len(sys.argv) != 2:
         print("missing argument - project name")
         exit()
     selected_project = str(sys.argv[1])
-    with open(os.getcwd() + "\\project info.txt", 'r') as outfile:
+    with open("project info.txt", 'r') as outfile:
         data = json.load(outfile)
 
         git_url = data[selected_project]['git url']
         jira_url = data[selected_project]['jira url']
         jira_query_symbol = data[selected_project]['jira query symbol']
 
-        if not (os.path.exists(os.getcwd() + "\\projects")):
-            os.mkdir(os.getcwd() + "\\projects")
-        if not (os.path.exists(os.getcwd() + "\\projects\\" + selected_project)):
-            os.mkdir(os.getcwd() + "\\projects\\" + selected_project)
+        if not (os.path.exists("projects")):
+            os.mkdir("projects")
+        if not (os.path.exists("projects\\" + selected_project)):
+            os.mkdir("projects\\" + selected_project)
 
         print("**********Gathering commits data**********")
         GatherCommitsData(git_url,selected_project).gather()
