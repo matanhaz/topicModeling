@@ -44,7 +44,8 @@ def main():
     #         }
     #         with open(os.getcwd() + "\\project info.txt", 'w') as outfile:
     #             json.dump(data, outfile, indent=4)
-
+    print(os.getcwd())
+    print(os.listdir())
     if not (os.path.exists(os.getcwd() + "\\project info.txt")):
         print("missing project info")
         exit()
