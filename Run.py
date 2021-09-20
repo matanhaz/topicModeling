@@ -3,60 +3,75 @@ import jiraPart
 import analysis
 import topicModeling
 import os
+import sys
 import json
+from gather_commits_data import GatherCommitsData
+from jiraPart import GatherJiraData
+from analysis import analyzer
+from topicModeling import TopicModeling
 
 
 def main():
+    # if not (os.path.exists(os.getcwd() + "\\project info.txt")):
+    #     open(os.getcwd() + "\\project info.txt", 'x')
+    #
+    # with open(os.getcwd() + "\\project info.txt", 'r') as outfile:
+    #     try:
+    #         data = json.load(outfile)
+    #     except:
+    #         data = {}
+    #
+    # while True:
+    #     available_projects = list(x for x in data.keys())
+    #     selected_project = input("available project are:\n"
+    #                             + str(available_projects) +
+    #                             "\nselect one, for adding new one write -> new")
+    #     if selected_project in available_projects:
+    #         break
+    #     if selected_project == "new":
+    #         while True:
+    #             project_name = input("please insert project's name")
+    #             if project_name not in available_projects:
+    #                 break
+    #             print("this project name already exist, please select another one")
+    #         git_url = input("please insert project's git url")
+    #         jira_url = input("please insert project's JIRA url")
+    #         jira_query_symbol = input("please insert project's JIRA query")
+    #         data[project_name] = {
+    #             'git url': git_url,
+    #             'jira url': jira_url,
+    #             'jira query symbol': jira_query_symbol
+    #         }
+    #         with open(os.getcwd() + "\\project info.txt", 'w') as outfile:
+    #             json.dump(data, outfile, indent=4)
+
     if not (os.path.exists(os.getcwd() + "\\project info.txt")):
-        open(os.getcwd() + "\\project info.txt", 'x')
-
+        print("missing project info")
+        exit()
+    if len(sys.argv) != 2:
+        print("missing argument - project name")
+        exit()
+    selected_project = str(sys.argv[1])
     with open(os.getcwd() + "\\project info.txt", 'r') as outfile:
-        try:
-            data = json.load(outfile)
-        except:
-            data = {}
+        data = json.load(outfile)
 
-    while True:
-        available_projects = list(x for x in data.keys())
-        selected_prject = input("available project are:\n"
-                                + str(available_projects) +
-                                "\nselect one, for adding new one write -> new")
-        if selected_prject in available_projects:
-            break
-        if selected_prject == "new":
-            while True:
-                project_name = input("please insert project's name")
-                if project_name not in available_projects:
-                    break
-                print("this project name already exist, please select another one")
-            git_url = input("please insert project's git url")
-            jira_url = input("please insert project's JIRA url")
-            jira_query_symbol = input("please insert project's JIRA query")
-            data[project_name] = {
-                'git url': git_url,
-                'jira url': jira_url,
-                'jira query symbol': jira_query_symbol
-            }
-            with open(os.getcwd() + "\\project info.txt", 'w') as outfile:
-                json.dump(data, outfile, indent=4)
+        git_url = data[selected_project]['git url']
+        jira_url = data[selected_project]['jira url']
+        jira_query_symbol = data[selected_project]['jira query symbol']
 
-    git_url = data[selected_prject]['git url']
-    jira_url = data[selected_prject]['jira url']
-    jira_query_symbol = data[selected_prject]['jira query symbol']
+        if not (os.path.exists(os.getcwd() + "\\projects")):
+            os.mkdir(os.getcwd() + "\\projects")
+        if not (os.path.exists(os.getcwd() + "\\projects\\" + selected_project)):
+            os.mkdir(os.getcwd() + "\\projects\\" + selected_project)
 
-    if not (os.path.exists(os.getcwd() + "\\projects")):
-        os.mkdir(os.getcwd() + "\\projects")
-    if not (os.path.exists(os.getcwd() + "\\projects\\" + selected_prject)):
-        os.mkdir(os.getcwd() + "\\projects\\" + selected_prject)
-
-    print("**********Gathering commits data**********")
-    #gather_commits_data.main(git_url,selected_prject)
-    print("**********Gathering Jira data**********")
-    #jiraPart.main(jira_url,jira_query_symbol,selected_prject)
-    print("**********Running some analysis**********")
-    #analysis.main(True,selected_prject, git_url)
-    print("**********now comes topic modeling**********")
-    topicModeling.main(selected_prject)
+        print("**********Gathering commits data**********")
+        GatherCommitsData(git_url,selected_project).gather()
+        print("**********Gathering Jira data**********")
+        GatherJiraData(jira_url,jira_query_symbol,selected_project).gather()
+        print("**********Running some analysis**********")
+        analyzer(selected_project).run()
+        print("**********now comes topic modeling**********")
+        TopicModeling(selected_project).run()
 
 
 if __name__ == "__main__":

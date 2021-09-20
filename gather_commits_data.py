@@ -1,179 +1,181 @@
 import os
 import json
-
+import sys
 from pydriller import repository
 
 
-#g = git.Git("https://github.com/apache/commons-lang.git")
 
+class GatherCommitsData:
+    def __init__(self, git_url, project_name):
+        self.project_path = os.path.join(os.getcwd(), "projects", project_name)
+        self.data_path = os.path.join(self.project_path, "data")
+        self.analysis_path = os.path.join(self.project_path, "analysis")
+        self.git = git_url
 
-DEFAULT_GIT_URL = "https://github.com/apache/commons-math.git"
-PROJECT_PATH = os.getcwd() + "\\projects\\"
+        self.changes_to_commits = []
+        self.functions = []
+        self.func_name_to_params_and_commits = {}
+        self.existing_functions = []
+        self.commit_id_to_functions = {}
 
+        self.commit_index = 1
 
-def main(git_url, project_name):
-    global PROJECT_PATH
-    PROJECT_PATH += project_name
+    def gather(self):
+        if not (os.path.exists(self.project_path)):
+            os.mkdir(self.project_path)
 
-    if not (os.path.exists(PROJECT_PATH)):
-        os.mkdir(PROJECT_PATH)
+        if not os.path.exists(self.analysis_path):
+            os.mkdir(self.analysis_path)
 
-    if not (os.path.exists(PROJECT_PATH + "\\analysis")):
-        os.mkdir(PROJECT_PATH + "\\analysis")
+        if not os.path.exists(self.data_path):
+            os.mkdir(self.data_path)
 
-    if not (os.path.exists(PROJECT_PATH + "\\data")):
-        os.mkdir(PROJECT_PATH + "\\data")
+        for commit in repository.Repository(self.git, num_workers=4, only_modifications_with_file_types='.java').traverse_commits():
+            if not commit.in_main_branch:
+                self.commit_index += 1
+                continue
 
-    repo = repository.Repository(git_url)
-    commits = repo.traverse_commits()
+            # data0, data1 ....
+            modified_functions = self.extract_modified_functions(commit.modified_files)
+            self.gather_commit_changes(commit, modified_functions)
 
-    file_number = 0
-    commit_index = 1
+            # func to commits
+            self.gather_func_to_commits(commit, modified_functions)
 
-    changes_to_commits = []  # goes to data0, 1 ...
-    functions = []  # goes to func to commit
+            # commit id to all functions
+            self.gather_all_functions(commit, commit.modified_files)
 
-    func_name_to_params_and_commits = {}
+            self.commit_index += 1
 
-    existing_functions = []
-    commit_id_to_functions = {}  # commit id to all functions
+        file_number = self.get_file_number()
 
-    for commit in commits:
-        if not commit.in_main_branch:
-            commit_index += 1
-            continue
+        for func in self.func_name_to_params_and_commits.keys():
+            self.functions.append({
+                'function name' : func,
+                'function params': self.func_name_to_params_and_commits[func]['params'],
+                'commits that changed in': self.func_name_to_params_and_commits[func]['commits that changed in']
+            })
 
-        modified_files = commit.modified_files
-        list_of_modified_functions = extract_modified_files(modified_files)
+        function_to_commits_dic = {}
+        function_to_commits_dic['functions'] = self.functions
+        with open(os.path.join(self.data_path, "funcToCommits.txt"), 'w') as outfile:
+            json.dump(function_to_commits_dic, outfile, indent=4)
 
-        changes_to_commits = gather_changes(commit, commit_index, modified_files, changes_to_commits, list_of_modified_functions)
+        self.save_into_file("data"+str(file_number), {'changes':self.changes_to_commits}, 'changes')
 
-        for method in list_of_modified_functions:
+        # takes time, maybe seperate to 2 files
+        self.save_functions_per_commit('commitId to all functions', self.commit_id_to_functions, 'commit id')
+
+    def get_file_number(self):
+        return (int)(self.commit_index / 1000)
+
+    def gather_commit_changes(self,commit, list_of_modified_functions):
+        file_number = self.get_file_number()
+
+        new_change = {
+            'commit_id': self.commit_index ,
+            'commit_summary': commit.msg,
+            'functions': list_of_modified_functions
+        }
+        self.changes_to_commits.append(new_change)
+
+        if self.commit_index % 250 == 0:
+            self.save_into_file("data"+str(file_number), {'changes':self.changes_to_commits}, 'changes')
+            self.changes_to_commits = []
+
+    def gather_func_to_commits(self, commit, modified_functions):
+        for method in modified_functions:
             method_name = method['function name']
-            if method_name in func_name_to_params_and_commits.keys():
-                func_name_to_params_and_commits[method_name]['commits that changed in'].append({
-                    'commit index': commit_index,
-                    'commit message':commit.msg})
+            if method_name in self.func_name_to_params_and_commits.keys():
+                self.func_name_to_params_and_commits[method_name]['commits that changed in'].append({
+                    'commit index': self.commit_index,
+                    'commit message' :commit.msg})
             else:
-                func_name_to_params_and_commits[method_name] = {
+                self.func_name_to_params_and_commits[method_name] = {
                     'params': method['function params'],
-                    'commits that changed in': [{'commit index': commit_index, 'commit message':commit.msg}] }
+                    'commits that changed in': [{'commit index': self.commit_index, 'commit message':commit.msg}] }
 
-        add_functions, delete_functions = classify_functions(modified_files)
+    def gather_all_functions(self, commit, modified_files):
+        add_functions, delete_functions = self.classify_functions(modified_files)
         for method in delete_functions:
-            if method in existing_functions:
-                existing_functions.remove(method)
+            if method in self.existing_functions:
+                self.existing_functions.remove(method)
         for method in add_functions:
-            existing_functions.append(method)
+            self.existing_functions.append(method)
 
-        commit_id_to_functions[commit_index] = {'hexsha' : commit.hash, 'all functions': existing_functions.copy()}
+        self.commit_id_to_functions[self.commit_index] = {'hexsha' : commit.hash, 'all functions': self.existing_functions.copy()}
 
-
-        print(commit_index)
-        commit_index += 1
-
-    file_number = (int)(commit_index / 1000)
-    
-    for func in func_name_to_params_and_commits.keys():
-        functions.append({
-            'function name' : func,
-            'function params': func_name_to_params_and_commits[func]['params'],
-            'commits that changed in': func_name_to_params_and_commits[func]['commits that changed in']
-        })
+        print(self.commit_index)
 
 
-    function_to_commits_dic = {}
-    function_to_commits_dic['functions'] = functions
-    with open(PROJECT_PATH +"\\data\\funcToCommits.txt", 'w') as outfile:
-        json.dump(function_to_commits_dic, outfile, indent=4)
+    def classify_functions(self,modified_files):
+        add_functions = []
+        delete_functions = []
+        for modified_file in modified_files:
+            exist_now = False
+            exist_before = False
+            methods_before = modified_file.methods_before
+            for method in modified_file.changed_methods:
+                for old_method in methods_before:
+                    if method.name == old_method.name:
+                        exist_before = True
+                        break
 
-    save_into_file("data"+str(file_number), {'changes':changes_to_commits}, 'changes')
+                if exist_before == False:
+                    add_functions.append(self.clear_name(method.name))
+                    continue
 
-    # takes time, maybe seperate to 2 files
-    save_functions_per_commit('commitId to all functions',commit_id_to_functions,'commit id')
+                for new_method in modified_file.methods:
+                    if method.name == new_method.name:
+                        exist_now = True
+                        break
+                if exist_now == False:
+                    delete_functions.append(self.clear_name(method.name))
+                    continue
+        return add_functions, delete_functions
 
-
-def classify_functions(modified_files):
-    add_functions = []
-    delete_functions = []
-    for modified_file in modified_files:
-        exist_now = False
-        exist_before = False
-        for method in modified_file.changed_methods:
-            for old_method in modified_file.methods_before:
-                if method.name == old_method.name:
-                    exist_before = True
-                    break
-
-            if exist_before == False:
-                add_functions.append(clear_name(method.name))
-                continue
-
-            for new_method in modified_file.methods:
-                if method.name == new_method.name:
-                    exist_now = True
-                    break
-            if exist_now == False:
-                delete_functions.append(clear_name(method.name))
-                continue
-    return add_functions, delete_functions
+    def extract_modified_functions(self, modified_files):
+        list_of_modified_functions = []
+        for modified_file in modified_files:
+            list_of_modified_functions.extend(list({'function name': self.clear_name(method.name),
+                                                    'function params': method.parameters}
+                                                   for method in modified_file.changed_methods))
+        return list_of_modified_functions
 
 
-def extract_modified_files(modified_files):
-    list_of_modified_functions = []
-    for modified_file in modified_files:
-        list_of_modified_functions.extend(list({'function name': clear_name(method.name),
-                                                'function params': method.parameters}
-                                               for method in modified_file.changed_methods))
-    return list_of_modified_functions
 
 
-def gather_changes(commit, commit_index, modified_files, changes_to_commits, list_of_modified_functions):
-    file_number = (int)(commit_index / 1000)
+    def save_into_file(self, file_name, new_data, dictionary_value):
+        if not os.path.exists(os.path.join(self.data_path, file_name + ".txt")):
+            with open(os.path.join(self.data_path, file_name + ".txt"), 'w') as outfile:
+                json.dump(new_data,outfile, indent=4)
+
+        else:
+            with open(os.path.join(self.data_path, file_name + ".txt")) as outfile:
+                data = json.load(outfile)
+
+            data[dictionary_value].extend(new_data[dictionary_value])
+
+            with open(os.path.join(self.data_path, file_name + ".txt"), 'w') as outfile:
+                outfile.seek(0)
+                json.dump(data,outfile, indent=4)
+
+    def save_functions_per_commit(self, file_name, new_data, dictionary_value):
+        data = {}
+        data[dictionary_value] = new_data
+        with open(os.path.join(self.analysis_path, file_name + ".txt"), 'w') as outfile:
+            json.dump(data, outfile, indent=4)
 
 
-    new_change = {
-        'commit_id': commit_index,
-        'commit_summary': commit.msg,
-        'functions': list_of_modified_functions
-    }
-    changes_to_commits.append(new_change)
-
-    if commit_index % 250 == 0:
-        save_into_file("data"+str(file_number), {'changes':changes_to_commits}, 'changes')
-        changes_to_commits = []
-
-    return changes_to_commits
+    def clear_name(self, name):
+        if "::" in name:
+            return name.split("::")[1]
+        else:
+            #print(name)
+            return name
 
 
-def save_into_file(file_name, new_data, dictionary_value):
-    if not (os.path.exists(PROJECT_PATH + "\\data\\"+file_name + ".txt")):
-        with open(PROJECT_PATH +"\\data\\"+file_name + ".txt", 'w') as outfile:
-            json.dump(new_data,outfile, indent=4)
-
-    else:
-        with open(PROJECT_PATH +"\\data\\"+file_name + ".txt") as outfile:
-            data = json.load(outfile)
-
-        data[dictionary_value].extend(new_data[dictionary_value])
-
-        with open(PROJECT_PATH +"\\data\\"+file_name + ".txt", 'w') as outfile:
-            outfile.seek(0)
-            json.dump(data,outfile, indent=4)
-
-def save_functions_per_commit(file_name, new_data, dictionary_value):
-    data = {}
-    data[dictionary_value] = new_data
-    with open(PROJECT_PATH + "\\analysis\\" + file_name + ".txt", 'w') as outfile:
-        json.dump(data, outfile, indent=4)
-
-
-def clear_name(name):
-    if "::" in name:
-        return name.split("::")[1]
-    else:
-        print(name)
-        return name
 
 if __name__ == "__main__":
-    main(DEFAULT_GIT_URL, 'test-math')
+    if len(sys.argv) == 1:
+        GatherCommitsData("https://github.com/apache/commons-math.git","apache_commons-lang-testing").gather()
