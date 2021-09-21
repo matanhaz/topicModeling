@@ -53,4 +53,27 @@ jobs:
           # Artifact name
           name: ${{matrix.project_folder_name}}
           # A file, directory or wildcard pattern that describes what to upload
-          path: ./projects/${{matrix.project_folder_name}}
+          path: ./projects
+          
+          
+  name2:
+    needs: build
+    runs-on: ubuntu-18.04
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        project_folder_name: [apache_commons-lang]
+        
+    steps:
+    - name: Download math result for job 1
+      uses: actions/download-artifact@v2
+      with:
+        name: ${{matrix.project_folder_name}}
+        
+        
+    - name: Upload math result for job 2
+      uses: actions/upload-artifact@v2
+      with:
+        name: homework
+          path: ./math-homework.txt
