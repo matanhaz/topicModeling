@@ -66,21 +66,22 @@ jobs:
         project_folder_name: [apache_commons-weaver]
         
     steps:
-    - name: cd projects
-      run: |
-            cd `git rev-parse --show-toplevel`
-            mkdir projects
-            cd projects
-            
-    - name: Download math result for job 1
-      uses: actions/download-artifact@v2
-      with:
-        name: ${{matrix.project_folder_name}}
-        
-    - name: ls projects
-      run: |
-            cd `git rev-parse --show-toplevel`
-            ls projects
+      - uses: actions/checkout@v2
+      - name: cd projects
+        run: |
+              cd `git rev-parse --show-toplevel`
+              mkdir projects
+              cd projects
+
+      - name: Download math result for job 1
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{matrix.project_folder_name}}
+
+      - name: ls projects
+        run: |
+              cd `git rev-parse --show-toplevel`
+              ls projects
 
         
    # - name: Upload math result for job 2
