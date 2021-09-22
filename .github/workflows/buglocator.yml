@@ -28,3 +28,4 @@ jobs:
         repo: Bench4BL
         github_token: ${{ secrets.G_PERSONAL_ACCESS_TOKEN }}
         workflow_file_name: main.yml
+        ref: master
