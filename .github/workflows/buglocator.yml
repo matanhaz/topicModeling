@@ -21,7 +21,11 @@ jobs:
         group: [Commons]
         project: [LANG]
         folder_name: [BugLocator_Lang]
-        
+    
+    outputs:
+       project: ${{matrix.project}}
+       group: ${{matrix.group}}
+       folder_name: ${{matrix.folder_name}}
  
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -123,4 +127,57 @@ jobs:
         name: all_data
         # A file, directory or wildcard pattern that describes what to upload
         path: ./expresults
+        
+  job2:
+    needs: build
+    
+    runs-on: ubuntu-18.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: build essentials
+        run: sudo apt install build-essential
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+          
+      - name: download requirements
+        run: |
+              cd `git rev-parse --show-toplevel`
+              pip install pipreqs
+              pipreqs --ignore diagnoser,sfl_diagnoser .
+              pip install -r requirements.txt
+      
+      - name: create folder "projects"
+        run: |
+              cd `git rev-parse --show-toplevel`
+              mkdir projects
+              
+              mkdir projects/apache_commons-lang
+              mkdir projects/apache_commons-lang/topicModeling
+              mkdir projects/apache_commons-lang/topicModeling/bug to funcion and similarity
+              
+      - name: Download results for - 
+        uses: actions/download-artifact@v2
+        with:
+          name: all_data
+          path: ./projects/apache_commons-lang
+          
+      - name: modify
+        run: |
+              cd `git rev-parse --show-toplevel`
+              python modify_other_methods_data.py
+              
+      - name: Upload data
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          # Artifact name
+          name: apache_commons-lang
+          # A file, directory or wildcard pattern that describes what to upload
+          path: ./projects
+    
+
 
