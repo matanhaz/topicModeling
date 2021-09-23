@@ -95,7 +95,9 @@ class MoidifyOtherMethods:
 
 if __name__ == "__main__":
     if len(sys.argv) == 5:
-        MoidifyOtherMethods(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+        MoidifyOtherMethods(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]).change_file_presentation()
     else:
-        MoidifyOtherMethods('LANG', 'Commons', 'BugLocator_Lang', "apache_commons-lang")
+        MoidifyOtherMethods('LANG', 'Commons', 'BugLocator_Lang', "apache_commons-lang").change_file_presentation()
+        
+    
 
