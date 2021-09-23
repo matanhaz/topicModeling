@@ -111,8 +111,8 @@ jobs:
         #techniques: [BugLocator,  BRTracer, BLUiR, AmaLgam,  BLIA, Locus]
         techniques: [BugLocator]
         group: [Commons]
-        project: [LANG]
-        folder_name: [BugLocator_Lang]
+        project: [WEAVER]
+        folder_name: [BugLocator_weaver]
     
     outputs:
        project: ${{matrix.project}}
