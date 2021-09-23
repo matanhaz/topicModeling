@@ -154,13 +154,12 @@ jobs:
         run: |
               cd `git rev-parse --show-toplevel`
               mkdir projects
-              cd `git rev-parse --show-toplevel`
-              ls
-              mkdir projects/apache_commons-lang
-              cd `git rev-parse --show-toplevel`
-              mkdir projects/apache_commons-lang/topicModeling
-              cd `git rev-parse --show-toplevel`
-              mkdir projects/apache_commons-lang/topicModeling/bug to funcion and similarity
+              cd projects
+              mkdir apache_commons-lang
+              cd apache_commons-lang
+              mkdir topicModeling
+              cd topicModeling
+              mkdir bug to funcion and similarity
               
       - name: Download results for - 
         uses: actions/download-artifact@v2
