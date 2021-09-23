@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project_folder_name: [apache_commons-weaver]
+        project_folder_name: [apache_commons-lang]
         
     outputs:
         folder_name: ${{matrix.project_folder_name}}
@@ -111,8 +111,8 @@ jobs:
         #techniques: [BugLocator,  BRTracer, BLUiR, AmaLgam,  BLIA, Locus]
         techniques: [BugLocator]
         group: [Commons]
-        project: [WEAVER]
-        folder_name: [BugLocator_weaver]
+        project: [LANG]
+        folder_name: [BugLocator_lang]
     
     outputs:
        project: ${{matrix.project}}
