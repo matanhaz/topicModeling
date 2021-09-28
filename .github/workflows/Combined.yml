@@ -110,14 +110,13 @@ jobs:
       matrix:
         #techniques: [BugLocator,  BRTracer, BLUiR, AmaLgam,  BLIA, Locus]
         techniques: [BugLocator]
-        group: [Commons]
-        project: [LANG]
-        folder_name: [BugLocator_lang]
+        #group: [Commons]
+        project: [Lang]
+        #folder_name: [BugLocator_lang]
     
     outputs:
        project: ${{matrix.project}}
-       group: ${{matrix.group}}
-       folder_name: ${{matrix.folder_name}}
+       technique: ${{matrix.techniques}}
  
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -142,13 +141,18 @@ jobs:
     - name: Download subjects’ archives
       run: |
             pip install virtualenv
+            pip install jq
+            
             cd `git rev-parse --show-toplevel`
             bootstrap/downloads.sh
     # Runs a set of commands using the runners shell
     - name: Download subjects’ archives
       run: |
             mkdir data
-            bootstrap/unpacking.sh ./archives ./data ${{matrix.group}} ${{matrix.project}}
+            name=${{matrix.project}}
+            project=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
+            group=$(echo $(jq ".$name.group" project_info.txt) | tr -d '\"')
+            bootstrap/unpacking.sh ./archives ./data $group $project
     - name: Install Indri
       run: |
           mkdir depots
@@ -185,13 +189,20 @@ jobs:
     - name: Inflate the source codes
       run: |
           cd `git rev-parse --show-toplevel`/scripts
-          python launcher_GitInflator.py  -g ${{matrix.group}} -p ${{matrix.project}}
+          name=${{matrix.project}}
+          project=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
+          group=$(echo $(jq ".$name.group" project_info.txt) | tr -d '\"')
+          python launcher_GitInflator.py  -g $group -p $project
     - name: Build bug repositories
       run: |
             cd `git rev-parse --show-toplevel`/scripts
-            python launcher_repoMaker.py  -g ${{matrix.group}} -p ${{matrix.project}}
-            python launcher_DupRepo.py  -g ${{matrix.group}} -p ${{matrix.project}}
-            python Counting.py  -g ${{matrix.group}} -p ${{matrix.project}}
+            name=${{matrix.project}}
+            project=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
+            group=$(echo $(jq ".$name.group" project_info.txt) | tr -d '\"')
+            
+            python launcher_repoMaker.py  -g $group -p $project
+            python launcher_DupRepo.py  -g $group -p $project
+            python Counting.py  -g $group -p $project
 #       - name: Execute previous techniques
 #         run: |
 #               mkdir -p ../techniques/locus_properties
@@ -204,13 +215,18 @@ jobs:
     - name: Collect performance results
       run: |
             cd `git rev-parse --show-toplevel`/scripts
-            python launcher_Tool.py -w ${{matrix.folder_name}}   -g ${{matrix.group}} -p ${{matrix.project}} -t ${{matrix.techniques}}
+            
+            name=${{matrix.project}}
+            project=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
+            group=$(echo $(jq ".$name.group" project_info.txt) | tr -d '\"')
+            
+            python launcher_Tool.py -w ${{matrix.project}}   -g $group -p $project -t ${{matrix.techniques}}
 #              python launcher_Tool.py -w ExpFirst   -g Apache -p CAMEL -t ${{ matrix.techniques }}
 
     - name: save performance results
       run: |
             cd `git rev-parse --show-toplevel`/scripts
-            python launcher_XLSResultsAll.py -w ${{matrix.folder_name}}
+            python launcher_XLSResultsAll.py -w ${{matrix.project}}
     - name: Upload data
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
@@ -263,7 +279,7 @@ jobs:
       - name: modify
         run: |
               cd `git rev-parse --show-toplevel`
-              python modify_other_methods_data.py ${{needs.step_5_other_methods.outputs.project}} ${{needs.step_5_other_methods.outputs.group}} ${{needs.step_5_other_methods.outputs.folder_name}} ${{needs.steps_1-3_gathering_data.outputs.folder_name}}
+              python modify_other_methods_data.py ${{needs.step_5_other_methods.outputs.project}} ${{needs.step_5_other_methods.outputs.technique}} 
               
       - name: Upload data
         if: ${{ always() }}
