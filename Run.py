@@ -44,19 +44,19 @@ def main():
     #         }
     #         with open(os.getcwd() + "\\project info.txt", 'w') as outfile:
     #             json.dump(data, outfile, indent=4)
-    if not (os.path.exists("project info.txt")):
+    if not (os.path.exists("project_info.txt")):
         print("missing project info")
         exit()
     if len(sys.argv) != 2:
         print("missing argument - project name")
         exit()
     selected_project = str(sys.argv[1])
-    with open("project info.txt", 'r') as outfile:
+    with open("project_info.txt", 'r') as outfile:
         data = json.load(outfile)
 
         git_url = data[selected_project]['git url']
         jira_url = data[selected_project]['jira url']
-        jira_query_symbol = data[selected_project]['jira query symbol']
+        project = data[selected_project]['project']
 
         if not os.path.exists("projects"):
             os.mkdir("projects")
@@ -66,7 +66,7 @@ def main():
         print("**********Gathering commits data**********")
         GatherCommitsData(git_url,selected_project).gather()
         print("**********Gathering Jira data**********")
-        GatherJiraData(jira_url,jira_query_symbol,selected_project).gather()
+        GatherJiraData(jira_url,project,selected_project).gather()
         print("**********Running some analysis**********")
         analyzer(selected_project).run()
         print("**********now comes topic modeling**********")

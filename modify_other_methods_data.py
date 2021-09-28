@@ -4,13 +4,14 @@ import csv
 import tqdm
 import sys
 
-class MoidifyOtherMethods:
+class ModifyOtherMethods:
 
-    def __init__(self, project_label, group_label, method_folder_name, project_folder):
+    def __init__(self, project_label, group_label, method_folder_name, project_folder,name_to_save):
         self.project_label = project_label
         self.group_label = group_label
         self.method_folder_name = method_folder_name
         self.project_folder = project_folder
+        self.name_to_save = name_to_save
         self.rows = [
                 ['bug id',
                  'num of functions that changed no tests' ,
@@ -47,7 +48,7 @@ class MoidifyOtherMethods:
 
         final_dict['bugs'] = bugs
 
-        with open(os.path.join("projects", self.project_folder,"topicModeling","bug to funcion and similarity",f"bug_to_function_and_similarity_{self.method_folder_name}.txt"), 'w') as outfile:
+        with open(os.path.join("projects", self.project_folder,"topicModeling","bug to funcion and similarity",f"bug_to_function_and_similarity_{self.name_to_save}.txt"), 'w') as outfile:
             json.dump(final_dict, outfile, indent=4)
 
     # write final dict to a json file
@@ -73,7 +74,7 @@ class MoidifyOtherMethods:
                                                                        'exists functions': exists_functions,
                                                                        'exists functions no tests': exists_functions_no_tests}
 
-        with open(os.path.join("projects", self.project_folder,"topicModeling","bug to funcion and similarity",f"bug_to_function_and_similarity_{self.method_folder_name}.txt")) as outfile:
+        with open(os.path.join("projects", self.project_folder,"topicModeling","bug to funcion and similarity",f"bug_to_function_and_similarity_{self.name_to_save}.txt")) as outfile:
             all_bugs = json.load(outfile)['bugs']
             exists_bugs = exist_bugs_and_changed_functions.keys()
             for bug in tqdm.tqdm(all_bugs):
@@ -94,10 +95,24 @@ class MoidifyOtherMethods:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 5:
-        MoidifyOtherMethods(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]).change_file_presentation()
+    # two arguments :
+    # 1. project
+    # 2. technique
+
+
+
+    if len(sys.argv) == 3:
+        selected_project = sys.argv[1]
+        technique = sys.argv[2]
     else:
-        MoidifyOtherMethods('LANG', 'Commons', 'BugLocator_Lang', "apache_commons-lang").change_file_presentation()
-        
-    
+        selected_project = "Lang"
+        technique = "BugLocator"
+
+    with open("project_info.txt", 'r') as outfile:
+        data = json.load(outfile)
+
+        project = data[selected_project]['project']
+        group = data[selected_project]['group']
+
+    ModifyOtherMethods(project, group, selected_project, selected_project, '_'.join([technique, selected_project]))
 

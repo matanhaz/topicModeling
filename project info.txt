@@ -1,17 +1,20 @@
 {
-    "apache_commons-lang": {
+    "Lang": {
         "git url": "https://github.com/apache/commons-lang.git",
         "jira url": "http://issues.apache.org/jira",
-        "jira query symbol": "LANG"
+        "project": "LANG",
+	"group":"Commons"
     },
-    "apache_commons-math": {
+    "Math": {
         "git url": "https://github.com/apache/commons-math.git",
        	"jira url": "http://issues.apache.org/jira",
-       	"jira query symbol": "MATH"
+       	"project": "MATH",
+	"group":"Commons"
     },
-    "apache_commons-weaver": {
+    "Weaver": {
         "git url": "https://github.com/apache/commons-weaver.git",
        	"jira url": "http://issues.apache.org/jira",
-       	"jira query symbol": "WEAVER"
+       	"project": "WEAVER",
+	"group":"Commons"
     }
 }
