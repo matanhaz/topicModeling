@@ -188,18 +188,19 @@ jobs:
 
     - name: Inflate the source codes
       run: |
-          cd `git rev-parse --show-toplevel`/scripts
+          cd `git rev-parse --show-toplevel`
           name=${{matrix.project}}
           project=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
           group=$(echo $(jq ".$name.group" project_info.txt) | tr -d '\"')
+          cd `git rev-parse --show-toplevel`/scripts
           python launcher_GitInflator.py  -g $group -p $project
     - name: Build bug repositories
       run: |
-            cd `git rev-parse --show-toplevel`/scripts
+            cd `git rev-parse --show-toplevel`
             name=${{matrix.project}}
             project=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
             group=$(echo $(jq ".$name.group" project_info.txt) | tr -d '\"')
-            
+            cd `git rev-parse --show-toplevel`/scripts
             python launcher_repoMaker.py  -g $group -p $project
             python launcher_DupRepo.py  -g $group -p $project
             python Counting.py  -g $group -p $project
@@ -214,12 +215,12 @@ jobs:
 
     - name: Collect performance results
       run: |
-            cd `git rev-parse --show-toplevel`/scripts
+            cd `git rev-parse --show-toplevel`
             
             name=${{matrix.project}}
             project=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
             group=$(echo $(jq ".$name.group" project_info.txt) | tr -d '\"')
-            
+            cd `git rev-parse --show-toplevel`/scripts
             python launcher_Tool.py -w ${{matrix.project}}   -g $group -p $project -t ${{matrix.techniques}}
 #              python launcher_Tool.py -w ExpFirst   -g Apache -p CAMEL -t ${{ matrix.techniques }}
 
