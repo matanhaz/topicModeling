@@ -37,6 +37,8 @@ jobs:
               pip install pipreqs
               pipreqs --ignore diagnoser,sfl_diagnoser .
               pip install -r requirements.txt
+              pip install pyarrow
+              pip install fastparquet
       
       - name: gathering
         run: |
