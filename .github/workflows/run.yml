@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project_folder_name: [apache_commons-weaver]
+        project_folder_name: [Lשמע]
         
  
     # Steps represent a sequence of tasks that will be executed as part of the job
