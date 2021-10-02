@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project_folder_name: [apache_commons-lang]
+        project_folder_name: [Lang]
         
     outputs:
         folder_name: ${{matrix.project_folder_name}}
@@ -35,6 +35,8 @@ jobs:
               pip install pipreqs
               pipreqs --ignore diagnoser,sfl_diagnoser .
               pip install -r requirements.txt
+              pip install pyarrow
+              pip install fastparquet
       
       - name: gathering
         run: |
