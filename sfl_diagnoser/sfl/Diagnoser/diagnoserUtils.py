@@ -1,3 +1,5 @@
+import pandas
+
 from .ExperimentInstanceFactory import ExperimentInstanceFactory
 from .FullMatrix import FullMatrix
 from .Experiment_Data import Experiment_Data
@@ -214,7 +216,7 @@ def read_json_planning_file(file_path, good_sim, bad_sim, experiment_type):
     with open(file_path, "r") as f:
         instance = json.loads(f.read())
 
-    if experiment_type == ("CompSimilarity" or "TestsSimilarity" or "BothSimilarities"):
+    if experiment_type in ("CompSimilarity", "TestsSimilarity", "BothSimilarities"):
         instance["CompSimilarity"] = create_similarity_vector(
             instance, good_sim, bad_sim
         )
@@ -237,7 +239,7 @@ def read_json_planning_file_real(
     with open(file_path, "r") as f:
         instance = json.loads(f.read())
 
-    if experiment_type == ("CompSimilarity" or "TestsSimilarity" or "BothSimilarities"):
+    if experiment_type in ("CompSimilarity", "TestsSimilarity", "BothSimilarities"):
         instance["CompSimilarity"] = get_real_comp_similarity(
             instance,
             file_path,
@@ -314,6 +316,10 @@ def get_real_comp_similarity(
             os.path.dirname(__file__)
             + f"\\..\\..\\..\\..\\projects\\{Project_name}\\topicModeling\\bug to funcion and similarity\\bug_to_function_and_similarity_{technique_and_project}.txt"
         )
+        with open(path, "r") as f:
+            bug_to_sim = json.loads(f.read())["bugs"][
+                bug_id
+            ]  # list of lists , func name sim and index
     else:
         path = (
             os.path.dirname(__file__)
@@ -321,20 +327,27 @@ def get_real_comp_similarity(
             + str(num_topics)
             + " topics.txt"
         )
-    with open(path, "r") as f:
-        bug_to_sim = json.loads(f.read())["bugs"][
-            bug_id
-        ]  # list of lists , func name sim and index
+        df = pandas.read_parquet(path= "projects\\apache_commons-lang-testing-paraquet\\analysis\\commitId to all functions")
+        bug_to_sim =df.to_dict()['bugs'][bug_id].tolist()
+        for i in range(len(bug_to_sim)):
+            bug_to_sim[i] = bug_to_sim[i].tolist()
+
+
+    average = sum(list(func[1] for func in bug_to_sim)) / len(bug_to_sim)
 
     similarities = []
     bugs = instance["bugs"]
 
     for comp in instance["components_names"]:
-        func_name = comp[1].split(".")[-1].split("(")[0]  # keep name only
+        func_name = (
+            comp[1].replace("$", ".").split(".")[-1].split("(")[0]
+        )  # keep name only
         for l in bug_to_sim:
-            if func_name == l[0]:
+            if func_name == l[0].lower():
                 similarities.append(l[1])
                 break
+        else:
+            similarities.append(average)
 
     return similarities
 
@@ -361,6 +374,10 @@ def get_real_test_similarity(
             os.path.dirname(__file__)
             + f"\\..\\..\\..\\..\\projects\\{Project_name}\\topicModeling\\bug to funcion and similarity\\bug_to_function_and_similarity_{technique_and_project}.txt"
         )
+        with open(path, "r") as f:
+            bug_to_sim = json.loads(f.read())["bugs"][
+                bug_id
+            ]  # list of lists , func name sim and index
     else:
         path = (
             os.path.dirname(__file__)
@@ -368,20 +385,26 @@ def get_real_test_similarity(
             + str(num_topics)
             + " topics.txt"
         )
-    with open(path, "r") as f:
-        bug_to_sim = json.loads(f.read())["bugs"][
-            bug_id
-        ]  # list of lists , func name sim and index
+        df = pandas.read_parquet(path= "projects\\apache_commons-lang-testing-paraquet\\analysis\\commitId to all functions")
+        bug_to_sim =df.to_dict()['bugs'][bug_id].tolist()
+        for i in range(len(bug_to_sim)):
+            bug_to_sim[i] = bug_to_sim[i].tolist()
 
+
+    average = sum(list(func[1] for func in bug_to_sim)) / len(bug_to_sim)
     similarities = []
     bugs = instance["bugs"]
 
     for test in instance["initial_tests"]:
-        test_name = test.split(".")[-1]  # keep name only
+        test_name = (
+            test.replace("$", ".").split(".")[-1].split("(")[0]
+        )  # keep name only
         for l in bug_to_sim:
             if test_name == l[0]:
                 similarities.append(l[1])
                 break
+        else:
+            similarities.append(average)
 
     return similarities
 
