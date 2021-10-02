@@ -304,7 +304,7 @@ def get_real_comp_similarity(
 ):
     with open(
         os.path.dirname(__file__)
-        + f"\\..\\..\\..\\..\\projects\\{Project_name}\\analysis\\bug_to_commit_that_solved.txt"
+        + f"\\\..\\..\\..\\projects\\{Project_name}\\analysis\\bug_to_commit_that_solved.txt"
     ) as f:
         data = json.loads(f.read())["bugs to commit"]  # array of dicts
 
@@ -314,7 +314,7 @@ def get_real_comp_similarity(
     if other_technique:
         path = (
             os.path.dirname(__file__)
-            + f"\\..\\..\\..\\..\\projects\\{Project_name}\\topicModeling\\bug to funcion and similarity\\bug_to_function_and_similarity_{technique_and_project}.txt"
+            + f"\\..\\..\\..\\projects\\{Project_name}\\topicModeling\\bug to funcion and similarity\\bug_to_function_and_similarity_{technique_and_project}.txt"
         )
         with open(path, "r") as f:
             bug_to_sim = json.loads(f.read())["bugs"][
@@ -323,7 +323,7 @@ def get_real_comp_similarity(
     else:
         path = (
             os.path.dirname(__file__)
-            + f"\\..\\..\\..\\..\\projects\\{Project_name}\\topicModeling\\bug to funcion and similarity\\bug to functions and similarity "
+            + f"\\..\\..\\..\\projects\\{Project_name}\\topicModeling\\bug to funcion and similarity\\bug to functions and similarity "
             + str(num_topics)
             + " topics.txt"
         )
@@ -362,7 +362,7 @@ def get_real_test_similarity(
 ):
     with open(
         os.path.dirname(__file__)
-        + f"\\..\\..\\..\\..\\projects\\{Project_name}\\analysis\\bug_to_commit_that_solved.txt"
+        + f"\\..\\..\\..\\projects\\{Project_name}\\analysis\\bug_to_commit_that_solved.txt"
     ) as f:
         data = json.loads(f.read())["bugs to commit"]  # array of dicts
 
@@ -372,7 +372,7 @@ def get_real_test_similarity(
     if other_technique:
         path = (
             os.path.dirname(__file__)
-            + f"\\..\\..\\..\\..\\projects\\{Project_name}\\topicModeling\\bug to funcion and similarity\\bug_to_function_and_similarity_{technique_and_project}.txt"
+            + f"\\..\\..\\..\\projects\\{Project_name}\\topicModeling\\bug to funcion and similarity\\bug_to_function_and_similarity_{technique_and_project}.txt"
         )
         with open(path, "r") as f:
             bug_to_sim = json.loads(f.read())["bugs"][
@@ -381,7 +381,7 @@ def get_real_test_similarity(
     else:
         path = (
             os.path.dirname(__file__)
-            + f"\\..\\..\\..\\..\\projects\\{Project_name}\\topicModeling\\bug to funcion and similarity\\bug to functions and similarity "
+            + f"\\..\\..\\..\\projects\\{Project_name}\\topicModeling\\bug to funcion and similarity\\bug to functions and similarity "
             + str(num_topics)
             + " topics.txt"
         )
