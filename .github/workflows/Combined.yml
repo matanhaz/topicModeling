@@ -414,7 +414,7 @@ jobs:
         
       
   
-  step_8_modify_other_methods_data:
+  step_8_barinel:
     needs: [step_5_other_methods,step_4_topic_modeling, steps_1-3_gathering_data, step_6_modify_other_methods_data, step_7_download_matrixes]
     
     runs-on: ubuntu-18.04
@@ -469,7 +469,7 @@ jobs:
       - name: barinel
         run: |
               cd `git rev-parse --show-toplevel`
-              python diagnoser\sfl_diagnoser\main.py ${{needs.steps_1-3_gathering_data.outputs.folder_name}}
+              python diagnoser\sfl_diagnoser\main.py ${{needs.steps_1-3_gathering_data.outputs.folder_name}} ${{needs.step_5_other_methods.outputs.technique}}
               
       - name: Upload data
         if: ${{ always() }}
