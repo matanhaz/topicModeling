@@ -3,6 +3,7 @@ import json
 import sys
 from pydriller import repository
 
+from pandas import *
 
 
 class GatherCommitsData:
@@ -30,7 +31,8 @@ class GatherCommitsData:
         if not os.path.exists(self.data_path):
             os.mkdir(self.data_path)
 
-        for commit in repository.Repository(self.git, num_workers=4, only_modifications_with_file_types='.java').traverse_commits():
+        commits = repository.Repository(self.git, num_workers=4, only_modifications_with_file_types='.java').traverse_commits()
+        for commit in commits:
             if not commit.in_main_branch:
                 self.commit_index += 1
                 continue
@@ -64,6 +66,22 @@ class GatherCommitsData:
         self.save_into_file("data"+str(file_number), {'changes':self.changes_to_commits}, 'changes')
 
         # takes time, maybe seperate to 2 files
+
+        # index = 0
+        # func_name_to_index = {}
+        # for commit in self.commit_id_to_functions:
+        #     for i,func in enumerate(self.commit_id_to_functions[commit]['all functions']):
+        #         if func not in func_name_to_index:
+        #             func_name_to_index[func] = index
+        #             index += 1
+        #         self.commit_id_to_functions[commit]['all functions'][i] = func_name_to_index[func]
+        #
+        #
+        #
+        #
+        # self.save_functions_per_commit('function to func id', func_name_to_index, 'func name')
+
+
         self.save_functions_per_commit('commitId to all functions', self.commit_id_to_functions, 'commit id')
 
     def get_file_number(self):
@@ -160,11 +178,16 @@ class GatherCommitsData:
                 outfile.seek(0)
                 json.dump(data,outfile, indent=4)
 
+
     def save_functions_per_commit(self, file_name, new_data, dictionary_value):
         data = {}
         data[dictionary_value] = new_data
-        with open(os.path.join(self.analysis_path, file_name + ".txt"), 'w') as outfile:
-            json.dump(data, outfile, indent=4)
+
+        data2 = DataFrame.from_dict(data)
+        DataFrame.to_parquet(data2,path=os.path.join(self.analysis_path, file_name))
+
+       # with open(os.path.join(self.analysis_path, file_name + ".txt"), 'w') as outfile:
+       #     json.dump(data, outfile, indent=4)
 
 
     def clear_name(self, name):
@@ -177,5 +200,11 @@ class GatherCommitsData:
 
 
 if __name__ == "__main__":
+
+    df = pandas.read_parquet(path= "projects\\apache_commons-lang-testing-paraquet\\analysis\\commitId to all functions")
+    d =df.to_dict()
+    a =d['commit id'][20]['all functions'].tolist()
+
+
     if len(sys.argv) == 1:
-        GatherCommitsData("https://github.com/apache/commons-math.git","apache_commons-lang-testing").gather()
+        GatherCommitsData("https://github.com/apache/commons-lang.git","apache_commons-lang-testing-paraquet").gather()

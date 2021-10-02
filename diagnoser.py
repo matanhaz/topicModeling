@@ -2,6 +2,9 @@
 import json
 import os
 import csv
+
+import pandas
+
 from sfl_diagnoser import main as D
 from datetime import datetime
 
@@ -140,13 +143,16 @@ def get_data_by_percentage():
 
 
         # get commit id and exist functions
-        with open(os.getcwd() + "\\analysis\\commitId to all functions.txt") as outfile:
-            commitId_to_all_functions = json.load(outfile)['commit id']
+        # with open(os.getcwd() + "\\analysis\\commitId to all functions.txt") as outfile:
+        #     commitId_to_all_functions = json.load(outfile)['commit id']
+
+        df = pandas.read_parquet(path=os.getcwd() + "\\analysis\\commitId to all functions")
+        commitId_to_all_functions =df.to_dict()['commit id']
 
         for id in commitId_to_all_functions:
             if commitId_to_all_functions[id]['hexsha'] == HEXSHA:
                 commit_id = str(int(id)+1)
-                exist_functions = commitId_to_all_functions[id]['all functions']
+                exist_functions = commitId_to_all_functions[id]['all functions'].tolist()
                 break
 
 

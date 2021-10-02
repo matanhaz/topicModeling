@@ -3,6 +3,7 @@ import javalang
 from git import Repo
 import os
 import json
+import pandas
 
 #PROJECT_PATH = os.getcwd() + "\\projects\\"
 
@@ -130,15 +131,18 @@ class analyzer:
             print("missing commits data to analyse")
             return
 
-        if not (os.path.exists(os.path.join(self.analysis_path,"commitId to all functions.txt" ))):
+        if not (os.path.exists(os.path.join(self.analysis_path,"commitId to all functions" ))):
             print("missing commits data to analyse")
             return
 
         with open(os.path.join(self.analysis_path, "bugs.txt")) as outfile:
             data = json.load(outfile)
 
-        with open(os.path.join(self.analysis_path,"commitId to all functions.txt" )) as outfile:
-            commitId_to_hexsha = json.load(outfile)['commit id']
+       # with open(os.path.join(self.analysis_path,"commitId to all functions.txt" )) as outfile:
+        #    commitId_to_hexsha = json.load(outfile)['commit id']
+
+        df = pandas.read_parquet(path=os.path.join(self.analysis_path,"commitId to all functions"))
+        commitId_to_hexsha =df.to_dict()['commit id']
 
         bugs = data['bugs info']['bugs']
         bugs_id_list = []
@@ -169,7 +173,7 @@ class analyzer:
                 if id[0] in commits[commit_id]['commit_summary'] and self.not_followed_by_a_number(id[0], commits[commit_id]['commit_summary']):
                     bug_to_commit_that_solved.append({
                         'bug id': id[0],
-                        'hexsha': commitId_to_hexsha[str(commit_id)]['hexsha'],
+                        'hexsha': commitId_to_hexsha[commit_id]['hexsha'],
                         'description': id[1],
                         'commit number': commit_id,
                         'function that changed': commits[commit_id]['functions']

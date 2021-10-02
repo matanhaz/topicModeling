@@ -1,6 +1,8 @@
 import os
 import json
 import csv
+
+import pandas
 import tqdm
 import sys
 
@@ -60,19 +62,21 @@ class ModifyOtherMethods:
             then i calculate the top k '''
 
         with open(os.path.join("projects",self.project_folder,"analysis","bug_to_commit_that_solved.txt"), 'r') as outfile:
-            with open(os.path.join("projects",self.project_folder,"analysis","commitId to all functions.txt"), 'r') as f:
-                all_bugs = json.load(outfile)['bugs to commit']
-                commit_to_exist_functions = json.load(f)['commit id']
-                exist_bugs_and_changed_functions = {}
-                for bug in all_bugs:
-                    functions_that_changed = [func['function name'] for func in bug["function that changed"]]
-                    functions_that_changed_no_tests = [func for func in functions_that_changed if not ('test' in func or 'Test' in func)]
-                    exists_functions = [commit_to_exist_functions[commit]['all functions'] for commit in commit_to_exist_functions if commit_to_exist_functions[commit]['hexsha'] == bug['hexsha']][0]
-                    exists_functions_no_tests = [func for func in exists_functions if not ('test' in func or 'Test' in func)]
-                    exist_bugs_and_changed_functions[bug['bug id']] = {'function that changed':functions_that_changed,
-                                                                       'function that changed no tests':functions_that_changed_no_tests,
-                                                                       'exists functions': exists_functions,
-                                                                       'exists functions no tests': exists_functions_no_tests}
+            #with open(os.path.join("projects",self.project_folder,"analysis","commitId to all functions.txt"), 'r') as f:
+            df = pandas.read_parquet(path=os.path.join(self.analysis_path,"commitId to all functions"))
+            commit_to_exist_functions =df.to_dict()['commit id']
+            all_bugs = json.load(outfile)['bugs to commit']
+            #commit_to_exist_functions = json.load(f)['commit id']
+            exist_bugs_and_changed_functions = {}
+            for bug in all_bugs:
+                functions_that_changed = [func['function name'] for func in bug["function that changed"]]
+                functions_that_changed_no_tests = [func for func in functions_that_changed if not ('test' in func or 'Test' in func)]
+                exists_functions = [commit_to_exist_functions[commit]['all functions'].tolist() for commit in commit_to_exist_functions if commit_to_exist_functions[commit]['hexsha'] == bug['hexsha']][0]
+                exists_functions_no_tests = [func for func in exists_functions if not ('test' in func or 'Test' in func)]
+                exist_bugs_and_changed_functions[bug['bug id']] = {'function that changed':functions_that_changed,
+                                                                   'function that changed no tests':functions_that_changed_no_tests,
+                                                                   'exists functions': exists_functions,
+                                                                   'exists functions no tests': exists_functions_no_tests}
 
         with open(os.path.join("projects", self.project_folder,"topicModeling","bug to funcion and similarity",f"bug_to_function_and_similarity_{self.name_to_save}.txt")) as outfile:
             all_bugs = json.load(outfile)['bugs']

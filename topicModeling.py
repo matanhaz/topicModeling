@@ -5,6 +5,8 @@ import csv
 import warnings
 import sys
 
+from pandas import *
+
 warnings.simplefilter("ignore", DeprecationWarning)# Load the LDA model from sk-learn
 
 from sklearn.metrics.pairwise import cosine_similarity
@@ -250,7 +252,7 @@ class TopicModeling:
         with open(os.path.join(self.project_path , "analysis","bug_to_commit_that_solved.txt")) as outfile:
             bugs = json.load(outfile)['bugs to commit']
 
-        if not os.path.exists(os.path.join(self.project_path , "topicModeling","bug to funcion and similarity","bug to functions and similarity " + str(NUM_TOPICS) + " topics.txt")):
+        if not os.path.exists(os.path.join(self.project_path , "topicModeling","bug to funcion and similarity","bug to functions and similarity " + str(NUM_TOPICS) + " topics")):
             all_bugs = []  # del
 
             bugs_filtered_and_document_topics = []
@@ -291,26 +293,33 @@ class TopicModeling:
                 func_and_similarity =[]
                 for func in func_filtered_and_document_topics:
                     cos = cosine_similarity([bug['chances']],[func['chances']]).tolist()[0][0]
-                    func_and_similarity.append((func['func name'],cos))
+                    func_and_similarity.append((func['func name'],str(round(cos,3))))
 
                 func_and_similarity.sort(key=lambda x: x[1] , reverse=True)
                 func_and_similarity_with_index = []
                 index = 0
                 for f_and_s in func_and_similarity:
-                    func_and_similarity_with_index.append((f_and_s[0],f_and_s[1],index))
+                    func_and_similarity_with_index.append([f_and_s[0],f_and_s[1],str(index)])
                     index += 1
                 bug_to_func_and_similarity[bug['bug id']] = func_and_similarity_with_index
                 print(i)
                 i-=1
 
             print("finished " + str(NUM_TOPICS) + " topics")
-            self.save_into_file(os.path.join("bug to funcion and similarity","bug to functions and similarity " + str(NUM_TOPICS) + " topics") ,bug_to_func_and_similarity,'bugs')
+            self.save_into_file_sim(os.path.join("bug to funcion and similarity","bug to functions and similarity " + str(NUM_TOPICS) + " topics") ,bug_to_func_and_similarity,'bugs')
 
 
-        with open(os.path.join(self.project_path , "topicModeling","bug to funcion and similarity","bug to functions and similarity " + str(NUM_TOPICS) + " topics.txt")) as outfile:
-            bug_to_func_and_similarity = json.load(outfile)['bugs']
-        with open(os.path.join(self.project_path ,"analysis","commitId to all functions.txt")) as outfile:
-            commit_to_exist_functions = json.load(outfile)['commit id']
+        # with open(os.path.join(self.project_path , "topicModeling","bug to funcion and similarity","bug to functions and similarity " + str(NUM_TOPICS) + " topics.txt")) as outfile:
+        #     bug_to_func_and_similarity = json.load(outfile)['bugs']
+
+        df = pandas.read_parquet(path=os.path.join(self.project_path , "topicModeling","bug to funcion and similarity","bug to functions and similarity " + str(NUM_TOPICS) + " topics"))
+        bug_to_func_and_similarity =df.to_dict()['bugs']
+
+        df = pandas.read_parquet(path=os.path.join(self.analysis_path,"commitId to all functions"))
+        commit_to_exist_functions =df.to_dict()['commit id']
+
+        # with open(os.path.join(self.project_path ,"analysis","commitId to all functions.txt")) as outfile:
+        #     commit_to_exist_functions = json.load(outfile)['commit id']
 
         return self.fill_table(NUM_TOPICS,bugs,bug_to_func_and_similarity, commit_to_exist_functions)
 
@@ -326,8 +335,8 @@ class TopicModeling:
 
             index_len_all_funcs = self.find_max_index_all_functions(bug,bug_to_func_and_similarity)
             index_len_all_funcs_no_tests = self.find_max_index_all_functions_no_tests(bug,bug_to_func_and_similarity)
-            index_len_exist_funcs = self.find_max_index_exist_functions(bug,bug_to_func_and_similarity, commit_to_exist_functions[str(bug['commit number'])]['all functions'])
-            index_len_exist_funcs_no_tests = self.find_max_index_exist_functions_no_tests(bug,bug_to_func_and_similarity, commit_to_exist_functions[str(bug['commit number'])]['all functions'])
+            index_len_exist_funcs = self.find_max_index_exist_functions(bug,bug_to_func_and_similarity, commit_to_exist_functions[bug['commit number']]['all functions'].tolist())
+            index_len_exist_funcs_no_tests = self.find_max_index_exist_functions_no_tests(bug,bug_to_func_and_similarity, commit_to_exist_functions[bug['commit number']]['all functions'].tolist())
 
             ret_list.append([NUM_TOPICS, # how many topics we are using
                         bug['bug id'],  # issue id
@@ -353,11 +362,11 @@ class TopicModeling:
 
     def find_max_index_all_functions(self, bug,bug_to_func_and_similarity):
         max_index = -1
-        func_and_similarity_of_bug = bug_to_func_and_similarity[bug['bug id']]
+        func_and_similarity_of_bug = bug_to_func_and_similarity[bug['bug id']].tolist()
         for func in bug['function that changed']:
             for func_and_similarity in func_and_similarity_of_bug:
                 if func['function name'] == func_and_similarity[0]:
-                    max_index = max(max_index,func_and_similarity[2])
+                    max_index = max(max_index,int(func_and_similarity[2]))
                     break
 
         return max_index, len(func_and_similarity_of_bug)
@@ -365,7 +374,7 @@ class TopicModeling:
 
     def find_max_index_all_functions_no_tests(self, bug,bug_to_func_and_similarity):
         max_index_without_test = -1
-        func_and_similarity_of_bug = bug_to_func_and_similarity[bug['bug id']]
+        func_and_similarity_of_bug = bug_to_func_and_similarity[bug['bug id']].tolist()
 
     # filtering all the test functions
         func_and_similarity_of_bug_without_tests = list(func for func in func_and_similarity_of_bug if ("test" or "Test") not in func[0])
@@ -388,7 +397,9 @@ class TopicModeling:
     def find_max_index_exist_functions(self, bug,bug_to_func_and_similarity ,exists_functions):
         max_index_smaller_list = -1
 
-        func_and_similarity_of_bug = bug_to_func_and_similarity[bug['bug id']].copy()
+        func_and_similarity_of_bug = bug_to_func_and_similarity[bug['bug id']].tolist().copy()
+        for i in range(len(func_and_similarity_of_bug)):
+            func_and_similarity_of_bug[i] = func_and_similarity_of_bug[i].tolist()
     # now im finiding the index only on the list of existing functions in the commit
         exist_funcs_with_similarity = []
 
@@ -414,7 +425,9 @@ class TopicModeling:
     def find_max_index_exist_functions_no_tests(self, bug,bug_to_func_and_similarity ,exists_functions):
         max_index_smaller_list_no_tests = -1
 
-        func_and_similarity_of_bug = bug_to_func_and_similarity[bug['bug id']].copy()
+        func_and_similarity_of_bug = bug_to_func_and_similarity[bug['bug id']].tolist().copy()
+        for i in range(len(func_and_similarity_of_bug)):
+            func_and_similarity_of_bug[i] = func_and_similarity_of_bug[i].tolist()
     # now im finiding the index only on the list of existing functions in the commit
         exist_funcs_with_similarity = []
 
@@ -457,8 +470,19 @@ class TopicModeling:
     def save_into_file(self, file_name, new_data, dictionary_value):
         data = {}
         data[dictionary_value] = new_data
+
         with open(os.path.join(self.project_path , "topicModeling", file_name + ".txt"), 'w') as outfile:
             json.dump(data, outfile, indent=4)
+
+    def save_into_file_sim(self, file_name, new_data, dictionary_value):
+        data = {}
+        data[dictionary_value] = new_data
+
+        data2 = DataFrame.from_dict(data)
+        data2.to_parquet(path=os.path.join(self.project_path , "topicModeling", file_name))
+
+        # with open(os.path.join(self.project_path , "topicModeling", file_name + ".txt"), 'w') as outfile:
+        #     json.dump(data, outfile, indent=4)
 
 
     def visualize(self, NUM_TOPICS):
@@ -470,7 +494,7 @@ class TopicModeling:
         pyLDAvis.display(lda_display)
 
 if __name__ == "__main__":
-    project_name ="apache_commons-lang"
+    project_name ="Weaver"
     if len(sys.argv) == 2:
         project_name = str(sys.argv[1])
     TopicModeling(project_name).run()
