@@ -201,9 +201,6 @@ class GatherCommitsData:
 
 if __name__ == "__main__":
 
-    df = pandas.read_parquet(path= "projects\\apache_commons-lang-testing-paraquet\\analysis\\commitId to all functions")
-    d =df.to_dict()
-    a =d['commit id'][20]['all functions'].tolist()
 
 
     if len(sys.argv) == 1:
