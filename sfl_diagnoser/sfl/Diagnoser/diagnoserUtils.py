@@ -10,7 +10,7 @@ import csv
 import json
 from functools import reduce
 import os
-
+from pathlib import Path
 
 def readPlanningFile(fileName, delimiter=";"):
     lines = open(fileName, "r").readlines()
@@ -210,17 +210,27 @@ def save_ds_to_matrix_file(ds, out_file):
             tests_details,
         ),
     )
+    
+def read_json_planning_file(file_path, experiment_type, experiment_method, **kwargs):
+    
+        
+    if experiment_method == 'sanity':
+        return _read_json_planning_file_sanity(file_path, experiment_type, **kwargs)
+
+    elif experiment_method == 'topic modeling':
+        return _read_json_planning_file_topic_modeling(file_path,experiment_type, **kwargs)
+    else:
+        return _read_json_planning_file_other_method(file_path,experiment_type, **kwargs)
 
 
-def read_json_planning_file(file_path, good_sim, bad_sim, experiment_type):
+def _read_json_planning_file_sanity(file_path, experiment_type, good_sim, bad_sim ):
     with open(file_path, "r") as f:
         instance = json.loads(f.read())
-
     if experiment_type in ("CompSimilarity", "TestsSimilarity", "BothSimilarities"):
-        instance["CompSimilarity"] = create_similarity_vector(
+        instance["CompSimilarity"] = __create_similarity_vector(
             instance, good_sim, bad_sim
         )
-        instance["TestsSimilarity"] = create_similarity_vector_tests(
+        instance["TestsSimilarity"] = __create_similarity_vector_tests(
             instance, good_sim, bad_sim
         )
         instance["ExperimentType"] = experiment_type
@@ -228,40 +238,7 @@ def read_json_planning_file(file_path, good_sim, bad_sim, experiment_type):
     return read_json_planning_instance(instance, experiment_type)
 
 
-def read_json_planning_file_real(
-    file_path,
-    experiment_type,
-    num_topics,
-    Project_name,
-    other_technique=False,
-    technique_and_project="",
-):
-    with open(file_path, "r") as f:
-        instance = json.loads(f.read())
-
-    if experiment_type in ("CompSimilarity", "TestsSimilarity", "BothSimilarities"):
-        instance["CompSimilarity"] = get_real_comp_similarity(
-            instance,
-            file_path,
-            num_topics,
-            Project_name,
-            other_technique,
-            technique_and_project,
-        )
-        instance["TestsSimilarity"] = get_real_test_similarity(
-            instance,
-            file_path,
-            num_topics,
-            Project_name,
-            other_technique,
-            technique_and_project,
-        )
-        instance["ExperimentType"] = experiment_type
-
-    return read_json_planning_instance(instance, experiment_type)
-
-
-def create_similarity_vector(instance, good_sim, bad_sim):
+def __create_similarity_vector(instance, good_sim, bad_sim):
     similarities = []
     bugs = instance["bugs"]
     for comp in instance["components_names"]:
@@ -273,7 +250,7 @@ def create_similarity_vector(instance, good_sim, bad_sim):
     return similarities
 
 
-def create_similarity_vector_tests(instance, good_sim, bad_sim):
+def __create_similarity_vector_tests(instance, good_sim, bad_sim):
     indexes = []
     bugs = instance["bugs"]
     for bug in bugs:
@@ -294,44 +271,48 @@ def create_similarity_vector_tests(instance, good_sim, bad_sim):
     return similarities
 
 
-def get_real_comp_similarity(
-    instance,
-    file_path,
-    num_topics,
-    Project_name,
-    other_technique,
-    technique_and_project,
-):
-    with open(
-        os.path.dirname(__file__)
-        + f"\\\..\\..\\..\\projects\\{Project_name}\\analysis\\bug_to_commit_that_solved.txt"
-    ) as f:
+PROJECTS_DIR_PATH = os.path.join(str(Path(__file__).parents[3]),'projects')
+
+def _read_json_planning_file_topic_modeling(file_path,experiment_type,num_topics,Project_name):
+    with open(file_path, "r") as f:
+        instance = json.loads(f.read())
+
+    path =os.path.join(PROJECTS_DIR_PATH,Project_name,'topicModeling','bug to funcion and similarity',f'bug to functions and similarity {str(num_topics)} topics' )
+
+    if experiment_type in ("CompSimilarity", "TestsSimilarity", "BothSimilarities"):
+        instance["CompSimilarity"] = __get_real_comp_similarity(instance,file_path,Project_name,path)
+        instance["TestsSimilarity"] = __get_real_test_similarity(instance,file_path,Project_name,path)
+        instance["ExperimentType"] = experiment_type
+
+    return read_json_planning_instance(instance, experiment_type)
+
+def _read_json_planning_file_other_method(file_path,experiment_type,Project_name,technique_and_project):
+    with open(file_path, "r") as f:
+        instance = json.loads(f.read())
+        
+    path =os.path.join(PROJECTS_DIR_PATH,Project_name,'topicModeling','bug to funcion and similarity',f'bug_to_function_and_similarity_{technique_and_project}' )
+
+    if experiment_type in ("CompSimilarity", "TestsSimilarity", "BothSimilarities"):
+        instance["CompSimilarity"] = __get_real_comp_similarity(instance,file_path,Project_name,path)
+        instance["TestsSimilarity"] = __get_real_test_similarity(instance,file_path,Project_name,path)
+        instance["ExperimentType"] = experiment_type
+
+    return read_json_planning_instance(instance, experiment_type)
+
+def __get_real_comp_similarity(instance,matrix_path,Project_name,similarities_path):
+    
+    with open(os.path.join(PROJECTS_DIR_PATH,Project_name,'analysis','bug_to_commit_that_solved.txt')) as f:
         data = json.loads(f.read())["bugs to commit"]  # array of dicts
 
-    file_path = file_path.split("//")[1]
-    bug_id = list(x["bug id"] for x in data if x["hexsha"] == file_path)[0]
+    matrix_path = os.path.split(matrix_path)[-1]
+    bug_id = list(x["bug id"] for x in data if x["hexsha"] == matrix_path)[0]
 
-    if other_technique:
-        path = (
-            os.path.dirname(__file__)
-            + f"\\..\\..\\..\\projects\\{Project_name}\\topicModeling\\bug to funcion and similarity\\bug_to_function_and_similarity_{technique_and_project}.txt"
-        )
-        with open(path, "r") as f:
-            bug_to_sim = json.loads(f.read())["bugs"][
-                bug_id
-            ]  # list of lists , func name sim and index
-    else:
-        path = (
-            os.path.dirname(__file__)
-            + f"\\..\\..\\..\\projects\\{Project_name}\\topicModeling\\bug to funcion and similarity\\bug to functions and similarity "
-            + str(num_topics)
-            + " topics.txt"
-        )
-        df = pandas.read_parquet(path= "projects\\apache_commons-lang-testing-paraquet\\analysis\\commitId to all functions")
-        bug_to_sim =df.to_dict()['bugs'][bug_id].tolist()
-        for i in range(len(bug_to_sim)):
-            bug_to_sim[i] = bug_to_sim[i].tolist()
-
+    df = pandas.read_parquet(path=similarities_path)
+    
+    bug_to_sim =df.to_dict()['bugs'][bug_id].tolist()
+    for i in range(len(bug_to_sim)):
+        bug_to_sim[i] = bug_to_sim[i].tolist()
+        bug_to_sim[i][1] = float(bug_to_sim[i][1])
 
     average = sum(list(func[1] for func in bug_to_sim)) / len(bug_to_sim)
 
@@ -339,56 +320,28 @@ def get_real_comp_similarity(
     bugs = instance["bugs"]
 
     for comp in instance["components_names"]:
-        func_name = (
-            comp[1].replace("$", ".").split(".")[-1].split("(")[0]
-        )  # keep name only
+        func_name = (comp[1].replace("$", ".").split(".")[-1].split("(")[0])  # keep name only
         for l in bug_to_sim:
             if func_name == l[0].lower():
                 similarities.append(l[1])
                 break
         else:
             similarities.append(average)
-
     return similarities
 
 
-def get_real_test_similarity(
-    instance,
-    file_path,
-    num_topics,
-    Project_name,
-    other_technique,
-    technique_and_project,
-):
-    with open(
-        os.path.dirname(__file__)
-        + f"\\..\\..\\..\\projects\\{Project_name}\\analysis\\bug_to_commit_that_solved.txt"
-    ) as f:
+def __get_real_test_similarity(instance,matrix_path,Project_name,similarities_path):
+    with open(os.path.join(PROJECTS_DIR_PATH,Project_name,'analysis','bug_to_commit_that_solved.txt')) as f:
         data = json.loads(f.read())["bugs to commit"]  # array of dicts
 
-    file_path = file_path.split("//")[1]
-    bug_id = list(x["bug id"] for x in data if x["hexsha"] == file_path)[0]
+    matrix_path = os.path.split(matrix_path)[-1]
+    bug_id = list(x["bug id"] for x in data if x["hexsha"] == matrix_path)[0]
 
-    if other_technique:
-        path = (
-            os.path.dirname(__file__)
-            + f"\\..\\..\\..\\projects\\{Project_name}\\topicModeling\\bug to funcion and similarity\\bug_to_function_and_similarity_{technique_and_project}.txt"
-        )
-        with open(path, "r") as f:
-            bug_to_sim = json.loads(f.read())["bugs"][
-                bug_id
-            ]  # list of lists , func name sim and index
-    else:
-        path = (
-            os.path.dirname(__file__)
-            + f"\\..\\..\\..\\projects\\{Project_name}\\topicModeling\\bug to funcion and similarity\\bug to functions and similarity "
-            + str(num_topics)
-            + " topics.txt"
-        )
-        df = pandas.read_parquet(path= "projects\\apache_commons-lang-testing-paraquet\\analysis\\commitId to all functions")
-        bug_to_sim =df.to_dict()['bugs'][bug_id].tolist()
-        for i in range(len(bug_to_sim)):
-            bug_to_sim[i] = bug_to_sim[i].tolist()
+    df = pandas.read_parquet(path=similarities_path)
+    bug_to_sim =df.to_dict()['bugs'][bug_id].tolist()
+    for i in range(len(bug_to_sim)):
+        bug_to_sim[i] = bug_to_sim[i].tolist()
+        bug_to_sim[i][1] = float(bug_to_sim[i][1])
 
 
     average = sum(list(func[1] for func in bug_to_sim)) / len(bug_to_sim)
@@ -407,6 +360,8 @@ def get_real_test_similarity(
             similarities.append(average)
 
     return similarities
+
+
 
 
 def read_json_planning_instance(instance, experiment_type):
@@ -433,8 +388,6 @@ def read_json_planning_instance(instance, experiment_type):
         estimatedTestsPool,
         experiment_type,
     )
-
-
 def write_json_planning_file(
     out_path, tests_details, bugs=None, initial_tests=None, **kwargs
 ):
