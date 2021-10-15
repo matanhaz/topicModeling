@@ -1,7 +1,8 @@
 
 import javalang
 from git import Repo
-import os
+from os.path import exists, join
+from os import mkdir
 import json
 import pandas
 
@@ -11,27 +12,25 @@ import pandas
 
 class analyzer:
     def __init__(self, project_name):
-        self.project_path = os.path.join("projects", project_name)
-        self.data_path = os.path.join(self.project_path, "data")
-        self.analysis_path = os.path.join(self.project_path, "analysis")
-        if not (os.path.exists(self.analysis_path)):
-            os.mkdir(self.analysis_path)
+        self.project_path = join("projects", project_name)
+        self.data_path = join(self.project_path, "data")
+        self.analysis_path = join(self.project_path, "analysis")
+        if not (exists(self.analysis_path)):
+            mkdir(self.analysis_path)
 
     def run(self):
         self.function_to_all_messages()
         self.count_bugs()
         self.bug_to_commit_that_solved()
 
-
-
     def analyse_failed_commits(self):
-        if not (os.path.exists(os.path.join(self.data_path,"failed commits.txt"))):
+        if not (exists(join(self.data_path,"failed commits.txt"))):
             print("missing failed commits data to analyse")
             return
 
         file_to_fails = {}
 
-        with open(os.path.join(self.data_path,"failed commits.txt")) as outfile:
+        with open(join(self.data_path,"failed commits.txt")) as outfile:
             data = json.load(outfile)
 
         failed_commits = data['failed']
@@ -59,13 +58,13 @@ class analyzer:
 
 
     def function_to_all_messages(self):
-        if not (os.path.exists(os.path.join(self.data_path,"funcToCommits.txt"))):
+        if not (exists(join(self.data_path,"funcToCommits.txt"))):
             print("missing funcToCommits data to analyse")
             return
 
         func_to_commits_message = {}
 
-        with open(os.path.join(self.data_path,"funcToCommits.txt")) as outfile:
+        with open(join(self.data_path,"funcToCommits.txt")) as outfile:
             data = json.load(outfile)
 
         functions = data['functions']
@@ -102,11 +101,11 @@ class analyzer:
 
 
     def count_bugs(self):
-        if not (os.path.exists(os.path.join(self.data_path, "issues.txt"))):
+        if not (exists(join(self.data_path, "issues.txt"))):
             print("missing issues data to analyse")
             return
 
-        with open(os.path.join(self.data_path, "issues.txt")) as outfile:
+        with open(join(self.data_path, "issues.txt")) as outfile:
             data = json.load(outfile)
 
         counter = 0
@@ -124,24 +123,24 @@ class analyzer:
 
 
     def bug_to_commit_that_solved(self):
-        if not (os.path.exists( os.path.join(self.analysis_path,"bugs.txt"))):
+        if not (exists( join(self.analysis_path,"bugs.txt"))):
             print("missing bugs data to analyse")
             return
-        if not (os.path.exists(os.path.join(self.data_path,"data0.txt"))):
+        if not (exists(join(self.data_path,"data0.txt"))):
             print("missing commits data to analyse")
             return
 
-        if not (os.path.exists(os.path.join(self.analysis_path,"commitId to all functions" ))):
+        if not (exists(join(self.analysis_path,"commitId to all functions" ))):
             print("missing commits data to analyse")
             return
 
-        with open(os.path.join(self.analysis_path, "bugs.txt")) as outfile:
+        with open(join(self.analysis_path, "bugs.txt")) as outfile:
             data = json.load(outfile)
 
-       # with open(os.path.join(self.analysis_path,"commitId to all functions.txt" )) as outfile:
+       # with open(join()(self.analysis_path,"commitId to all functions.txt" )) as outfile:
         #    commitId_to_hexsha = json.load(outfile)['commit id']
 
-        df = pandas.read_parquet(path=os.path.join(self.analysis_path,"commitId to all functions"))
+        df = pandas.read_parquet(path=join(self.analysis_path,"commitId to all functions"))
         commitId_to_hexsha =df.to_dict()['commit id']
 
         bugs = data['bugs info']['bugs']
@@ -152,9 +151,9 @@ class analyzer:
         counter = 0
         commits = {}
         bug_to_commit_that_solved = []
-        os.path.join(self.analysis_path,f"data{counter}.txt")
-        while (os.path.exists(os.path.join(self.data_path,f"data{counter}.txt"))):
-            with open(os.path.join(self.data_path,f"data{counter}.txt")) as outfile:
+        join(self.analysis_path,f"data{counter}.txt")
+        while (exists(join(self.data_path,f"data{counter}.txt"))):
+            with open(join(self.data_path,f"data{counter}.txt")) as outfile:
                 data = json.load(outfile)
             data = data['changes']
             for commit in data:
@@ -189,7 +188,7 @@ class analyzer:
 
     # def get_all_functions_on_commit_and_id_to_hexsha(git_url):
     #     try:
-    #         if not (os.path.exists(PROJECT_PATH + "\\Project")):
+    #         if not (exists(PROJECT_PATH + "\\Project")):
     #             Repo.clone_from(
     #                 git_url, PROJECT_PATH + "\\Project")
     #         repo = Repo(PROJECT_PATH + "\\Project")
@@ -214,9 +213,9 @@ class analyzer:
     #         # existing_files_in_commit = git.execute(['git','ls-tree','--name-only','-r',all_commits[cur_commit].hexsha ]).split()
     #         # all_functions = []
     #         # for file in existing_files_in_commit:
-    #         #     if ".java" in file and os.path.exists(os.getcwd() + "\\Project\\"+file):
+    #         #     if ".java" in file and exists(os.getcwd() + "\\Project\\"+file):
     #         #         try:
-    #         #             tmp_tree = javalang.parse.parse(open(os.path.normpath(os.path.join(repo._working_tree_dir, file))).read())
+    #         #             tmp_tree = javalang.parse.parse(open(os.path.normpath(join()(repo._working_tree_dir, file))).read())
     #         #             all_functions.extend(get_methods_from_tree(tmp_tree))
     #         #         except Exception as e:
     #         #             continue
@@ -255,7 +254,7 @@ class analyzer:
         data = {}
         data[dictionary_value] = new_data
 
-        with open(os.path.join(self.analysis_path,f"{file_name}.txt"), 'w') as outfile:
+        with open(join(self.analysis_path,f"{file_name}.txt"), 'w') as outfile:
             json.dump(data, outfile, indent=4)
 
 
