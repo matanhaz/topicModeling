@@ -1,4 +1,6 @@
-import os
+from os.path import exists, join
+from os import mkdir,listdir
+
 import json
 import csv
 
@@ -8,29 +10,33 @@ import sys
 
 class ModifyOtherMethods:
 
-    def __init__(self, project_label, group_label, method_folder_name, project_folder,name_to_save):
-        self.project_label = project_label
-        self.group_label = group_label
-        self.method_folder_name = method_folder_name
-        self.project_folder = project_folder
-        self.name_to_save = name_to_save
+    def __init__(self, project_label, group_label, technique, project_folder):
+        self.project_label = project_label  # LANG -> like LANG-123
+        self.group_label = group_label  # Commons
+        self.technique = technique
+        self.method_folder_name = '_'.join([technique, project_folder])  # BugLocator_Lang
+        self.project_folder = project_folder  # Lang -> like Lang, Weaver etc
+
+        self.project_path = join("projects", project_folder)
+        self.analysis_path = join(self.project_path, "analysis")
+
         self.rows = [
-                ['bug id',
+                ['technique', 'bug id',
                  'num of functions that changed no tests' ,
                  'max index exist functions no tests',
                  'num of functions checked']]
 
     def change_file_presentation(self):
 
-        dirs = [dir for dir in os.listdir(
-            os.path.join("projects", self.project_folder, self.method_folder_name, self.group_label, self.project_label)) if "output" not in dir]
+        dirs = [dir for dir in listdir(
+            join("projects", self.project_folder, self.method_folder_name, self.group_label, self.project_label)) if "output" not in dir]
 
         bug_files = []
         for dir in dirs:
-            path = os.path.join("projects", self.project_folder, self.method_folder_name, self.group_label, self.project_label, dir, "recommended")
-            for bug_file in os.listdir(path):
+            path = join("projects", self.project_folder, self.method_folder_name, self.group_label, self.project_label, dir, "recommended")
+            for bug_file in listdir(path):
                 bug_id = bug_file.split('.')[0]
-                bug_files.append((f"{self.project_label}-{bug_id}", os.path.join(path,bug_file)))
+                bug_files.append((f"{self.project_label}-{bug_id}", join(path,bug_file)))
 
         final_dict = {}
         bugs = {}
@@ -50,7 +56,7 @@ class ModifyOtherMethods:
 
         final_dict['bugs'] = bugs
 
-        with open(os.path.join("projects", self.project_folder,"topicModeling","bug to funcion and similarity",f"bug_to_function_and_similarity_{self.name_to_save}.txt"), 'w') as outfile:
+        with open(join("projects", self.project_folder,"topicModeling","bug to funcion and similarity",f"bug_to_function_and_similarity_{self.method_folder_name}.txt"), 'w') as outfile:
             json.dump(final_dict, outfile, indent=4)
 
     # write final dict to a json file
@@ -61,9 +67,9 @@ class ModifyOtherMethods:
             then i need to check which functions has benn changed in those bugs
             then i calculate the top k '''
 
-        with open(os.path.join("projects",self.project_folder,"analysis","bug_to_commit_that_solved.txt"), 'r') as outfile:
-            #with open(os.path.join("projects",self.project_folder,"analysis","commitId to all functions.txt"), 'r') as f:
-            df = pandas.read_parquet(path=os.path.join(self.analysis_path,"commitId to all functions"))
+        with open(join("projects",self.project_folder,"analysis","bug_to_commit_that_solved.txt"), 'r') as outfile:
+            #with open(join("projects",self.project_folder,"analysis","commitId to all functions.txt"), 'r') as f:
+            df = pandas.read_parquet(path=join(self.analysis_path,"commitId to all functions"))
             commit_to_exist_functions =df.to_dict()['commit id']
             all_bugs = json.load(outfile)['bugs to commit']
             #commit_to_exist_functions = json.load(f)['commit id']
@@ -78,7 +84,7 @@ class ModifyOtherMethods:
                                                                    'exists functions': exists_functions,
                                                                    'exists functions no tests': exists_functions_no_tests}
 
-        with open(os.path.join("projects", self.project_folder,"topicModeling","bug to funcion and similarity",f"bug_to_function_and_similarity_{self.name_to_save}.txt")) as outfile:
+        with open(join("projects", self.project_folder,"topicModeling","bug to funcion and similarity",f"bug_to_function_and_similarity_{self.method_folder_name}.txt")) as outfile:
             all_bugs = json.load(outfile)['bugs']
             exists_bugs = exist_bugs_and_changed_functions.keys()
             for bug in tqdm.tqdm(all_bugs):
@@ -88,12 +94,12 @@ class ModifyOtherMethods:
      #          max_index = -1 if len(exist_bugs_and_changed_functions[bug]['function that changed']) == 0 else max([[function[2] for function in all_bugs[bug] if function[0] == func][0] for func in exist_bugs_and_changed_functions[bug]['function that changed']])
                 all_indexes = [[function[2] for function in all_bugs[bug] if function[0] == func] for func in exist_bugs_and_changed_functions[bug]['function that changed no tests']]
                 max_index_no_test = -1 if len(all_indexes)==0 else len(exist_bugs_and_changed_functions[bug]['exists functions no tests'])-1 if [] in all_indexes else max(all_indexes)[0]
-                self.rows.append([bug,
+                self.rows.append([self.technique,bug,
                              len(exist_bugs_and_changed_functions[bug]['function that changed no tests']),
                              max_index_no_test,
                              len(exist_bugs_and_changed_functions[bug]['exists functions no tests'])])
 
-            with open(os.path.join('projects',self.project_folder,"topicModeling","table_bugLocator.csv"), 'w', newline='', ) as file:
+            with open(join(self.project_path, "Experiments", "Experiment_1", "data", f"{self.method_folder_name}_indexes.csv"), 'w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerows(self.rows)
 
@@ -109,7 +115,7 @@ if __name__ == "__main__":
         selected_project = sys.argv[1]
         technique = sys.argv[2]
     else:
-        selected_project = "Lang"
+        selected_project = "apache_commons-lang"
         technique = "BugLocator"
 
     with open("project_info.txt", 'r') as outfile:
@@ -118,5 +124,7 @@ if __name__ == "__main__":
         project = data[selected_project]['project']
         group = data[selected_project]['group']
 
-    ModifyOtherMethods(project, group, selected_project, selected_project, '_'.join([technique, selected_project]))
+    modify = ModifyOtherMethods(project, group, technique, selected_project)
+    modify.change_file_presentation()
+    modify.gather_otherMethod_topK()
 

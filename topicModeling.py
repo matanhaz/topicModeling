@@ -10,7 +10,7 @@ import collections
 from spacy.lang.en import English
 from sklearn.metrics.pairwise import cosine_similarity
 import json
-from os.path import exist, join as path_exist, path_join
+from os.path import exists, join
 from os import mkdir
 import re
 import csv
@@ -138,28 +138,34 @@ def clean_list_of_strings(unfiltered):
 
 class TopicModeling:
     def __init__(self, project_name):
-        self.project_path = path_join("projects", project_name)
-        self.topicModeling_path = path_join(
+        self.project_path = join("projects", project_name)
+        self.topicModeling_path = join(
             self.project_path, "topicModeling")
-        self.analysis_path = path_join(self.project_path, "analysis")
+        self.analysis_path = join(self.project_path, "analysis")
 
     def run(self):
 
-        if not (path_exist(path_join(self.analysis_path, "func to commits message.txt"))):
+        if not (exists(join(self.analysis_path, "func to commits message.txt"))):
             print("missing data")
 
         else:
-            if not (path_exist(self.topicModeling_path)):
+
+            if not exists(join(self.project_path, "Experiments")):
+                mkdir(join(self.project_path, "Experiments"))
+                mkdir(join(self.project_path, "Experiments", "Experiment_1"))
+                mkdir(join(self.project_path, "Experiments", "Experiment_1", "data"))
+
+            if not (exists(self.topicModeling_path)):
                 mkdir(self.topicModeling_path)
 
-            if not(path_exist(path_join(self.topicModeling_path, "bug to funcion and similarity"))):
-                mkdir(path_join( self.topicModeling_path, "bug to funcion and similarity"))
+            if not(exists(join(self.topicModeling_path, "bug to funcion and similarity"))):
+                mkdir(join( self.topicModeling_path, "bug to funcion and similarity"))
 
-            if not (path_exist(path_join(self.topicModeling_path, "topics"))):
-                mkdir(path_join(self.topicModeling_path, "topics"))
+            if not (exists(join(self.topicModeling_path, "topics"))):
+                mkdir(join(self.topicModeling_path, "topics"))
 
-            if not (path_exist(path_join(self.topicModeling_path, "filtered_data.txt"))):
-                with open(path_join(self.analysis_path,"func to commits message.txt")) as outfile:
+            if not (exists(join(self.topicModeling_path, "filtered_data.txt"))):
+                with open(join(self.analysis_path,"func to commits message.txt")) as outfile:
                     data = json.load(outfile)
 
                 data = data["functions"]
@@ -207,12 +213,12 @@ class TopicModeling:
                 
             else:
                 with open(
-                    path_join(self.topicModeling_path, "filtered_data.txt")
+                    join(self.topicModeling_path, "filtered_data.txt")
                 ) as outfile:
                     func_to_prepared_commit_messages = json.load(outfile)[
                         "strings"]
                 with open(
-                    path_join(self.topicModeling_path, "word_to_counts.txt")
+                    join(self.topicModeling_path, "word_to_counts.txt")
                 ) as outfile:
                     word_to_counts = json.load(outfile)["words"]
 
@@ -225,10 +231,10 @@ class TopicModeling:
             corpus = [dictionary.doc2bow(text)
                       for text in prepared_commit_messages]
             pickle.dump(
-                corpus, open(path_join(
+                corpus, open(join(
                     self.topicModeling_path, "corpus.pkl"), "wb")
             )
-            dictionary.save(path_join(
+            dictionary.save(join(
                 self.topicModeling_path, "dictionary.gensim"))
 
             num_topics_to_table = [
@@ -263,7 +269,7 @@ class TopicModeling:
                 )
 
                 ldamodel.save(
-                    path_join(
+                    join(
                         self.project_path,
                         "topicModeling",
                         "topics",
@@ -283,13 +289,13 @@ class TopicModeling:
         self, lda, dictionary, prepared_commit_messages, NUM_TOPICS
     ):
         with open(
-            path_join(self.project_path, "analysis",
+            join(self.project_path, "analysis",
                       "bug_to_commit_that_solved.txt")
         ) as outfile:
             bugs = json.load(outfile)["bugs to commit"]
 
-        if not path_exist(
-            path_join(
+        if not exists(
+            join(
                 self.project_path,
                 "topicModeling",
                 "bug to funcion and similarity",
@@ -358,7 +364,7 @@ class TopicModeling:
 
             print("finished " + str(NUM_TOPICS) + " topics")
             self.save_into_file_sim(
-                path_join(
+                join(
                     "bug to funcion and similarity",
                     "bug to functions and similarity " +
                     str(NUM_TOPICS) + " topics",
@@ -367,11 +373,11 @@ class TopicModeling:
                 "bugs",
             )
 
-        # with open(path_join(self.project_path , "topicModeling","bug to funcion and similarity","bug to functions and similarity " + str(NUM_TOPICS) + " topics.txt")) as outfile:
+        # with open(join()(self.project_path , "topicModeling","bug to funcion and similarity","bug to functions and similarity " + str(NUM_TOPICS) + " topics.txt")) as outfile:
         #     bug_to_func_and_similarity = json.load(outfile)['bugs']
 
         df = pandas.read_parquet(
-            path=path_join(
+            path=join(
                 self.project_path,
                 "topicModeling",
                 "bug to funcion and similarity",
@@ -382,11 +388,11 @@ class TopicModeling:
         bug_to_func_and_similarity = df.to_dict()["bugs"]
 
         df = pandas.read_parquet(
-            path=path_join(self.analysis_path, "commitId to all functions")
+            path=join(self.analysis_path, "commitId to all functions")
         )
         commit_to_exist_functions = df.to_dict()["commit id"]
 
-        # with open(path_join(self.project_path ,"analysis","commitId to all functions.txt")) as outfile:
+        # with open(join()(self.project_path ,"analysis","commitId to all functions.txt")) as outfile:
         #     commit_to_exist_functions = json.load(outfile)['commit id']
 
         return self.fill_table(
@@ -584,11 +590,8 @@ class TopicModeling:
         )
 
     def create_table(self, rows):
-        with open(
-            path_join(self.project_path, "topicModeling", "table.csv"),
-            "w",
-            newline="",
-        ) as file:
+
+        with open(join(self.project_path, "Experiments", "Experiment_1", "data", "topicModeling_indexes.csv"), "w", newline="") as file:
             writer = csv.writer(file)
             writer.writerows(rows)
 
@@ -597,7 +600,7 @@ class TopicModeling:
         data[dictionary_value] = new_data
 
         with open(
-            path_join(self.project_path, "topicModeling",
+            join(self.project_path, "topicModeling",
                       file_name + ".txt"), "w"
         ) as outfile:
             json.dump(data, outfile, indent=4)
@@ -608,34 +611,34 @@ class TopicModeling:
 
         data2 = DataFrame.from_dict(data)
         data2.to_parquet(
-            path=path_join(self.project_path, "topicModeling", file_name)
+            path=join(self.project_path, "topicModeling", file_name)
         )
 
-        # with open(path_join(self.project_path , "topicModeling", file_name + ".txt"), 'w') as outfile:
+        # with open(join()(self.project_path , "topicModeling", file_name + ".txt"), 'w') as outfile:
         #     json.dump(data, outfile, indent=4)
 
-    def visualize(self, NUM_TOPICS):
-
-        dictionary = gensim.corpora.Dictionary.load(
-            path_join(self.project_path, "topicModeling",
-                      "dictionary.gensim")
-        )
-        corpus = pickle.load(
-            open(path_join(self.project_path,
-                           "topicModeling", "corpus.pkl"), "rb")
-        )
-        lda = gensim.models.ldamodel.LdaModel.load(
-            path_join(
-                self.project_path,
-                "topicModeling",
-                "topics",
-                "model" + str(NUM_TOPICS) + ".gensim",
-            )
-        )
-        lda_display = pyLDAvis.gensim_models.prepare(
-            lda, corpus, dictionary, sort_topics=False
-        )
-        pyLDAvis.display(lda_display)
+    # def visualize(self, NUM_TOPICS):
+    #
+    #     dictionary = gensim.corpora.Dictionary.load(
+    #         join(self.project_path, "topicModeling",
+    #                   "dictionary.gensim")
+    #     )
+    #     corpus = pickle.load(
+    #         open(join(self.project_path,
+    #                        "topicModeling", "corpus.pkl"), "rb")
+    #     )
+    #     lda = gensim.models.ldamodel.LdaModel.load(
+    #         join(
+    #             self.project_path,
+    #             "topicModeling",
+    #             "topics",
+    #             "model" + str(NUM_TOPICS) + ".gensim",
+    #         )
+    #     )
+    #     lda_display = pyLDAvis.gensim_models.prepare(
+    #         lda, corpus, dictionary, sort_topics=False
+    #     )
+    #     pyLDAvis.display(lda_display)
 
 
 if __name__ == "__main__":
