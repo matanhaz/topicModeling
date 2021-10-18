@@ -1,6 +1,7 @@
 import csv
 import json
-import os
+from os.path import join, exists, isdir, isfile, islink
+from os import mkdir, listdir, rename, unlink
 import shutil
 from pathlib import Path
 
@@ -21,51 +22,62 @@ class BarinelTester:
         self.epsilon = 0.01
         self.rows = []
         self.test_type = test_type
-        self.project_path = os.path.join("..","projects",project_name)
+        self.project_path = join("..","projects",project_name)
+        self.experiment2_path = join(self.project_path,'Experiments', 'Experiment_2')
         self.prepare_dir()
         self.prepare_matrixes()
 
     def prepare_dir(self):
-        if not os.path.exists(os.path.join(self.project_path, "barinel")):
-            os.mkdir(os.path.join(self.project_path, "barinel"))
+        if not exists(join
+                                  (self.project_path, "barinel")):
+            mkdir(join
+                     (self.project_path, "barinel"))
 
         # generate matrixes somehow, need amir's code
 
     def prepare_matrixes(self):
-        with open(os.path.join(self.project_path, "analysis", "bug_to_commit_that_solved.txt")) as f:
+        with open(join
+                      (self.project_path, "analysis", "bug_to_commit_that_solved.txt")) as f:
             data = json.loads(f.read())["bugs to commit"]  # array of dicts, each represent a bug that i discovered
 
-        old_path_matrixes = os.path.join(self.project_path, "barinel", "matrixes_before_change")
-        new_path_matrixes = os.path.join(self.project_path, "barinel", "matrixes")
+        old_path_matrixes = join\
+            (self.project_path, "barinel", "matrixes_before_change")
+        new_path_matrixes = join\
+            (self.project_path, "barinel", "matrixes")
 
         """clear matrixes dir"""
-        for file in os.listdir(new_path_matrixes):
-            file_path = os.path.join(new_path_matrixes, file)
+        for file in listdir(new_path_matrixes):
+            file_path = join\
+                (new_path_matrixes, file)
             try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
+                if isfile(file_path) or islink(file_path):
+                    unlink(file_path)
+                elif isdir(file_path):
                     shutil.rmtree(file_path)
             except Exception as e:
                 print("Failed to delete %s. Reason: %s" % (file_path, e))
 
         """copy files"""
-        for file in os.listdir(old_path_matrixes):
+        for file in listdir(old_path_matrixes):
             shutil.copy(
-                os.path.join(old_path_matrixes, file),
-                os.path.join(new_path_matrixes, file),
+                join
+                (old_path_matrixes, file),
+                join
+                (new_path_matrixes, file),
             )
 
         """remove json"""
-        for file in os.listdir(new_path_matrixes):
+        for file in listdir(new_path_matrixes):
             new_name = file.split(".")[0]
-            os.rename(os.path.join(new_path_matrixes, file), os.path.join(new_path_matrixes, new_name))
+            rename(join
+                      (new_path_matrixes, file), join
+            (new_path_matrixes, new_name))
 
         """read csv"""
         df = pd.read_csv("active-bugs.csv").to_dict()
         all_matrixes_in_dir = []
         for i in range(len(df["bug.id"])):
-            if str(df["bug.id"][i]) in os.listdir(new_path_matrixes):
+            if str(df["bug.id"][i]) in listdir(new_path_matrixes):
                 all_matrixes_in_dir.append([str(df["bug.id"][i]), str(df["report.id"][i].split("-")[1])])  # (bug file index, bug actual id in jira)
 
         """add to each matrix his hexsha"""
@@ -78,14 +90,24 @@ class BarinelTester:
         """treansfer matrixes to a new location"""
         counter = 1
         for m in all_matrixes_in_dir:
-            if os.path.isfile(os.path.join(new_path_matrixes, m[2])):
-                os.rename(os.path.join(new_path_matrixes, m[0]), os.path.join(new_path_matrixes, f"{m[2]}_{str(counter)}"))
+            if isfile(join
+                                  (new_path_matrixes, m[2])):
+                rename(join
+                          (new_path_matrixes, m[0]), join
+                (new_path_matrixes, f"{m[2]}_{str(counter)}"))
                 counter += 1
             else:
-                os.rename(os.path.join(new_path_matrixes, m[0]), os.path.join(new_path_matrixes, m[2]))
+                rename(join
+                          (new_path_matrixes, m[0]), join
+                (new_path_matrixes, m[2]))
 
     def write_rows(self):
-        path_to_save_into = os.path.join(self.project_path, "barinel", f"data_{self.test_type}.csv")
+        if not exists(self.experiment2_path):
+            mkdir(self.experiment2_path)
+            mkdir(join(self.experiment2_path, "data"))
+
+
+        path_to_save_into = join(self.experiment2_path, "data", f"data_{self.test_type}.csv")
         with open(path_to_save_into, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerows(self.rows)
@@ -225,7 +247,8 @@ class BarinelTesterTopicModeling(BarinelTester):
 class BarinelTesterOtherAlgorithm(BarinelTester):
     def __init__(self, project_name, technique):
         super().__init__(project_name, technique)  # represnt what comes out from the github results of other teqniques
-        self.rows.append(["precision", "recall", "wasted"])
+        self.rows.append(["technique","precision", "recall", "wasted"])
+        self.technique = technique
 
     def diagnose(self, matrix_name):
         # getting basic values
@@ -237,7 +260,7 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
         recall = diagnoses["recall"]
         wasted = diagnoses["wasted"]
 
-        self.rows.append([diagnoses["precision"], diagnoses["recall"], diagnoses["wasted"]])
+        self.rows.append([self.technique, diagnoses["precision"], diagnoses["recall"], diagnoses["wasted"]])
 
 import sys
 if __name__ == "__main__":
@@ -259,13 +282,17 @@ if __name__ == "__main__":
     topicModeling = BarinelTesterTopicModeling(project_name, (15, 26))
     #buglocator_lang = BarinelTesterOtherAlgorithm(project_name, f"{technique}_{project_name}")
 
-    path = os.path.join(str(Path(__file__).parents[1]),'projects',project_name,"barinel","matrixes")
+    path = join\
+        (str(Path(__file__).parents[1]),'projects',project_name,"barinel","matrixes")
 
-    for matrix in os.listdir(path):
+    for matrix in listdir(path):
         try:
-            #sanity.diagnose(os.path.join(path,"matrixes", matrix.split("_")[0]))
-            topicModeling.diagnose(os.path.join(path, matrix.split("_")[0]))
-            #buglocator_lang.diagnose(os.path.join(path,"matrixes", matrix.split("_")[0]))
+            #sanity.diagnose(join
+            # (path,"matrixes", matrix.split("_")[0]))
+            topicModeling.diagnose(join
+                                   (path, matrix.split("_")[0]))
+            #buglocator_lang.diagnose(join
+            # (path,"matrixes", matrix.split("_")[0]))
             success.append(matrix)
         except Exception as e:
             #raise e
