@@ -132,7 +132,7 @@ jobs:
                   if 'bug-mining' in file:
                       p = os.path.join(path,file)
                       old = os.path.join(p,'framework', 'projects','Lang',f"matrix_{file.split('_')[1]}.json")
-                      new = os.path.join(f"matrixes_before_change","{file.split('_')[1]}.json")
+                      new = os.path.join("matrixes_before_change","f{file.split('_')[1]}.json")
                       os.rename(old,new)
                       if not active_bugs:
                           active_bugs = True
