@@ -125,14 +125,16 @@ jobs:
         run: |
               import os
               active_bugs = False
-              a= os.listdir()
+              path = os.path.join('.','framework','bug-mining')
+              a= os.listdir(path)
               print(a)
               for file in a:
                   if 'bug-mining' in file:
-                      os.rename(f"{file}\\framework\\projects\\Lang\\matrix_{file.split('_')[1]}.json",f"matrixes_before_change\\{file.split('_')[1]}.json")
+                      p = os.path.join(path,file)
+                      os.rename(f"{p}\\framework\\projects\\Lang\\matrix_{file.split('_')[1]}.json",f"matrixes_before_change\\{file.split('_')[1]}.json")
                       if not active_bugs:
                           active_bugs = True
-                          os.rename(f"{file}\\framework\\projects\\Lang\\active-bugs.csv",f"matrixes_before_change\\active-bugs.csv")
+                          os.rename(f"{p}\\framework\\projects\\Lang\\active-bugs.csv",f"matrixes_before_change\\active-bugs.csv")
         shell: python
       
       - name: Upload bug-mining
