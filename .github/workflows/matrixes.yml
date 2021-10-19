@@ -84,18 +84,18 @@ jobs:
       - run: ./init.sh
 
       - name: execute
-        run: python wrapper.py commons-lang bug-mining_${{ matrix.bug_ind }} ${{ matrix.bug_ind }}
+        run: python wrapper.py commons-lang bug-mining_${{ matrix.bug_id }} ${{ matrix.bug_id }}
         working-directory: ./framework/bug-mining
 
       - name: delete repo
         if: ${{always()}}
         run: |
-            rm -rf ./framework/bug-mining/bug-mining_${{ matrix.bug_ind}}/project_repos
-            rm -rf ./framework/bug-mining/bug-mining_${{ matrix.bug_ind}}/issues
-            rm -rf ./framework/bug-mining/bug-mining_${{ matrix.bug_ind}}/framework/core
-            rm -rf ./framework/bug-mining/bug-mining_${{ matrix.bug_ind}}/gitlog
-            rm -rf ./framework/bug-mining/bug-mining_${{ matrix.bug_ind}}/issues.txt
-            rm -rf ./framework/bug-mining/bug-mining_${{ matrix.bug_ind}}/framework/projects/Lang/lib
+            rm -rf ./framework/bug-mining/bug-mining_${{ matrix.bug_id}}/project_repos
+            rm -rf ./framework/bug-mining/bug-mining_${{ matrix.bug_id}}/issues
+            rm -rf ./framework/bug-mining/bug-mining_${{ matrix.bug_id}}/framework/core
+            rm -rf ./framework/bug-mining/bug-mining_${{ matrix.bug_id}}/gitlog
+            rm -rf ./framework/bug-mining/bug-mining_${{ matrix.bug_id}}/issues.txt
+            rm -rf ./framework/bug-mining/bug-mining_${{ matrix.bug_id}}/framework/projects/Lang/lib
             rm -rf ./framework/bug-mining/tracing
       
       
