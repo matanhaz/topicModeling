@@ -126,6 +126,7 @@ jobs:
               import os
               active_bugs = False
               a= os.listdir()
+              print(a)
               for file in a:
                   if 'bug-mining' in file:
                       os.rename(f"{file}\\framework\\projects\\Lang\\matrix_{file.split('_')[1]}.json",f"matrixes_before_change\\{file.split('_')[1]}.json")
@@ -141,4 +142,4 @@ jobs:
           # Artifact name
           name: step_7_artifact
           # A file, directory or wildcard pattern that describes what to upload
-          path: ./framework/bug-mining/matrixes_before_change
+          path: ./matrixes_before_change
