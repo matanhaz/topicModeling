@@ -132,11 +132,11 @@ jobs:
                   if 'bug-mining' in file:
                       p = os.path.join(path,file)
                       old = os.path.join(p,'framework', 'projects','Lang',f"matrix_{file.split('_')[1]}.json")
-                      new = os.path.join("matrixes_before_change","f{file.split('_')[1]}.json")
+                      new = os.path.join(path,"matrixes_before_change","f{file.split('_')[1]}.json")
                       os.rename(old,new)
                       if not active_bugs:
                           active_bugs = True
-                          os.rename(os.path.join(p,'framework', 'projects','Lang',"active-bugs.csv"),os.path.join("matrixes_before_change","active-bugs.csv"))
+                          os.rename(os.path.join(p,'framework', 'projects','Lang',"active-bugs.csv"),os.path.join(path,"matrixes_before_change","active-bugs.csv"))
         shell: python
       
       - name: Upload bug-mining
