@@ -297,15 +297,15 @@ jobs:
   
   
   step_7_download_matrixes:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     
     strategy:
       fail-fast: false
       matrix:
-        project: [Lang]
-        bug_id: [19] #[19, 28, 29, 45, 49, 83, 224, 229, 259, 262, 284, 21, 27, 30, 31, 32, 33, 34, 36, 48, 54, 56, 57, 68, 72, 73, 76, 78, 87, 90, 176, 178, 181, 182, 183, 200, 219, 225, 230, 248, 249, 252, 258, 267, 269, 275, 279, 282, 283, 289, 290, 291, 296, 305, 306, 307, 309, 311, 312, 314, 315, 317, 319, 321, 325]
- 
+        bug_ind: [33] #[19, 28, 29, 45, 49, 83, 224, 229, 259, 262, 284, 21, 27, 30, 31, 32, 33, 34, 36, 48, 54, 56, 57, 68, 72, 73, 76, 78, 87, 90, 176, 178, 181, 182, 183, 200, 219, 225, 230, 248, 249, 252, 258, 267, 269, 275, 279, 282, 283, 289, 290, 291, 296, 305, 306, 307, 309, 311, 312, 314, 315, 317, 319, 321, 325]
+
+
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -372,8 +372,24 @@ jobs:
       - run: cpanm --installdeps .
       - run: ./init.sh
 
-      - name: execute
-        run: python wrapper.py commons-lang bug-mining_${{ matrix.bug_ind }} ${{ matrix.bug_ind }}
+      - name: initialize-project-and-collect-issues
+        run: ./initialize-project-and-collect-issues.pl -p Lang -n commons-lang -w bug-mining_${{ matrix.bug_ind }} -r https://github.com/apache/commons-lang.git -g jira -t LANG -e "/(LANG-\d+)/mi"
+        working-directory: ./framework/bug-mining
+      
+      - name: initialize-revisions
+        run: ./initialize-revisions.pl -p Lang -w bug-mining_${{ matrix.bug_ind }}  -i ${{ matrix.bug_ind }} 
+        working-directory: ./framework/bug-mining
+
+      - name: analyze-project
+        run: ./analyze-project.pl -p Lang -w bug-mining_${{ matrix.bug_ind }}  -g jira -t LANG -i ${{ matrix.bug_ind }} 
+        working-directory: ./framework/bug-mining
+
+      - name: get-trigger
+        run: ./get-trigger.pl -p Lang -w bug-mining_${{ matrix.bug_ind }}
+        working-directory: ./framework/bug-mining
+
+      - name: get-metadata
+        run: ./get-metadata.pl -p Lang -w bug-mining_${{ matrix.bug_ind }}
         working-directory: ./framework/bug-mining
 
       - name: delete repo
@@ -396,11 +412,19 @@ jobs:
       - name: Script
         run: |
               import os
-              a= os.listdir()
+              active_bugs = False
+              path = os.path.join('.','framework','bug-mining')
+              a= os.listdir(path)
+              print(a)
               for file in a:
                   if 'bug-mining' in file:
-                      os.rename(f"{file}\\framework\\projects\\Lang\\matrix_{file.split('_')[1]}.json",f"matrixes_before_change\\{file.split('_')[1]}.json")
-
+                      p = os.path.join(path,file)
+                      old = os.path.join(p,'framework', 'projects','Lang',f"matrix_{file.split('_')[1]}.json")
+                      new = os.path.join(path,"matrixes_before_change",f"{file.split('_')[1]}.json")
+                      os.rename(old,new)
+                      if not active_bugs:
+                          active_bugs = True
+                          os.rename(os.path.join(p,'framework', 'projects','Lang',"active-bugs.csv"),os.path.join(path,"matrixes_before_change","active-bugs.csv"))
         shell: python
       
       - name: Upload bug-mining
