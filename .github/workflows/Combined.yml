@@ -273,13 +273,13 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: step_4_artifact
-          path: projects
+          path: ./projects
           
       - name: Download results step 5
         uses: actions/download-artifact@v2
         with:
           name: step_5_artifact
-          path: projects/${{needs.steps_1-3_gathering_data.outputs.folder_name}}
+          path: ./projects/${{needs.steps_1-3_gathering_data.outputs.folder_name}}
           
       - name: modify
         run: |
@@ -293,7 +293,7 @@ jobs:
           # Artifact name
           name: step_6_artifact
           # A file, directory or wildcard pattern that describes what to upload
-          path: projects
+          path: ./projects
   
   
   step_7_download_matrixes:
@@ -472,7 +472,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: step_6_artifact
-          path: projects
+          path: ./projects
       
       - name: create folder "barinel"
         run: |
@@ -488,7 +488,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: step_7_artifact
-          path: projects/${{needs.steps_1-3_gathering_data.outputs.folder_name}}/barinel/matrixes_before_change
+          path: ./projects/${{needs.steps_1-3_gathering_data.outputs.folder_name}}/barinel/matrixes_before_change
           
       - name: barinel
         run: |
@@ -502,7 +502,7 @@ jobs:
           # Artifact name
           name: step_8_artifact
           # A file, directory or wildcard pattern that describes what to upload
-          path: projects
+          path: ./projects
 
         
    # - name: Upload math result for job 2
