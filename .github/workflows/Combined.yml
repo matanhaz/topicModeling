@@ -225,13 +225,13 @@ jobs:
             project=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
             group=$(echo $(jq ".$name.group" project_info.txt) | tr -d '\"')
             cd `git rev-parse --show-toplevel`/scripts
-            python launcher_Tool.py -w ${{matrix.project}}   -g $group -p $project -t ${{matrix.techniques}}
+            python launcher_Tool.py -w ${{matrix.techniques}}_${{matrix.project}}   -g $group -p $project -t ${{matrix.techniques}}
 #              python launcher_Tool.py -w ExpFirst   -g Apache -p CAMEL -t ${{ matrix.techniques }}
 
     - name: save performance results
       run: |
             cd `git rev-parse --show-toplevel`/scripts
-            python launcher_XLSResultsAll.py -w ${{matrix.project}}
+            python launcher_XLSResultsAll.py -w ${{matrix.techniques}}_${{matrix.project}}
     - name: Upload data
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
@@ -279,7 +279,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: step_5_artifact
-          path: ./projects/${{needs.steps_1-3_gathering_data.outputs.folder_name}}/${{needs.step_5_other_methods.outputs.technique}}_${{needs.steps_1-3_gathering_data.outputs.folder_name}}
+          path: ./projects/${{needs.steps_1-3_gathering_data.outputs.folder_name}}
           
       - name: modify
         run: |
@@ -302,7 +302,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bug_ind: [33] #[19, 28, 29, 45, 49, 83, 224, 229, 259, 262, 284, 21, 27, 30, 31, 32, 33, 34, 36, 48, 54, 56, 57, 68, 72, 73, 76, 78, 87, 90, 176, 178, 181, 182, 183, 200, 219, 225, 230, 248, 249, 252, 258, 267, 269, 275, 279, 282, 283, 289, 290, 291, 296, 305, 306, 307, 309, 311, 312, 314, 315, 317, 319, 321, 325]
+        bug_ind: [33, 19, 28, 29, 45, 49, 83, 224, 229, 259, 262, 284, 21, 27, 30, 31, 32, 33, 34, 36, 48, 54, 56, 57, 68, 72, 73, 76, 78, 87, 90, 176, 178, 181, 182, 183, 200, 219, 225, 230, 248, 249, 252, 258, 267, 269, 275, 279, 282, 283, 289, 290, 291, 296, 305, 306, 307, 309, 311, 312, 314, 315, 317, 319, 321, 325] #[]
 
 
 
