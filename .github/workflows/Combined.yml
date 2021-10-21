@@ -279,7 +279,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: step_5_artifact
-          path: ./projects/${{needs.steps_1-3_gathering_data.outputs.folder_name}}
+          path: ./projects/${{needs.step_5_other_methods.outputs.technique}}_${{needs.steps_1-3_gathering_data.outputs.folder_name}}
           
       - name: modify
         run: |
