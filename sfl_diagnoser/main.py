@@ -28,22 +28,23 @@ class BarinelTester:
         self.prepare_matrixes()
 
     def prepare_dir(self):
-        if not exists(join
-                                  (self.project_path, "barinel")):
-            mkdir(join
-                     (self.project_path, "barinel"))
+        if not exists(join(self.project_path, "barinel")):
+            mkdir(join(self.project_path, "barinel"))
 
         # generate matrixes somehow, need amir's code
 
     def prepare_matrixes(self):
-        with open(join
-                      (self.project_path, "analysis", "bug_to_commit_that_solved.txt")) as f:
+        with open(join(self.project_path, "analysis", "bug_to_commit_that_solved.txt")) as f:
             data = json.loads(f.read())["bugs to commit"]  # array of dicts, each represent a bug that i discovered
 
         old_path_matrixes = join\
             (self.project_path, "barinel", "matrixes_before_change")
         new_path_matrixes = join\
             (self.project_path, "barinel", "matrixes")
+
+        """move avtive-bugs.csv"""
+        rename(join(old_path_matrixes,'active-bugs.csv'),join(self.project_path, "barinel"))
+
 
         """clear matrixes dir"""
         for file in listdir(new_path_matrixes):
@@ -74,7 +75,7 @@ class BarinelTester:
             (new_path_matrixes, new_name))
 
         """read csv"""
-        df = pd.read_csv("active-bugs.csv").to_dict()
+        df = pd.read_csv(join(self.project_path, "barinel",'active-bugs.csv')).to_dict()
         all_matrixes_in_dir = []
         for i in range(len(df["bug.id"])):
             if str(df["bug.id"][i]) in listdir(new_path_matrixes):
@@ -267,32 +268,30 @@ if __name__ == "__main__":
 
     project_name = "apache_commons-lang"
     technique = "BugLocator"
-    # if len(sys.argv) != 3:
-    #     print("missing arguments")
-    #     exit()
+    if len(sys.argv) != 3:
+        print("missing arguments")
+        exit()
 
 
-    # project_name = sys.argv[1]
-    # technique = sys.argv[2]
+    project_name = sys.argv[1]
+    technique = sys.argv[2]
     success = []
     failed = []
 
     # select the test we want to do
     sanity = BarinelTesterSanity(project_name)
     topicModeling = BarinelTesterTopicModeling(project_name, (15, 26))
-    #buglocator_lang = BarinelTesterOtherAlgorithm(project_name, f"{technique}_{project_name}")
+    other_method = BarinelTesterOtherAlgorithm(project_name, f"{technique}_{project_name}")
 
     path = join\
         (str(Path(__file__).parents[1]),'projects',project_name,"barinel","matrixes")
 
     for matrix in listdir(path):
         try:
-            #sanity.diagnose(join
-            # (path,"matrixes", matrix.split("_")[0]))
+            sanity.diagnose(join(path,"matrixes", matrix.split("_")[0]))
             topicModeling.diagnose(join
                                    (path, matrix.split("_")[0]))
-            #buglocator_lang.diagnose(join
-            # (path,"matrixes", matrix.split("_")[0]))
+            other_method.diagnose(join(path,"matrixes", matrix.split("_")[0]))
             success.append(matrix)
         except Exception as e:
             #raise e
@@ -300,8 +299,8 @@ if __name__ == "__main__":
             failed.append(matrix)
         print(f"finished a matrix: {matrix}")
 
-    #sanity.write_rows()
+    sanity.write_rows()
     topicModeling.write_rows()
-    #buglocator_lang.write_rows()
+    other_method.write_rows()
 
     print(f"success:{success},\n failed: {failed}")
