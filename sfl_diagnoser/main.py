@@ -43,7 +43,9 @@ class BarinelTester:
             (self.project_path, "barinel", "matrixes")
 
         """move avtive-bugs.csv"""
-        rename(join(old_path_matrixes,'active-bugs.csv'),join(self.project_path, "barinel"))
+        if not exists(join(self.project_path, "barinel",'active-bugs.csv' )):
+
+            rename(join(old_path_matrixes,'active-bugs.csv'),join(self.project_path, "barinel",'active-bugs.csv' ))
 
 
         """clear matrixes dir"""
@@ -266,21 +268,21 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 import sys
 if __name__ == "__main__":
 
-    project_name = "apache_commons-lang"
-    technique = "BugLocator"
-    if len(sys.argv) != 3:
-        print("missing arguments")
-        exit()
+    project_name = "Lang"
+    technique = "BRTracer"
+    #if len(sys.argv) != 3:
+    #    print("missing arguments")
+    #    exit()
 
 
-    project_name = sys.argv[1]
-    technique = sys.argv[2]
+    #project_name = sys.argv[1]
+    #technique = sys.argv[2]
     success = []
     failed = []
 
     # select the test we want to do
-    sanity = BarinelTesterSanity(project_name)
-    topicModeling = BarinelTesterTopicModeling(project_name, (15, 26))
+   # sanity = BarinelTesterSanity(project_name)
+   # topicModeling = BarinelTesterTopicModeling(project_name, (15, 26))
     other_method = BarinelTesterOtherAlgorithm(project_name, f"{technique}_{project_name}")
 
     path = join\
@@ -288,9 +290,9 @@ if __name__ == "__main__":
 
     for matrix in listdir(path):
         try:
-            sanity.diagnose(join(path,"matrixes", matrix.split("_")[0]))
-            topicModeling.diagnose(join
-                                   (path, matrix.split("_")[0]))
+           # sanity.diagnose(join(path,"matrixes", matrix.split("_")[0]))
+           ## topicModeling.diagnose(join
+           #                        (path, matrix.split("_")[0]))
             other_method.diagnose(join(path,"matrixes", matrix.split("_")[0]))
             success.append(matrix)
         except Exception as e:
@@ -299,8 +301,8 @@ if __name__ == "__main__":
             failed.append(matrix)
         print(f"finished a matrix: {matrix}")
 
-    sanity.write_rows()
-    topicModeling.write_rows()
+    #sanity.write_rows()
+   # topicModeling.write_rows()
     other_method.write_rows()
 
     print(f"success:{success},\n failed: {failed}")
