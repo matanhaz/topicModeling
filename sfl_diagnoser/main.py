@@ -269,7 +269,7 @@ import sys
 if __name__ == "__main__":
 
     project_name = "Lang"
-    technique = "BRTracer"
+    technique = "BugLocator"
     #if len(sys.argv) != 3:
     #    print("missing arguments")
     #    exit()
@@ -290,10 +290,10 @@ if __name__ == "__main__":
 
     for matrix in listdir(path):
         try:
-           # sanity.diagnose(join(path,"matrixes", matrix.split("_")[0]))
+           # sanity.diagnose(join(path, matrix.split("_")[0]))
            ## topicModeling.diagnose(join
            #                        (path, matrix.split("_")[0]))
-            other_method.diagnose(join(path,"matrixes", matrix.split("_")[0]))
+            other_method.diagnose(join(path, matrix.split("_")[0]))
             success.append(matrix)
         except Exception as e:
             #raise e
