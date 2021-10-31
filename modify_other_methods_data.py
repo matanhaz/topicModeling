@@ -8,6 +8,9 @@ import pandas
 import tqdm
 import sys
 
+from pandas import DataFrame
+
+
 class ModifyOtherMethods:
 
     def __init__(self, project_label, group_label, technique, project_folder):
@@ -49,12 +52,18 @@ class ModifyOtherMethods:
                     parsed_line = line.split("\t")
                     function_name = parsed_line[2].split('.')[-2]
                     if 'test' not in function_name and 'Test' not in function_name:
-                        sim.append([function_name, float(parsed_line[1]), counter])
+                        sim.append([function_name, parsed_line[1], str(counter)])
                         counter += 1
                 bugs[bug_name] = sim
 
 
         final_dict['bugs'] = bugs
+        path_to_save = join("projects", self.project_folder,"topicModeling","bug to funcion and similarity",f"bug_to_function_and_similarity_{self.method_folder_name}")
+
+        data2 = DataFrame.from_dict(final_dict)
+        data2.to_parquet(
+            path=path_to_save
+        )
 
         with open(join("projects", self.project_folder,"topicModeling","bug to funcion and similarity",f"bug_to_function_and_similarity_{self.method_folder_name}.txt"), 'w') as outfile:
             json.dump(final_dict, outfile, indent=4)
@@ -115,8 +124,8 @@ if __name__ == "__main__":
         selected_project = sys.argv[1]
         technique = sys.argv[2]
     else:
-        selected_project = "apache_commons-lang"
-        technique = "BugLocator"
+        selected_project = "Lang"
+        technique = "BRTracer"
 
     with open("project_info.txt", 'r') as outfile:
         data = json.load(outfile)
@@ -126,5 +135,5 @@ if __name__ == "__main__":
 
     modify = ModifyOtherMethods(project, group, technique, selected_project)
     modify.change_file_presentation()
-    modify.gather_otherMethod_topK()
+    #modify.gather_otherMethod_topK()
 
