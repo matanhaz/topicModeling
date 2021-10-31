@@ -495,7 +495,7 @@ jobs:
       - name: barinel
         run: |
               cd `git rev-parse --show-toplevel`
-              python sfl_diagnoser\main.py ${{needs.steps_1-3_gathering_data.outputs.folder_name}} ${{needs.step_5_other_methods.outputs.technique}}
+              python sfl_diagnoser/main.py ${{needs.steps_1-3_gathering_data.outputs.folder_name}} ${{needs.step_5_other_methods.outputs.technique}}
               
       - name: Upload data
         if: ${{ always() }}
