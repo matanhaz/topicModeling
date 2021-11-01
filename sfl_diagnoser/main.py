@@ -22,7 +22,7 @@ class BarinelTester:
         self.epsilon = 0.01
         self.rows = []
         self.test_type = test_type
-        self.project_path = join("..","projects",project_name)
+        self.project_path = join(str(Path(__file__).parents[1]),"projects",project_name)
         self.experiment2_path = join(self.project_path,'Experiments', 'Experiment_2')
         self.prepare_dir()
         self.prepare_matrixes()
