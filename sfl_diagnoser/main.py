@@ -84,15 +84,17 @@ class BarinelTester:
                 all_matrixes_in_dir.append([str(df["bug.id"][i]), str(df["report.id"][i].split("-")[1])])  # (bug file index, bug actual id in jira)
 
         """add to each matrix his hexsha"""
+        all_matrixes_in_dir_filtered = []
         for m in all_matrixes_in_dir:
             for bug in data:
                 if bug["bug id"].split("-")[1] == m[1]:
                     m.append(bug["hexsha"])
+                    all_matrixes_in_dir_filtered.append(m)
                     break
 
         """treansfer matrixes to a new location"""
         counter = 1
-        for m in all_matrixes_in_dir:
+        for m in all_matrixes_in_dir_filtered:
             if isfile(join
                                   (new_path_matrixes, m[2])):
                 rename(join
@@ -268,7 +270,7 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 import sys
 if __name__ == "__main__":
 
-    project_name = "Lang"
+    project_name = "Compress"
     technique = "BugLocator"
     #if len(sys.argv) != 3:
     #    print("missing arguments")
@@ -281,19 +283,19 @@ if __name__ == "__main__":
     failed = []
 
     # select the test we want to do
-   # sanity = BarinelTesterSanity(project_name)
-   # topicModeling = BarinelTesterTopicModeling(project_name, (15, 26))
-    other_method = BarinelTesterOtherAlgorithm(project_name, f"{technique}_{project_name}")
+    sanity = BarinelTesterSanity(project_name)
+    topicModeling = BarinelTesterTopicModeling(project_name, (15, 26))
+    #other_method = BarinelTesterOtherAlgorithm(project_name, f"{technique}_{project_name}")
 
     path = join\
         (str(Path(__file__).parents[1]),'projects',project_name,"barinel","matrixes")
 
     for matrix in listdir(path):
         try:
-           # sanity.diagnose(join(path, matrix.split("_")[0]))
-           ## topicModeling.diagnose(join
-           #                        (path, matrix.split("_")[0]))
-            other_method.diagnose(join(path, matrix.split("_")[0]))
+            sanity.diagnose(join(path, matrix.split("_")[0]))
+            topicModeling.diagnose(join
+                                   (path, matrix.split("_")[0]))
+            #other_method.diagnose(join(path, matrix.split("_")[0]))
             success.append(matrix)
         except Exception as e:
             #raise e
@@ -301,8 +303,8 @@ if __name__ == "__main__":
             failed.append(matrix)
         print(f"finished a matrix: {matrix}")
 
-    #sanity.write_rows()
-   # topicModeling.write_rows()
-    other_method.write_rows()
+    sanity.write_rows()
+    topicModeling.write_rows()
+    #other_method.write_rows()
 
     print(f"success:{success},\n failed: {failed}")
