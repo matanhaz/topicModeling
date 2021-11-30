@@ -23,10 +23,10 @@
        	"project": "HIVE",
 	"group":"Apache"
     },
-    "Weaver": {
-        "git url": "https://github.com/apache/commons-collections.git",
+    "Compress": {
+        "git url": "https://github.com/apache/commons-compress.git",
        	"jira url": "http://issues.apache.org/jira",
-       	"project": "COLLECTIONS",
+       	"project": "COMPRESS",
 	"group":"Commons"
     }
 }
