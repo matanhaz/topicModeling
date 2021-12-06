@@ -1,7 +1,7 @@
 import csv
 import json
 from os.path import join, exists, isdir, isfile, islink
-from os import mkdir, listdir, rename, unlink
+from os import mkdir, listdir, rename, unlink, remove
 import shutil
 from pathlib import Path
 
@@ -36,6 +36,11 @@ class BarinelTester:
     def prepare_matrixes(self):
         with open(join(self.project_path, "analysis", "bug_to_commit_that_solved.txt")) as f:
             data = json.loads(f.read())["bugs to commit"]  # array of dicts, each represent a bug that i discovered
+
+       # bugz = [] # debug bug id
+       # for bb in data:
+       #     bugz.append(bb["bug id"].split("-")[1])
+       # print(bugz)
 
         old_path_matrixes = join\
             (self.project_path, "barinel", "matrixes_before_change")
@@ -91,6 +96,10 @@ class BarinelTester:
                     m.append(bug["hexsha"])
                     all_matrixes_in_dir_filtered.append(m)
                     break
+            else:
+                remove(join(new_path_matrixes, m[0]))
+
+
 
         """treansfer matrixes to a new location"""
         counter = 1
@@ -292,6 +301,8 @@ if __name__ == "__main__":
 
     for matrix in listdir(path):
         try:
+            if matrix == '177':
+                print("debug")
             sanity.diagnose(join(path, matrix.split("_")[0]))
             topicModeling.diagnose(join
                                    (path, matrix.split("_")[0]))
