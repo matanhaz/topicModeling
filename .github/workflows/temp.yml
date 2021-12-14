@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Combined
+name: Combined-temp
 
 on:
   workflow_dispatch:
@@ -110,7 +110,7 @@ jobs:
       fail-fast: false
       matrix:
         #techniques: [BugLocator,  BRTracer, BLUiR, AmaLgam,  BLIA, Locus]
-        techniques: [BugLocator]
+        techniques: [BugLocator, BRTracer]
         #group: [Commons]
         #folder_name: [BugLocator_lang]
     
