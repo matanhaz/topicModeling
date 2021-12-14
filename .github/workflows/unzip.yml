@@ -33,10 +33,12 @@ jobs:
 
       - name: create dir matrixes
         run: |
+              cd `git rev-parse --show-toplevel`
               mkdir matrixes_before_change
               
       - name: unzip matrixes
         run: |
+              cd `git rev-parse --show-toplevel`
               sudo apt install unzip
               unzip matrixes/Compress matrixes/Compress
               
