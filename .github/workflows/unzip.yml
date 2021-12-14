@@ -53,18 +53,18 @@ jobs:
         run: |
               import os
               active_bugs = False
-              path = os.path.join('.','matrixes',f'{${{github.event.inputs.repo_name}}}')
+              path = os.path.join('.','matrixes',"{${{github.event.inputs.repo_name}}}")
               a= os.listdir(path)
               print(a)
               for file in a:
                   if 'bug-mining' in file:
                       p = os.path.join(path,file)
-                      old = os.path.join(p,'framework', 'projects',f'{${{github.event.inputs.repo_name}}}',f"matrix_{file.split('_')[1]}_full.json")
+                      old = os.path.join(p,'framework', 'projects',"{${{github.event.inputs.repo_name}}}",f"matrix_{file.split('_')[1]}_full.json")
                       new = os.path.join('.',"matrixes_before_change",f"{file.split('_')[1]}.json")
                       os.rename(old,new)
                       if not active_bugs:
                           active_bugs = True
-                          os.rename(os.path.join(p,'framework', 'projects',f'{${{github.event.inputs.repo_name}}}',"active-bugs.csv"),os.path.join('.',"matrixes_before_change","active-bugs.csv"))
+                          os.rename(os.path.join(p,'framework', 'projects',"{${{github.event.inputs.repo_name}}}","active-bugs.csv"),os.path.join('.',"matrixes_before_change","active-bugs.csv"))
         shell: python
       
       - name: Upload bug-mining
