@@ -418,7 +418,7 @@ jobs:
       - name: barinel
         run: |
               cd `git rev-parse --show-toplevel`
-              python sfl_diagnoser/main.py ${{github.event.inputs.repo_name}} ${{matrix.techniques}}
+              python sfl_diagnoser/main.py ${{github.event.inputs.repo_name}} ${{matrix.techniques}} git
               
       - name: Upload data
         if: ${{ always() }}
