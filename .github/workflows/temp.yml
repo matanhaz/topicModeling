@@ -220,7 +220,7 @@ jobs:
             project=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
             group=$(echo $(jq ".$name.group" project_info.txt) | tr -d '\"')
             cd `git rev-parse --show-toplevel`/scripts
-            python launcher_Tool.py -w ${{matrix.techniques}}_${{matrix.project}}   -g $group -p $project -t ${{matrix.techniques}}
+            python launcher_Tool.py -w ${{matrix.techniques}}_${{github.event.inputs.repo_name}}   -g $group -p $project -t ${{matrix.techniques}}
 #              python launcher_Tool.py -w ExpFirst   -g Apache -p CAMEL -t ${{ matrix.techniques }}
 
     - name: save performance results
