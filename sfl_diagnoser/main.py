@@ -308,7 +308,7 @@ if __name__ == "__main__":
 
     # select the test we want to do
     sanity = BarinelTesterSanity(project_name)
-    topicModeling = BarinelTesterTopicModeling(project_name, (15, 26))
+    topicModeling = BarinelTesterTopicModeling(project_name, (15, 16))
     other_method = BarinelTesterOtherAlgorithm(project_name, f"{technique}_{project_name}")
 
     path = join\
@@ -332,7 +332,7 @@ if __name__ == "__main__":
 
     sanity.write_rows()
     topicModeling.write_rows()
-    #other_method.write_rows()
+    other_method.write_rows()
 
     print(f"success:{success},\n failed: {failed}")
 

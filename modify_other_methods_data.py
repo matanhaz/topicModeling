@@ -1,4 +1,4 @@
-from os.path import exists, join
+from os.path import exists, join, isdir
 from os import mkdir,listdir
 
 import json
@@ -120,12 +120,10 @@ if __name__ == "__main__":
 
 
 
-    if len(sys.argv) == 3:
+    if len(sys.argv) == 2:
         selected_project = sys.argv[1]
-        technique = sys.argv[2]
     else:
         selected_project = "Lang"
-        technique = "BRTracer"
 
     with open("project_info.txt", 'r') as outfile:
         data = json.load(outfile)
@@ -133,7 +131,9 @@ if __name__ == "__main__":
         project = data[selected_project]['project']
         group = data[selected_project]['group']
 
-    modify = ModifyOtherMethods(project, group, technique, selected_project)
-    modify.change_file_presentation()
-    #modify.gather_otherMethod_topK()
+    for dir in listdir(join("projects", selected_project)):
+        if isdir(dir) and selected_project in dir:
+            modify = ModifyOtherMethods(project, group, dir.split('_')[0], selected_project)
+            modify.change_file_presentation()
+            #modify.gather_otherMethod_topK()
 
