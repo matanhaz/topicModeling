@@ -24,8 +24,13 @@ class BarinelTester:
         self.test_type = test_type
         self.project_path = join(str(Path(__file__).parents[1]),"projects",project_name)
         self.experiment2_path = join(self.project_path,'Experiments', 'Experiment_2')
+
+        self.mapping = {}
         self.prepare_dir()
         self.prepare_matrixes()
+
+        self.low_precision = []
+        self.high_precision = []
 
     def prepare_dir(self):
         if not exists(join(self.project_path, "barinel")):
@@ -91,10 +96,12 @@ class BarinelTester:
         """add to each matrix his hexsha"""
         all_matrixes_in_dir_filtered = []
         for m in all_matrixes_in_dir:
+
             for bug in data:
                 if bug["bug id"].split("-")[1] == m[1]:
                     m.append(bug["hexsha"])
                     all_matrixes_in_dir_filtered.append(m)
+                    self.mapping[m[2]] = m[1]
                     break
             else:
                 remove(join(new_path_matrixes, m[0]))
@@ -166,8 +173,8 @@ class BarinelTesterSanity(BarinelTester):
         original_recall = diagnoses["recall"]
         original_wasted = diagnoses["wasted"]
 
-        if original_precision < self.epsilon or original_precision > 1 - self.epsilon:
-            return
+        # if original_precision < self.epsilon or original_precision > 1 - self.epsilon:
+        #     return
 
         for good_sim in self.high_similarity:
             for bad_sim in self.low_similarity:
@@ -191,6 +198,7 @@ class BarinelTesterSanity(BarinelTester):
                         diagnosis_both["precision"],
                         diagnosis_both["recall"],
                         diagnosis_both["wasted"],
+                        self.mapping[matrix_name.split('\\')[-1]]
                     ]
                 )
 
@@ -223,6 +231,7 @@ class BarinelTesterTopicModeling(BarinelTester):
         def diagnose_real(matrix_name, exp_type, topic):
             ei = read_json_planning_file(matrix_name, exp_type,'topic modeling', num_topics=topic, Project_name=self.project_name)
             ei.diagnose()
+
             diagnosis = Diagnosis_Results(ei.diagnoses, ei.initial_tests, ei.error, ei.pool, ei.get_id_bugs()).metrics
             return diagnosis
 
@@ -232,14 +241,19 @@ class BarinelTesterTopicModeling(BarinelTester):
         original_recall = diagnoses["recall"]
         original_wasted = diagnoses["wasted"]
 
-        if original_precision < self.epsilon or original_precision > 1 - self.epsilon:
-            return
+        # if original_precision < self.epsilon:
+        #     self.low_precision.append(matrix_name)
+        #     return
+        # if original_precision > 1 - self.epsilon:
+        #     self.high_precision.append(matrix_name)
+        #     return
+
 
         for topic in self.topics:
             diagnosis_comp = diagnose_real(matrix_name, "CompSimilarity", topic)
             diagnosis_tests = diagnose_real(matrix_name, "TestsSimilarity", topic)
             diagnosis_both = diagnose_real(matrix_name, "BothSimilarities", topic)
-            print('finished topics ', topic)
+            #print('finished topics ', topic)
             self.rows.append(
                 [
                     topic,
@@ -254,6 +268,7 @@ class BarinelTesterTopicModeling(BarinelTester):
                     diagnosis_tests["wasted"],
                     diagnosis_both["precision"],                    diagnosis_both["recall"],
                     diagnosis_both["wasted"],
+                    self.mapping[matrix_name.split('\\')[-1]]
                 ]
             )
 
@@ -274,44 +289,45 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
         recall = diagnoses["recall"]
         wasted = diagnoses["wasted"]
 
-        self.rows.append([self.technique, diagnoses["precision"], diagnoses["recall"], diagnoses["wasted"]])
+        self.rows.append([self.technique, diagnoses["precision"], diagnoses["recall"], diagnoses["wasted"],
+                          self.mapping[matrix_name.split('\\')[-1]]])
 
 import sys
 if __name__ == "__main__":
 
     project_name = "Compress"
     technique = "BugLocator"
-    #if len(sys.argv) != 3:
-    #    print("missing arguments")
-    #    exit()
+    if len(sys.argv) == 3:
+        project_name = sys.argv[1]
+        technique = sys.argv[2]
 
+    errors = []
 
-    #project_name = sys.argv[1]
-    #technique = sys.argv[2]
     success = []
     failed = []
 
     # select the test we want to do
     sanity = BarinelTesterSanity(project_name)
     topicModeling = BarinelTesterTopicModeling(project_name, (15, 26))
-    #other_method = BarinelTesterOtherAlgorithm(project_name, f"{technique}_{project_name}")
+    other_method = BarinelTesterOtherAlgorithm(project_name, f"{technique}_{project_name}")
 
     path = join\
         (str(Path(__file__).parents[1]),'projects',project_name,"barinel","matrixes")
 
     for matrix in listdir(path):
         try:
-            if matrix == '177':
-                print("debug")
+
             sanity.diagnose(join(path, matrix.split("_")[0]))
-            topicModeling.diagnose(join
-                                   (path, matrix.split("_")[0]))
-            #other_method.diagnose(join(path, matrix.split("_")[0]))
+            topicModeling.diagnose(join(path, matrix.split("_")[0]))
+            other_method.diagnose(join(path, matrix.split("_")[0]))
             success.append(matrix)
         except Exception as e:
+            failed.append((matrix, e))
+            #print(matrix)
             #raise e
+            #errors.append(e)
 
-            failed.append(matrix)
+
         print(f"finished a matrix: {matrix}")
 
     sanity.write_rows()
@@ -319,3 +335,4 @@ if __name__ == "__main__":
     #other_method.write_rows()
 
     print(f"success:{success},\n failed: {failed}")
+

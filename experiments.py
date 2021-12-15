@@ -89,7 +89,7 @@ class Experiment2(Experiment):
         for file in listdir(self.data_path):
             if 'sanity' in file:
                 self._run_sanity(file)
-            elif 'real' in file:
+            elif 'Topic' in file:
                 self._run_topic(file)
             else:
                 self._run_other(file)
@@ -110,21 +110,44 @@ class Experiment2(Experiment):
         key_to_rows = {}
         key_to_rows = defaultdict(lambda:{'original':0 ,'comp':0, 'tests':0, 'both':0}, key_to_rows)
 
-        for row in tqdm(values_rows):
-            key_to_rows['precision']['original'] += (float(row[1]) / num_of_rows)
-            key_to_rows['precision']['comp'] += (float(row[4])/ num_of_rows)
-            key_to_rows['precision']['tests'] += (float(row[7])/ num_of_rows)
-            key_to_rows['precision']['both'] += (float(row[10])/ num_of_rows)
+        for i in tqdm(range(0,len(values_rows),11)):
 
-            key_to_rows['recall']['original'] += (float(row[2])/ num_of_rows)
-            key_to_rows['recall']['comp'] += (float(row[5])/ num_of_rows)
-            key_to_rows['recall']['tests'] += (float(row[8])/ num_of_rows)
-            key_to_rows['recall']['both'] += (float(row[11])/ num_of_rows)
+            maxx = max([values_rows[j][4] for j in range(i,i+11)])
+            for j in range(i,i+11):
+                if values_rows[j][4] == maxx:
+                    row = values_rows[j]
+                    key_to_rows['precision']['original'] += (float(row[1]) / num_of_rows)
+                    key_to_rows['precision']['comp'] += (float(row[4])/ num_of_rows)
+                    key_to_rows['precision']['tests'] += (float(row[7])/ num_of_rows)
+                    key_to_rows['precision']['both'] += (float(row[10])/ num_of_rows)
 
-            key_to_rows['wasted']['original'] += (float(row[3])/ num_of_rows)
-            key_to_rows['wasted']['comp'] += (float(row[6])/ num_of_rows)
-            key_to_rows['wasted']['tests'] += (float(row[9])/ num_of_rows)
-            key_to_rows['wasted']['both'] += (float(row[12])/ num_of_rows)
+                    key_to_rows['recall']['original'] += (float(row[2])/ num_of_rows)
+                    key_to_rows['recall']['comp'] += (float(row[5])/ num_of_rows)
+                    key_to_rows['recall']['tests'] += (float(row[8])/ num_of_rows)
+                    key_to_rows['recall']['both'] += (float(row[11])/ num_of_rows)
+
+                    key_to_rows['wasted']['original'] += (float(row[3])/ num_of_rows)
+                    key_to_rows['wasted']['comp'] += (float(row[6])/ num_of_rows)
+                    key_to_rows['wasted']['tests'] += (float(row[9])/ num_of_rows)
+                    key_to_rows['wasted']['both'] += (float(row[12])/ num_of_rows)
+                    break
+
+
+        # for row in tqdm(values_rows):
+        #     key_to_rows['precision']['original'] += (float(row[1]) / num_of_rows)
+        #     key_to_rows['precision']['comp'] += (float(row[4])/ num_of_rows)
+        #     key_to_rows['precision']['tests'] += (float(row[7])/ num_of_rows)
+        #     key_to_rows['precision']['both'] += (float(row[10])/ num_of_rows)
+        #
+        #     key_to_rows['recall']['original'] += (float(row[2])/ num_of_rows)
+        #     key_to_rows['recall']['comp'] += (float(row[5])/ num_of_rows)
+        #     key_to_rows['recall']['tests'] += (float(row[8])/ num_of_rows)
+        #     key_to_rows['recall']['both'] += (float(row[11])/ num_of_rows)
+        #
+        #     key_to_rows['wasted']['original'] += (float(row[3])/ num_of_rows)
+        #     key_to_rows['wasted']['comp'] += (float(row[6])/ num_of_rows)
+        #     key_to_rows['wasted']['tests'] += (float(row[9])/ num_of_rows)
+        #     key_to_rows['wasted']['both'] += (float(row[12])/ num_of_rows)
 
         for key in key_to_rows:
             for test in key_to_rows[key]:
@@ -156,6 +179,98 @@ class Experiment2(Experiment):
                 self.y[test].append(key_to_rows[key][test])
 
 
+
+class Experiment3(Experiment):
+    def __init__(self, project_name):
+        super().__init__(project_name, 'Experiment_3')
+        self.x = {}
+        self.x = defaultdict(lambda:[], self.x)
+        self.y = {}
+        self.y = defaultdict(lambda:[], self.y)
+
+    def __call__(self):
+        self.run()
+
+    def run(self):
+        for file in listdir(self.data_path):
+            if 'sanity' in file:
+                pass
+            elif 'Topic' in file:
+                self._run_topic(file)
+            else:
+                pass
+        for index in self.x:
+            self.save_plot(self.x[index], self.y[index], 'bug index', index + " delta", f'Experiment3 results - {index}', f'Experiment 3 - {index}')
+
+    def _run_sanity(self, file):
+        pass
+
+    def _run_topic(self, file_name):
+        with open(join(self.data_path, file_name)) as outfile:
+            rows = list(csv.reader(outfile))
+
+        labels_row, values_rows = rows[0], rows[1:]
+
+        num_of_rows = len(values_rows)
+
+        key_to_rows = {'precision': {} ,'recall': {}, 'wasted':{}}
+        #key_to_rows = defaultdict(lambda:{'original':0 ,'comp':0, 'tests':0, 'both':0}, key_to_rows)
+
+        for i in tqdm(range(0,len(values_rows),11)):
+            maxx = max([values_rows[j][4] for j in range(i,i+11)])
+            for j in range(i,i+11):
+                if values_rows[j][4] == maxx:
+                    row = values_rows[j]
+                    key_to_rows['precision'][row[-1]] = float(row[4])-float(row[1])
+
+                    key_to_rows['recall'][row[-1]] = float(row[5])- float(row[2])
+
+                    key_to_rows['wasted'][row[-1]] = float(row[6]) - float(row[3])
+
+                    break
+
+
+        for key in key_to_rows:
+            for test in key_to_rows[key]:
+                self.x[key].append(test)
+                self.y[key].append(key_to_rows[key][test])
+
+    def _run_other(self, file_name):
+        with open(join(self.data_path, file_name)) as outfile:
+            rows = list(csv.reader(outfile))
+
+        labels_row, values_rows = rows[0], rows[1:]
+
+        num_of_rows = len(values_rows)
+
+        key_to_rows = {}
+        key_to_rows = defaultdict(lambda:{'precision':0, 'recall':0, 'wasted':0}, key_to_rows)
+
+        for row in tqdm(values_rows):
+            key_to_rows[row[0]]['precision'] += (float(row[1]) / num_of_rows)
+
+            key_to_rows[row[0]]['recall'] += (float(row[2])/ num_of_rows)
+
+            key_to_rows[row[0]]['wasted'] += (float(row[3])/ num_of_rows)
+
+
+        for key in key_to_rows:
+            for test in key_to_rows[key]:
+                self.x[test].append(key)
+                self.y[test].append(key_to_rows[key][test])
+
+    def save_plot(self,x,y, x_label, y_label, file_name,title):
+        if not exists(self.results_path):
+            mkdir(self.results_path)
+        plt.figure(figsize=(15, 6))
+        plt.plot(x,y, 'o')
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.title(title)
+        plt.savefig(join(self.results_path, file_name), dpi=100)
+        #plt.show()
+
+
 if __name__ == '__main__':
 
-    Experiment2('apache_commons-lang')()
+    Experiment3('Compress')()
