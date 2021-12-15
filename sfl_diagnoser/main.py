@@ -1,7 +1,7 @@
 import csv
 import json
 from os.path import join, exists, isdir, isfile, islink
-from os import mkdir, listdir, rename, unlink, remove
+from os import mkdir, listdir, rename, unlink, remove, getcwd
 import shutil
 from pathlib import Path
 
@@ -17,12 +17,19 @@ from sfl.Diagnoser.Experiment_Data import Experiment_Data
 
 
 class BarinelTester:
-    def __init__(self, project_name, test_type):
+    def __init__(self, project_name, test_type, local):
         self.project_name = project_name
         self.epsilon = 0.01
         self.rows = []
         self.test_type = test_type
-        self.project_path = join(str(Path(__file__).parents[1]),"projects",project_name)
+       ## print(Path(__file__).parents[1])
+     #   print(Path())
+        print(Path(getcwd()))
+        if local:
+            self.project_path = join(str(Path(__file__).parents[1]),"projects",project_name)
+        else:
+            self.project_path = join(str(Path(getcwd())),"projects",project_name)
+
         self.experiment2_path = join(self.project_path,'Experiments', 'Experiment_2')
 
         self.mapping = {}
@@ -136,8 +143,8 @@ class BarinelTester:
 
 
 class BarinelTesterSanity(BarinelTester):
-    def __init__(self, project_name):
-        super().__init__(project_name, "Sanity")
+    def __init__(self, project_name, local):
+        super().__init__(project_name, "Sanity",local)
         self.high_similarity = [0.6, 0.7, 0.8, 0.9, 1]
         self.low_similarity = [0.4, 0.3, 0.2, 0.1]
         self.rows.append(
@@ -204,8 +211,8 @@ class BarinelTesterSanity(BarinelTester):
 
 
 class BarinelTesterTopicModeling(BarinelTester):
-    def __init__(self, project_name, topics_range):
-        super().__init__(project_name, "TopicModeling")
+    def __init__(self, project_name, topics_range, local):
+        super().__init__(project_name, "TopicModeling", local)
         self.topics = range(topics_range[0], topics_range[1])
         self.rows.append(
             [
@@ -274,8 +281,8 @@ class BarinelTesterTopicModeling(BarinelTester):
 
 
 class BarinelTesterOtherAlgorithm(BarinelTester):
-    def __init__(self, project_name, technique):
-        super().__init__(project_name, technique)  # represnt what comes out from the github results of other teqniques
+    def __init__(self, project_name, technique, local):
+        super().__init__(project_name, technique, local)  # represnt what comes out from the github results of other teqniques
         self.rows.append(["technique","precision", "recall", "wasted"])
         self.technique = technique
 
@@ -296,10 +303,12 @@ import sys
 if __name__ == "__main__":
 
     project_name = "Compress"
+    local = True
     technique = "BugLocator"
-    if len(sys.argv) == 3:
+    if len(sys.argv) == 4:
         project_name = sys.argv[1]
         technique = sys.argv[2]
+        local = False
 
     errors = []
 
@@ -307,9 +316,9 @@ if __name__ == "__main__":
     failed = []
 
     # select the test we want to do
-    sanity = BarinelTesterSanity(project_name)
-    topicModeling = BarinelTesterTopicModeling(project_name, (15, 26))
-    other_method = BarinelTesterOtherAlgorithm(project_name, f"{technique}_{project_name}")
+    sanity = BarinelTesterSanity(project_name,local)
+    topicModeling = BarinelTesterTopicModeling(project_name, (15, 26), local)
+    other_method = BarinelTesterOtherAlgorithm(project_name, f"{technique}_{project_name}",local)
 
     path = join\
         (str(Path(__file__).parents[1]),'projects',project_name,"barinel","matrixes")
@@ -324,7 +333,7 @@ if __name__ == "__main__":
         except Exception as e:
             failed.append((matrix, e))
             #print(matrix)
-            #raise e
+            raise e
             #errors.append(e)
 
 
