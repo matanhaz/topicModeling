@@ -22,9 +22,7 @@ class BarinelTester:
         self.epsilon = 0.01
         self.rows = []
         self.test_type = test_type
-       ## print(Path(__file__).parents[1])
-     #   print(Path())
-        print(Path(getcwd()))
+       
         if local:
             self.project_path = join(str(Path(__file__).parents[1]),"projects",project_name)
         else:
