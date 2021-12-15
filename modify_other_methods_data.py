@@ -132,7 +132,7 @@ if __name__ == "__main__":
         group = data[selected_project]['group']
 
     for dir in listdir(join("projects", selected_project)):
-        if isdir(dir) and selected_project in dir:
+        if isdir(join("projects", selected_project,dir)) and selected_project in dir:
             modify = ModifyOtherMethods(project, group, dir.split('_')[0], selected_project)
             modify.change_file_presentation()
             #modify.gather_otherMethod_topK()
