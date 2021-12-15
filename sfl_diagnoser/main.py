@@ -22,7 +22,7 @@ class BarinelTester:
         self.epsilon = 0.01
         self.rows = []
         self.test_type = test_type
-       
+
         if local:
             self.project_path = join(str(Path(__file__).parents[1]),"projects",project_name)
         else:
@@ -306,7 +306,8 @@ if __name__ == "__main__":
     if len(sys.argv) == 4:
         project_name = sys.argv[1]
         technique = sys.argv[2]
-        local = False
+        if sys.argv[3] == 'git':
+            local = False
 
     errors = []
 
