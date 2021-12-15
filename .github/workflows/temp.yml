@@ -281,7 +281,7 @@ jobs:
       - name: modify
         run: |
               cd `git rev-parse --show-toplevel`
-              python modify_other_methods_data.py ${{github.event.inputs.repo_name}} ${{needs.step_5_other_methods.outputs.technique}} 
+              python modify_other_methods_data.py ${{github.event.inputs.repo_name}} 
               
       - name: Upload data
         if: ${{ always() }}
@@ -361,6 +361,12 @@ jobs:
     needs: [step_5_other_methods,step_4_topic_modeling, steps_1-3_gathering_data, step_6_modify_other_methods_data, step_7_download_matrixes]
     
     runs-on: ubuntu-18.04
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        #techniques: [BugLocator,  BRTracer, BLUiR, AmaLgam,  BLIA, Locus]
+        techniques: [BugLocator, BRTracer]
 
     steps:
       - uses: actions/checkout@v2
@@ -412,7 +418,7 @@ jobs:
       - name: barinel
         run: |
               cd `git rev-parse --show-toplevel`
-              python sfl_diagnoser/main.py ${{github.event.inputs.repo_name}} ${{needs.step_5_other_methods.outputs.technique}}
+              python sfl_diagnoser/main.py ${{github.event.inputs.repo_name}} ${{matrix.techniques}}
               
       - name: Upload data
         if: ${{ always() }}
