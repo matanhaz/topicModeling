@@ -203,7 +203,7 @@ class BarinelTesterSanity(BarinelTester):
                         diagnosis_both["precision"],
                         diagnosis_both["recall"],
                         diagnosis_both["wasted"],
-                        self.mapping[matrix_name.split('\\')[-1]]
+                        self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]]
                     ]
                 )
 
@@ -273,7 +273,7 @@ class BarinelTesterTopicModeling(BarinelTester):
                     diagnosis_tests["wasted"],
                     diagnosis_both["precision"],                    diagnosis_both["recall"],
                     diagnosis_both["wasted"],
-                    self.mapping[matrix_name.split('\\')[-1]]
+                    self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]]
                 ]
             )
 
@@ -295,7 +295,7 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
         wasted = diagnoses["wasted"]
 
         self.rows.append([self.technique, diagnoses["precision"], diagnoses["recall"], diagnoses["wasted"],
-                          self.mapping[matrix_name.split('\\')[-1]]])
+                          self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]]])
 
 import sys
 if __name__ == "__main__":
@@ -332,7 +332,7 @@ if __name__ == "__main__":
         except Exception as e:
             failed.append((matrix, e))
             #print(matrix)
-            raise e
+            #raise e
             #errors.append(e)
 
 
