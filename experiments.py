@@ -20,11 +20,12 @@ class Experiment(ABC):
     def save_plot(self,x,y, x_label, y_label, file_name,title):
         if not exists(self.results_path):
             mkdir(self.results_path)
-        plt.figure(figsize=(15, 6))
+        plt.figure(figsize=(20, 9))
         plt.bar(x,y)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
         plt.title(title)
+        plt.xticks(rotation=90)
         plt.savefig(join(self.results_path, file_name), dpi=100)
         #plt.show()
 
@@ -87,7 +88,7 @@ class Experiment2(Experiment):
 
     def run(self):
         for file in listdir(self.data_path):
-            if 'sanity' in file:
+            if 'Sanity' in file:
                 self._run_sanity(file)
             elif 'Topic' in file:
                 self._run_topic(file)
@@ -96,8 +97,76 @@ class Experiment2(Experiment):
         for index in self.x:
             self.save_plot(self.x[index], self.y[index], 'method', index, f'Experiment2 results - {index}', f'Experiment 2 - {index}')
 
-    def _run_sanity(self, file):
-        pass
+    def _run_sanity(self, file_name):
+        with open(join(self.data_path, file_name)) as outfile:
+            rows = list(csv.reader(outfile))
+
+        labels_row, values_rows = rows[0], rows[1:]
+
+        num_of_rows = len(values_rows) / 20
+
+        all_combinations = ['sanity-0.6,0.4' ,'sanity-0.6,0.3','sanity-0.6,0.2','sanity-0.6,0.1',
+                                          'sanity-0.7,0.4','sanity-0.7,0.3','sanity-0.7,0.2','sanity-0.7,0.1',
+                                          'sanity-0.8,0.4','sanity-0.8,0.3','sanity-0.8,0.2','sanity-0.8,0.1',
+                                          'sanity-0.9,0.4','sanity-0.9,0.3','sanity-0.9,0.2','sanity-0.9,0.1',
+                                          'sanity-1,0.4','sanity-1,0.3','sanity-1,0.2','sanity-1,0.1']
+
+       # all_combinations_updated = [x + " comp" for x in all_combinations] + [x + " tests" for x in all_combinations] + [x + " both" for x in all_combinations]
+        all_combinations_updated = [x + " comp" for x in all_combinations]
+        key_to_rows = {}
+        key_to_rows = defaultdict(lambda:{x:0 for x in all_combinations_updated},
+                                  key_to_rows)
+
+        for i in tqdm(range(0,len(values_rows),20)):
+
+            #maxx = max([values_rows[j][4] for j in range(i,i+11)])
+            for j in range(0,20):
+                row = values_rows[i+j]
+
+
+                key_to_rows['precision'][all_combinations[j]+' comp'] += (float(row[5])/ num_of_rows)
+               # key_to_rows['precision'][all_combinations[j] + ' tests'] += (float(row[8])/ num_of_rows)
+               # key_to_rows['precision'][all_combinations[j] + ' both'] += (float(row[11])/ num_of_rows)
+
+                key_to_rows['recall'][all_combinations[j]+' comp'] += (float(row[6])/ num_of_rows)
+               # key_to_rows['recall'][all_combinations[j] + ' tests'] += (float(row[9])/ num_of_rows)
+               # key_to_rows['recall'][all_combinations[j] + ' both'] += (float(row[12])/ num_of_rows)
+
+                key_to_rows['wasted'][all_combinations[j]+' comp'] += (float(row[7])/ num_of_rows)
+               # key_to_rows['wasted'][all_combinations[j] + ' tests'] += (float(row[10])/ num_of_rows)
+              #  key_to_rows['wasted'][all_combinations[j] + ' both'] += (float(row[13])/ num_of_rows)
+
+
+
+        for key in key_to_rows:
+            for test in key_to_rows[key]:
+                self.x[key].append(test)
+                self.y[key].append(key_to_rows[key][test])
+
+    def _run_other(self, file_name):
+        with open(join(self.data_path, file_name)) as outfile:
+            rows = list(csv.reader(outfile))
+
+        labels_row, values_rows = rows[0], rows[1:]
+
+        num_of_rows = len(values_rows)
+
+        key_to_rows = {}
+        key_to_rows = defaultdict(lambda:{'precision':0, 'recall':0, 'wasted':0}, key_to_rows)
+
+        for row in tqdm(values_rows):
+            technique_name = row[0].split('_')[0]
+            key_to_rows[technique_name]['precision'] += (float(row[1]) / num_of_rows)
+
+            key_to_rows[technique_name]['recall'] += (float(row[2])/ num_of_rows)
+
+            key_to_rows[technique_name]['wasted'] += (float(row[3])/ num_of_rows)
+
+
+        for key in key_to_rows:
+            for test in key_to_rows[key]:
+                self.x[test].append(key)
+                self.y[test].append(key_to_rows[key][test])
 
     def _run_topic(self, file_name):
         with open(join(self.data_path, file_name)) as outfile:
@@ -105,7 +174,7 @@ class Experiment2(Experiment):
 
         labels_row, values_rows = rows[0], rows[1:]
 
-        num_of_rows = len(values_rows)
+        num_of_rows = len(values_rows) / 11
 
         key_to_rows = {}
         key_to_rows = defaultdict(lambda:{'original':0 ,'comp':0, 'tests':0, 'both':0}, key_to_rows)
@@ -154,29 +223,29 @@ class Experiment2(Experiment):
                 self.x[key].append(test)
                 self.y[key].append(key_to_rows[key][test])
 
-    def _run_other(self, file_name):
-        with open(join(self.data_path, file_name)) as outfile:
-            rows = list(csv.reader(outfile))
-
-        labels_row, values_rows = rows[0], rows[1:]
-
-        num_of_rows = len(values_rows)
-
-        key_to_rows = {}
-        key_to_rows = defaultdict(lambda:{'precision':0, 'recall':0, 'wasted':0}, key_to_rows)
-
-        for row in tqdm(values_rows):
-            key_to_rows[row[0]]['precision'] += (float(row[1]) / num_of_rows)
-
-            key_to_rows[row[0]]['recall'] += (float(row[2])/ num_of_rows)
-
-            key_to_rows[row[0]]['wasted'] += (float(row[3])/ num_of_rows)
-
-
-        for key in key_to_rows:
-            for test in key_to_rows[key]:
-                self.x[test].append(key)
-                self.y[test].append(key_to_rows[key][test])
+    # def _run_other(self, file_name):
+    #     with open(join(self.data_path, file_name)) as outfile:
+    #         rows = list(csv.reader(outfile))
+    #
+    #     labels_row, values_rows = rows[0], rows[1:]
+    #
+    #     num_of_rows = len(values_rows)
+    #
+    #     key_to_rows = {}
+    #     key_to_rows = defaultdict(lambda:{'precision':0, 'recall':0, 'wasted':0}, key_to_rows)
+    #
+    #     for row in tqdm(values_rows):
+    #         key_to_rows[row[0]]['precision'] += (float(row[1]) / num_of_rows)
+    #
+    #         key_to_rows[row[0]]['recall'] += (float(row[2])/ num_of_rows)
+    #
+    #         key_to_rows[row[0]]['wasted'] += (float(row[3])/ num_of_rows)
+    #
+    #
+    #     for key in key_to_rows:
+    #         for test in key_to_rows[key]:
+    #             self.x[test].append(key)
+    #             self.y[test].append(key_to_rows[key][test])
 
 
 
@@ -273,4 +342,4 @@ class Experiment3(Experiment):
 
 if __name__ == '__main__':
 
-    Experiment3('Compress')()
+    Experiment2('Compress')()

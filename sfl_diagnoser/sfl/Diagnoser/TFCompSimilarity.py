@@ -47,10 +47,32 @@ class TFCompSimilarity(TF):
 
 
         original_calc =  reduce(operator.mul, list(map(lambda x: test_prob(*x), self.get_activity())), 1.0)
+        if original_calc > 0.99:
+            original_calc = 0.99
+        elif original_calc < 0.01:
+            original_calc = 0.01
+        avg = 0
         if self.ExperimentType == 'CompSimilarity' or self.ExperimentType == 'BothSimilarities' :
             for i in range(len(self.diagnosis)):
                 #original_calc *= (self.CompSimilarity[i] ** self.get_number_of_repetioions(self.diagnosis[i]))
-                original_calc *= (self.CompSimilarity[i])
+                #original_calc *= (self.CompSimilarity[i])
+                avg += (self.CompSimilarity[i] / len(self.diagnosis))
+
+            if avg == 1:
+                original_calc /= 0.01
+
+            elif avg == 0:
+                 original_calc /= (1./0.01)
+
+            elif avg >= 0.5:
+                original_calc /= (1.-avg)
+            else:
+                original_calc /= (1./avg)
+
+        if original_calc > 1:
+            original_calc = 1
+        elif original_calc < 0.01:
+            original_calc = 0.01
 
         return original_calc
 
