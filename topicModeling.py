@@ -5,6 +5,7 @@ from gensim import corpora
 import matplotlib.pyplot as plt
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.corpus import wordnet as wn
+
 import nltk
 import collections
 from spacy.lang.en import English
@@ -29,7 +30,7 @@ parser = English()
 nltk.download("wordnet")
 
 nltk.download("stopwords")
-
+nltk.download('omw-1.4')
 
 def tokenize(text):
     lda_tokens = []
