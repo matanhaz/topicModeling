@@ -340,7 +340,7 @@ jobs:
                       p = os.path.join(path,file)
                       old = os.path.join(p,'framework', 'projects',"${{github.event.inputs.repo_name}}",f"matrix_{file.split('_')[1]}_full.json")
                       new = os.path.join('.',"matrixes_before_change",f"{file.split('_')[1]}.json")
-                      if os.path.exist(old):
+                      if os.path.exists(old):
                           os.rename(old,new)
                       if not active_bugs:
                           active_bugs = True
