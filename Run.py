@@ -35,7 +35,7 @@ def main():
     print("**********Running some analysis**********")
     analyzer(selected_project).run()
     print("**********now comes topic modeling**********")
-    TopicModeling(selected_project).run()
+    #TopicModeling(selected_project).run()
 
 
 if __name__ == "__main__":
