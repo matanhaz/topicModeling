@@ -28,5 +28,11 @@
        	"jira url": "http://issues.apache.org/jira",
        	"project": "COMPRESS",
 	"group":"Commons"
+    },
+    "Codec": {
+        "git url": "https://github.com/apache/commons-codec.git",
+       	"jira url": "http://issues.apache.org/jira",
+       	"project": "CODEC",
+	"group":"Commons"
     }
 }
