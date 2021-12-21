@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Combined-temp
+name: Combined
 
 on:
   workflow_dispatch:
