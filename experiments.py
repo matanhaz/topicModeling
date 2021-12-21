@@ -339,7 +339,10 @@ class Experiment3(Experiment):
         plt.savefig(join(self.results_path, file_name), dpi=100)
         #plt.show()
 
-
+import sys
 if __name__ == '__main__':
-
-    Experiment2('Compress')()
+    project = 'Codec'
+    if len(sys.argv) == 2:
+        project = str(sys.argv[1])
+    Experiment1(project)()
+    Experiment1(project)()
