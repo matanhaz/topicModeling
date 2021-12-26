@@ -17,7 +17,7 @@
        	"project": "WEAVER",
 	"group":"Commons"
     },
-    "Hive": {
+     "Hive": {
         "git url": "https://github.com/apache/hive.git",
        	"jira url": "http://issues.apache.org/jira",
        	"project": "HIVE",
@@ -34,5 +34,18 @@
        	"jira url": "http://issues.apache.org/jira",
        	"project": "CODEC",
 	"group":"Commons"
+    },
+    "Collections": {
+        "git url": "https://github.com/apache/commons-collections.git",
+       	"jira url": "http://issues.apache.org/jira",
+       	"project": "COLLECTIONS",
+	"group":"Commons"
+    },
+    "Csv": {
+        "git url": "https://github.com/apache/commons-csv.git",
+       	"jira url": "http://issues.apache.org/jira",
+       	"project": "CSV",
+	"group":"Commons"
     }
+    
 }
