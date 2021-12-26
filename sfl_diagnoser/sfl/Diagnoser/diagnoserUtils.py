@@ -313,7 +313,19 @@ def __get_real_comp_similarity(instance,matrix_path,Project_name,similarities_pa
     for i in range(len(bug_to_sim)):
         bug_to_sim[i] = bug_to_sim[i].tolist()
         bug_to_sim[i][1] = float(bug_to_sim[i][1])
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    ans = []
+    for funci in bug_to_sim:
+        if 'test' not in funci[0]:
+            ans.append(funci)
 
+    diff = 1./len(ans)
+    start = 1
+    bug_to_sim = []
+    for a in ans:
+        bug_to_sim.append([a[0],start,a[2]])
+        start -= diff
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     average = sum(list(func[1] for func in bug_to_sim)) / len(bug_to_sim)
 
     similarities = []

@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 
 class Experiment(ABC):
     def __init__(self, project_name, experiment_name):
+        self.project_name = project_name
         self.experiment_path = join('projects', project_name, 'Experiments', experiment_name)
         self.data_path = join(self.experiment_path, 'data')
         self.results_path = join('projects', project_name, 'Experiments', 'results')
@@ -46,7 +47,7 @@ class Experiment1(Experiment):
             else:
                 self.run(file, 3, 4)
 
-        self.save_plot(self.x,self.y, 'num topics / method', 'average max index of all functions in results', 'Experiment_1_results', 'Experiment 1')
+        self.save_plot(self.x,self.y, 'num topics / method', 'average max index of all functions in results', 'Experiment_1_results', f'Experiment 1 - {self.project_name}')
 
     def run(self, file_name='topicModeling_indexes.csv', max_index=8, num_functions_checked=9):
         with open(join(self.data_path, file_name)) as outfile:
@@ -95,7 +96,7 @@ class Experiment2(Experiment):
             else:
                 self._run_other(file)
         for index in self.x:
-            self.save_plot(self.x[index], self.y[index], 'method', index, f'Experiment2 results - {index}', f'Experiment 2 - {index}')
+            self.save_plot(self.x[index], self.y[index], 'method', index, f'Experiment2 results - {index}', f'Experiment 2 - {index} - {self.project_name}')
 
     def _run_sanity(self, file_name):
         with open(join(self.data_path, file_name)) as outfile:
@@ -345,4 +346,4 @@ if __name__ == '__main__':
     if len(sys.argv) == 2:
         project = str(sys.argv[1])
     Experiment1(project)()
-    Experiment1(project)()
+    Experiment2(project)()

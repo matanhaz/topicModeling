@@ -643,7 +643,7 @@ class TopicModeling:
 
 
 if __name__ == "__main__":
-    project_name = "Weaver"
+    project_name = "Codec"
     if len(sys.argv) == 2:
         project_name = str(sys.argv[1])
     TopicModeling(project_name).run()
