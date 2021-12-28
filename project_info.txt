@@ -46,6 +46,18 @@
        	"jira url": "http://issues.apache.org/jira",
        	"project": "CSV",
 	"group":"Commons"
+    },
+    "Configuration": {
+        "git url": "https://github.com/apache/commons-configuration.git",
+       	"jira url": "http://issues.apache.org/jira",
+       	"project": "CONFIGURATION",
+	"group":"Commons"
+    },
+    "Io": {
+        "git url": "https://github.com/apache/commons-io.git",
+       	"jira url": "http://issues.apache.org/jira",
+       	"project": "IO",
+	"group":"Commons"
     }
     
 }
