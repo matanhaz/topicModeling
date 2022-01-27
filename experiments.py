@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from functools import reduce
 from tqdm import tqdm
 from abc import ABC, abstractmethod
+import numpy as np
 
 
 class Experiment(ABC):
@@ -15,18 +16,33 @@ class Experiment(ABC):
         self.project_name = project_name
         self.experiment_path = join('projects', project_name, 'Experiments', experiment_name)
         self.data_path = join(self.experiment_path, 'data')
-        self.results_path = join('projects', project_name, 'Experiments', 'results')
+        self.results_path = join(self.experiment_path, 'results')
 
 
-    def save_plot(self,x,y, x_label, y_label, file_name,title):
+    def save_plot(self,x,y, x_label, y_label, file_name,title, sanity = False):
+        colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+          '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
         if not exists(self.results_path):
             mkdir(self.results_path)
-        plt.figure(figsize=(20, 9))
-        plt.bar(x,y)
+        plt.figure(figsize=(15, 6))
+
+        if sanity:
+            similarities = x.copy()
+            similarities.reverse()
+            pos = -0.035
+            for index,sim in enumerate(similarities):
+                plt.bar(x=np.array(x) + pos, height=[arr[sim]for arr in y], width=0.007, label=str(sim))
+                pos += 0.007
+            plt.legend(title="Others Similarities")
+        else:
+            plt.bar(x,y, color=colors)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
         plt.title(title)
-        plt.xticks(rotation=90)
+        plt.xticks(x)
+        #plt.grid(True)
+        if y_label != 'wasted':
+            plt.ylim(0,1)
         plt.savefig(join(self.results_path, file_name), dpi=100)
         #plt.show()
 
@@ -73,24 +89,39 @@ class Experiment1(Experiment):
                 } for key in key_to_rows}
 
         self.x.extend(percentages.keys())
-        self.y.extend([p['all'] for p in percentages.values()])
+        self.y.extend([p['without_negative'] for p in percentages.values()])
 
 
 class Experiment2(Experiment):
-    def __init__(self, project_name):
+    def __init__(self, project_name, is_sanity):
         super().__init__(project_name, 'Experiment_2')
         self.x = {}
         self.x = defaultdict(lambda:[], self.x)
         self.y = {}
         self.y = defaultdict(lambda:[], self.y)
+        self.is_sanity = is_sanity
 
     def __call__(self):
-        self.run()
+        if self.is_sanity:
+            self.run_sanity()
+        else:
+            self.run()
 
-    def run(self):
+    def run_sanity(self):
         for file in listdir(self.data_path):
             if 'Sanity' in file:
                 self._run_sanity(file)
+            else:
+                pass
+
+        for index in self.x:
+            self.save_plot(self.x[index], self.y[index], 'Actual Bug Similarities', index, f'Experiment2 results - {index} - sanity', f'Experiment 2 Sanity - {index} - {self.project_name}', sanity = True)
+
+
+    def run(self):
+        for file in listdir(self.data_path):
+            if 'Sanity' in file :
+                pass
             elif 'Topic' in file:
                 self._run_topic(file)
             else:
@@ -104,38 +135,36 @@ class Experiment2(Experiment):
 
         labels_row, values_rows = rows[0], rows[1:]
 
-        num_of_rows = len(values_rows) / 20
+        num_of_rows = len(values_rows) / 121
 
-        all_combinations = ['sanity-0.6,0.4' ,'sanity-0.6,0.3','sanity-0.6,0.2','sanity-0.6,0.1',
-                                          'sanity-0.7,0.4','sanity-0.7,0.3','sanity-0.7,0.2','sanity-0.7,0.1',
-                                          'sanity-0.8,0.4','sanity-0.8,0.3','sanity-0.8,0.2','sanity-0.8,0.1',
-                                          'sanity-0.9,0.4','sanity-0.9,0.3','sanity-0.9,0.2','sanity-0.9,0.1',
-                                          'sanity-1,0.4','sanity-1,0.3','sanity-1,0.2','sanity-1,0.1']
+
+        all_similarities_values = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
 
        # all_combinations_updated = [x + " comp" for x in all_combinations] + [x + " tests" for x in all_combinations] + [x + " both" for x in all_combinations]
-        all_combinations_updated = [x + " comp" for x in all_combinations]
         key_to_rows = {}
-        key_to_rows = defaultdict(lambda:{x:0 for x in all_combinations_updated},
+        key_to_rows = defaultdict(lambda:{x:{y:0 for y in all_similarities_values} for x in all_similarities_values},
                                   key_to_rows)
 
-        for i in tqdm(range(0,len(values_rows),20)):
+        for i in tqdm(range(0,len(values_rows),121)):
 
             #maxx = max([values_rows[j][4] for j in range(i,i+11)])
-            for j in range(0,20):
-                row = values_rows[i+j]
+            for j in range(len(all_similarities_values)):
+                for k in range(len(all_similarities_values)):
+                    row = values_rows[i+j*11+k]
 
 
-                key_to_rows['precision'][all_combinations[j]+' comp'] += (float(row[5])/ num_of_rows)
-               # key_to_rows['precision'][all_combinations[j] + ' tests'] += (float(row[8])/ num_of_rows)
-               # key_to_rows['precision'][all_combinations[j] + ' both'] += (float(row[11])/ num_of_rows)
+                    key_to_rows['precision'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[5])/ num_of_rows)
 
-                key_to_rows['recall'][all_combinations[j]+' comp'] += (float(row[6])/ num_of_rows)
-               # key_to_rows['recall'][all_combinations[j] + ' tests'] += (float(row[9])/ num_of_rows)
-               # key_to_rows['recall'][all_combinations[j] + ' both'] += (float(row[12])/ num_of_rows)
 
-                key_to_rows['wasted'][all_combinations[j]+' comp'] += (float(row[7])/ num_of_rows)
-               # key_to_rows['wasted'][all_combinations[j] + ' tests'] += (float(row[10])/ num_of_rows)
-              #  key_to_rows['wasted'][all_combinations[j] + ' both'] += (float(row[13])/ num_of_rows)
+                    key_to_rows['recall'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[6])/ num_of_rows)
+
+
+                    key_to_rows['wasted'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[7])/ num_of_rows)
+
+                    f_score = (float(row[5]) * float(row[6]) * 2) / (float(row[5]) + float(row[6])) if (float(row[5]) + float(row[6])) != 0 else 0
+
+                    key_to_rows['f-score'][all_similarities_values[j]][all_similarities_values[k]] += (f_score/ num_of_rows)
+
 
 
 
@@ -153,7 +182,7 @@ class Experiment2(Experiment):
         num_of_rows = len(values_rows)
 
         key_to_rows = {}
-        key_to_rows = defaultdict(lambda:{'precision':0, 'recall':0, 'wasted':0}, key_to_rows)
+        key_to_rows = defaultdict(lambda:{'precision':0, 'recall':0, 'wasted':0, 'f-score':0}, key_to_rows)
 
         for row in tqdm(values_rows):
             technique_name = row[0].split('_')[0]
@@ -162,6 +191,10 @@ class Experiment2(Experiment):
             key_to_rows[technique_name]['recall'] += (float(row[2])/ num_of_rows)
 
             key_to_rows[technique_name]['wasted'] += (float(row[3])/ num_of_rows)
+
+            f_score = (float(row[1]) * float(row[2]) * 2) / (float(row[1]) + float(row[2])) if (float(row[1]) + float(row[2])) != 0 else 0
+
+            key_to_rows[technique_name]['f-score'] += (f_score/ num_of_rows)
 
 
         for key in key_to_rows:
@@ -178,8 +211,8 @@ class Experiment2(Experiment):
         num_of_rows = len(values_rows) / 11
 
         key_to_rows = {}
-        key_to_rows = defaultdict(lambda:{'original':0 ,'comp':0, 'tests':0, 'both':0}, key_to_rows)
-
+        #key_to_rows = defaultdict(lambda:{'original':0 ,'comp':0, 'tests':0, 'both':0}, key_to_rows)
+        key_to_rows = defaultdict(lambda:{'original':0 ,'sigmuid':0 ,'multiply':0}, key_to_rows)
         for i in tqdm(range(0,len(values_rows),11)):
 
             maxx = max([values_rows[j][4] for j in range(i,i+11)])
@@ -187,117 +220,150 @@ class Experiment2(Experiment):
                 if values_rows[j][4] == maxx:
                     row = values_rows[j]
                     key_to_rows['precision']['original'] += (float(row[1]) / num_of_rows)
-                    key_to_rows['precision']['comp'] += (float(row[4])/ num_of_rows)
-                    key_to_rows['precision']['tests'] += (float(row[7])/ num_of_rows)
-                    key_to_rows['precision']['both'] += (float(row[10])/ num_of_rows)
+                    key_to_rows['precision']['sigmuid'] += (float(row[4])/ num_of_rows)
+                    #key_to_rows['precision']['tests'] += (float(row[7])/ num_of_rows)
+                    key_to_rows['precision']['multiply'] += (float(row[10])/ num_of_rows)
 
                     key_to_rows['recall']['original'] += (float(row[2])/ num_of_rows)
-                    key_to_rows['recall']['comp'] += (float(row[5])/ num_of_rows)
-                    key_to_rows['recall']['tests'] += (float(row[8])/ num_of_rows)
-                    key_to_rows['recall']['both'] += (float(row[11])/ num_of_rows)
+                    key_to_rows['recall']['sigmuid'] += (float(row[5])/ num_of_rows)
+                    #key_to_rows['recall']['tests'] += (float(row[8])/ num_of_rows)
+                    key_to_rows['recall']['multiply'] += (float(row[11])/ num_of_rows)
 
                     key_to_rows['wasted']['original'] += (float(row[3])/ num_of_rows)
-                    key_to_rows['wasted']['comp'] += (float(row[6])/ num_of_rows)
-                    key_to_rows['wasted']['tests'] += (float(row[9])/ num_of_rows)
-                    key_to_rows['wasted']['both'] += (float(row[12])/ num_of_rows)
+                    key_to_rows['wasted']['sigmuid'] += (float(row[6])/ num_of_rows)
+                    #key_to_rows['wasted']['tests'] += (float(row[9])/ num_of_rows)
+                    key_to_rows['wasted']['multiply'] += (float(row[12])/ num_of_rows)
+
+
+                    f_score_original = (float(row[1]) * float(row[2]) * 2) / (float(row[1]) + float(row[2])) if (float(row[1]) + float(row[2])) != 0 else 0
+                    f_score_sigmuid = (float(row[4]) * float(row[5]) * 2) / (float(row[4]) + float(row[5])) if (float(row[4]) + float(row[5])) != 0 else 0
+                    f_score_multiply = (float(row[10]) * float(row[11]) * 2) / (float(row[10]) + float(row[11])) if (float(row[10]) + float(row[11])) != 0 else 0
+
+                    key_to_rows['f-score']['original'] += (f_score_original/ num_of_rows)
+                    key_to_rows['f-score']['sigmuid'] += (f_score_sigmuid/ num_of_rows)
+                    key_to_rows['f-score']['multiply'] += (f_score_multiply/ num_of_rows)
+
                     break
-
-
-        # for row in tqdm(values_rows):
-        #     key_to_rows['precision']['original'] += (float(row[1]) / num_of_rows)
-        #     key_to_rows['precision']['comp'] += (float(row[4])/ num_of_rows)
-        #     key_to_rows['precision']['tests'] += (float(row[7])/ num_of_rows)
-        #     key_to_rows['precision']['both'] += (float(row[10])/ num_of_rows)
-        #
-        #     key_to_rows['recall']['original'] += (float(row[2])/ num_of_rows)
-        #     key_to_rows['recall']['comp'] += (float(row[5])/ num_of_rows)
-        #     key_to_rows['recall']['tests'] += (float(row[8])/ num_of_rows)
-        #     key_to_rows['recall']['both'] += (float(row[11])/ num_of_rows)
-        #
-        #     key_to_rows['wasted']['original'] += (float(row[3])/ num_of_rows)
-        #     key_to_rows['wasted']['comp'] += (float(row[6])/ num_of_rows)
-        #     key_to_rows['wasted']['tests'] += (float(row[9])/ num_of_rows)
-        #     key_to_rows['wasted']['both'] += (float(row[12])/ num_of_rows)
 
         for key in key_to_rows:
             for test in key_to_rows[key]:
                 self.x[key].append(test)
                 self.y[key].append(key_to_rows[key][test])
 
-    # def _run_other(self, file_name):
-    #     with open(join(self.data_path, file_name)) as outfile:
-    #         rows = list(csv.reader(outfile))
-    #
-    #     labels_row, values_rows = rows[0], rows[1:]
-    #
-    #     num_of_rows = len(values_rows)
-    #
-    #     key_to_rows = {}
-    #     key_to_rows = defaultdict(lambda:{'precision':0, 'recall':0, 'wasted':0}, key_to_rows)
-    #
-    #     for row in tqdm(values_rows):
-    #         key_to_rows[row[0]]['precision'] += (float(row[1]) / num_of_rows)
-    #
-    #         key_to_rows[row[0]]['recall'] += (float(row[2])/ num_of_rows)
-    #
-    #         key_to_rows[row[0]]['wasted'] += (float(row[3])/ num_of_rows)
-    #
-    #
-    #     for key in key_to_rows:
-    #         for test in key_to_rows[key]:
-    #             self.x[test].append(key)
-    #             self.y[test].append(key_to_rows[key][test])
-
 
 
 class Experiment3(Experiment):
-    def __init__(self, project_name):
+    def __init__(self, project_name, is_sanity):
         super().__init__(project_name, 'Experiment_3')
+        self.all_percentages_values = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
         self.x = {}
-        self.x = defaultdict(lambda:[], self.x)
+        self.x = defaultdict(lambda:self.all_percentages_values, self.x)
         self.y = {}
-        self.y = defaultdict(lambda:[], self.y)
+        self.y = defaultdict(lambda: {x:{} for x in self.all_percentages_values}, self.y)
+        self.is_sanity = is_sanity
+        self.techniques = []
+
+    def save_plot(self,x,y, x_label, y_label, file_name,title, sanity = False):
+        colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+          '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+        if not exists(self.results_path):
+            mkdir(self.results_path)
+        plt.figure(figsize=(15, 6))
+
+        if sanity:
+            # similarities = x.copy()
+            # similarities.reverse()
+            # pos = -0.035
+            # for index,sim in enumerate(similarities):
+            #     plt.bar(x=np.array(x) + pos, height=[arr[sim]for arr in y], width=0.007, label=str(sim))
+            #     pos += 0.007
+            # plt.legend(title="Others Similarities")
+            pass
+        else:
+            percentages = x.copy()
+
+            pos = -0.015
+            width = 0.06/len(self.techniques)
+            for technique in self.techniques:
+                plt.bar(x=np.array(x) + pos, height=[y[key][technique] for key in y], width=width, label=str(technique))
+                pos += width
+            plt.legend(title="Technique")
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.title(title)
+        plt.xticks(x)
+        #plt.grid(True)
+        if y_label != 'wasted':
+            plt.ylim(0,1)
+        plt.savefig(join(self.results_path, file_name), dpi=100)
+        #plt.show()
 
     def __call__(self):
-        self.run()
+        if self.is_sanity:
+            pass
+            self.run_sanity()
+        else:
+            self.run()
+
+    def run_sanity(self):
+        for file in listdir(self.data_path):
+            if 'Sanity' in file:
+                self._run_sanity(file)
+            else:
+                pass
+
+        for index in self.x:
+            self.save_plot(self.x[index], self.y[index], 'Actual Bug Similarities', index, f'Experiment2 results - {index} - sanity', f'Experiment 2 Sanity - {index} - {self.project_name}', sanity = True)
+
 
     def run(self):
         for file in listdir(self.data_path):
-            if 'sanity' in file:
+            if 'Sanity' in file :
                 pass
             elif 'Topic' in file:
                 self._run_topic(file)
             else:
-                pass
+                self._run_other(file)
         for index in self.x:
-            self.save_plot(self.x[index], self.y[index], 'bug index', index + " delta", f'Experiment3 results - {index}', f'Experiment 3 - {index}')
+            self.save_plot(self.x[index], self.y[index], 'Original Score Percentage', index, f'Experiment3 results - {index}', f'Experiment 3 - {index} - {self.project_name}')
 
-    def _run_sanity(self, file):
-        pass
 
-    def _run_topic(self, file_name):
+    def _run_sanity(self, file_name):
         with open(join(self.data_path, file_name)) as outfile:
             rows = list(csv.reader(outfile))
 
         labels_row, values_rows = rows[0], rows[1:]
 
-        num_of_rows = len(values_rows)
+        num_of_rows = len(values_rows) / 121
 
-        key_to_rows = {'precision': {} ,'recall': {}, 'wasted':{}}
-        #key_to_rows = defaultdict(lambda:{'original':0 ,'comp':0, 'tests':0, 'both':0}, key_to_rows)
 
-        for i in tqdm(range(0,len(values_rows),11)):
-            maxx = max([values_rows[j][4] for j in range(i,i+11)])
-            for j in range(i,i+11):
-                if values_rows[j][4] == maxx:
-                    row = values_rows[j]
-                    key_to_rows['precision'][row[-1]] = float(row[4])-float(row[1])
+        all_similarities_values = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
 
-                    key_to_rows['recall'][row[-1]] = float(row[5])- float(row[2])
+       # all_combinations_updated = [x + " comp" for x in all_combinations] + [x + " tests" for x in all_combinations] + [x + " both" for x in all_combinations]
+        key_to_rows = {}
+        key_to_rows = defaultdict(lambda:{x:{y:0 for y in all_similarities_values} for x in all_similarities_values},
+                                  key_to_rows)
 
-                    key_to_rows['wasted'][row[-1]] = float(row[6]) - float(row[3])
+        for i in tqdm(range(0,len(values_rows),121)):
 
-                    break
+            #maxx = max([values_rows[j][4] for j in range(i,i+11)])
+            for j in range(len(all_similarities_values)):
+                for k in range(len(all_similarities_values)):
+                    row = values_rows[i+j*11+k]
+
+
+                    key_to_rows['precision'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[5])/ num_of_rows)
+                   # key_to_rows['precision'][all_combinations[j] + ' tests'] += (float(row[8])/ num_of_rows)
+                   # key_to_rows['precision'][all_combinations[j] + ' both'] += (float(row[11])/ num_of_rows)
+
+                    key_to_rows['recall'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[6])/ num_of_rows)
+                   # key_to_rows['recall'][all_combinations[j] + ' tests'] += (float(row[9])/ num_of_rows)
+                   # key_to_rows['recall'][all_combinations[j] + ' both'] += (float(row[12])/ num_of_rows)
+
+                    key_to_rows['wasted'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[7])/ num_of_rows)
+                   # key_to_rows['wasted'][all_combinations[j] + ' tests'] += (float(row[10])/ num_of_rows)
+                  #  key_to_rows['wasted'][all_combinations[j] + ' both'] += (float(row[13])/ num_of_rows)
+
 
 
         for key in key_to_rows:
@@ -310,35 +376,65 @@ class Experiment3(Experiment):
             rows = list(csv.reader(outfile))
 
         labels_row, values_rows = rows[0], rows[1:]
-
-        num_of_rows = len(values_rows)
+        technique_name = values_rows[0][0].split('_')[0]
+        self.techniques.append(technique_name)
+        num_of_rows = len(values_rows)/11
 
         key_to_rows = {}
-        key_to_rows = defaultdict(lambda:{'precision':0, 'recall':0, 'wasted':0}, key_to_rows)
+        key_to_rows = defaultdict(lambda:{float(x):{y:0 for y in [technique_name]} for x in self.all_percentages_values},
+                                  key_to_rows)
 
         for row in tqdm(values_rows):
-            key_to_rows[row[0]]['precision'] += (float(row[1]) / num_of_rows)
 
-            key_to_rows[row[0]]['recall'] += (float(row[2])/ num_of_rows)
+            key_to_rows['precision'][float(row[5])][technique_name] += (float(row[1]) / num_of_rows)
 
-            key_to_rows[row[0]]['wasted'] += (float(row[3])/ num_of_rows)
+            key_to_rows['recall'][float(row[5])][technique_name] += (float(row[2])/ num_of_rows)
+
+            key_to_rows['wasted'][float(row[5])][technique_name] += (float(row[3])/ num_of_rows)
 
 
         for key in key_to_rows:
             for test in key_to_rows[key]:
-                self.x[test].append(key)
-                self.y[test].append(key_to_rows[key][test])
+                tmp = self.x[key]
+                self.y[key][test][technique_name] = key_to_rows[key][test][technique_name]
 
-    def save_plot(self,x,y, x_label, y_label, file_name,title):
-        if not exists(self.results_path):
-            mkdir(self.results_path)
-        plt.figure(figsize=(15, 6))
-        plt.plot(x,y, 'o')
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
-        plt.title(title)
-        plt.savefig(join(self.results_path, file_name), dpi=100)
-        #plt.show()
+    def _run_topic(self, file_name):
+        with open(join(self.data_path, file_name)) as outfile:
+            rows = list(csv.reader(outfile))
+
+        labels_row, values_rows = rows[0], rows[1:]
+
+        technique_name = "Topic Modeling"
+        self.techniques.append(technique_name)
+
+        num_of_rows = len(values_rows) / (len(self.all_percentages_values) * 11)
+
+        key_to_rows = {}
+
+        key_to_rows = defaultdict(lambda:{float(x):{y:0 for y in [technique_name]} for x in self.all_percentages_values},
+                                  key_to_rows)
+
+
+        for i in tqdm(range(0,len(values_rows),11)):
+            maxx = max([values_rows[j][4] for j in range(i,i+11)])
+            for j in range(i,i+11):
+                if values_rows[j][4] == maxx:
+                    row = values_rows[j]
+                    key_to_rows['precision'][float(row[14])]['Topic Modeling'] += (float(row[4])/ num_of_rows)
+
+                    key_to_rows['recall'][float(row[14])]['Topic Modeling'] += (float(row[5])/ num_of_rows)
+
+                    key_to_rows['wasted'][float(row[14])]['Topic Modeling'] += (float(row[6])/ num_of_rows)
+                    break
+
+
+
+        for key in key_to_rows:
+            for test in key_to_rows[key]:
+                tmp = self.x[key]
+                self.y[key][test][technique_name] = key_to_rows[key][test][technique_name]
+
+
 
 import sys
 if __name__ == '__main__':
@@ -346,4 +442,6 @@ if __name__ == '__main__':
     if len(sys.argv) == 2:
         project = str(sys.argv[1])
     Experiment1(project)()
-    Experiment2(project)()
+    Experiment2(project,True)()
+    Experiment2(project,False)()
+    Experiment3(project,False)()

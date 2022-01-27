@@ -3,11 +3,12 @@ from .FullMatrix import FullMatrix
 
 
 class FullMatrixCompSimilarity(FullMatrix):
-    def __init__(self):
+    def __init__(self, OriginalScorePercentage):
         super(FullMatrixCompSimilarity, self).__init__()
         self.CompSimilarity = {}
         self.TestsSimilarity = dict()
         self.ExperimentType = None
+        self.OriginalScorePercentage = OriginalScorePercentage
      
     def set_CompSimilarity(self, s):
         self.CompSimilarity = s
@@ -18,7 +19,7 @@ class FullMatrixCompSimilarity(FullMatrix):
    
 
     def diagnose(self):
-        bar = BarinelCompSimilarity()
+        bar = BarinelCompSimilarity(self.OriginalScorePercentage)
         bar.set_matrix_error(self.matrix,self.error)
         bar.set_prior_probs(self.probabilities)
         bar.set_CompSimilarity(self.CompSimilarity)
@@ -31,7 +32,7 @@ class FullMatrixCompSimilarity(FullMatrix):
     # return: optimized FullMatrix, chosen_components( indices), used_tests
     def optimize(self):
         optimizedMatrix, used_components, used_tests = super(FullMatrixCompSimilarity, self).optimize()
-        new_CompSimilarity_matrix = FullMatrixCompSimilarity()
+        new_CompSimilarity_matrix = FullMatrixCompSimilarity(self.OriginalScorePercentage)
         new_CompSimilarity_matrix.set_error(optimizedMatrix.error)
         new_CompSimilarity_matrix.set_matrix(optimizedMatrix.matrix)
         new_CompSimilarity_matrix.set_probabilities(optimizedMatrix.probabilities)

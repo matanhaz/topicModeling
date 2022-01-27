@@ -85,9 +85,13 @@ class ModifyOtherMethods:
             exist_bugs_and_changed_functions = {}
             for bug in all_bugs:
                 functions_that_changed = [func['function name'] for func in bug["function that changed"]]
+
                 functions_that_changed_no_tests = [func for func in functions_that_changed if not ('test' in func or 'Test' in func)]
+
                 exists_functions = [commit_to_exist_functions[commit]['all functions'].tolist() for commit in commit_to_exist_functions if commit_to_exist_functions[commit]['hexsha'] == bug['hexsha']][0]
+
                 exists_functions_no_tests = [func for func in exists_functions if not ('test' in func or 'Test' in func)]
+
                 exist_bugs_and_changed_functions[bug['bug id']] = {'function that changed':functions_that_changed,
                                                                    'function that changed no tests':functions_that_changed_no_tests,
                                                                    'exists functions': exists_functions,
@@ -123,7 +127,7 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         selected_project = sys.argv[1]
     else:
-        selected_project = "Lang"
+        selected_project = "Codec"
 
     with open("project_info.txt", 'r') as outfile:
         data = json.load(outfile)
@@ -135,5 +139,5 @@ if __name__ == "__main__":
         if isdir(join("projects", selected_project,dir)) and selected_project in dir:
             modify = ModifyOtherMethods(project, group, dir.split('_')[0], selected_project)
             modify.change_file_presentation()
-            #modify.gather_otherMethod_topK()
+            modify.gather_otherMethod_topK()
 

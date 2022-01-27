@@ -5,6 +5,7 @@ from os import mkdir, listdir, rename, unlink, remove, getcwd
 import shutil
 from pathlib import Path
 
+import sys
 import pandas as pd
 
 from sfl.Diagnoser.diagnoserUtils import (
@@ -21,7 +22,11 @@ class BarinelTester:
         self.project_name = project_name
         self.epsilon = 0.01
         self.rows = []
+        self.rows_all = []
         self.test_type = test_type
+        self.optimal_original_score_percentage = 0.2
+        self.percentages = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+
 
         if local:
             self.project_path = join(str(Path(__file__).parents[1]),"projects",project_name)
@@ -29,7 +34,7 @@ class BarinelTester:
             self.project_path = join(str(Path(getcwd())),"projects",project_name)
 
         self.experiment2_path = join(self.project_path,'Experiments', 'Experiment_2')
-
+        self.experiment3_path = join(self.project_path,'Experiments', 'Experiment_3')
         self.mapping = {}
         self.prepare_dir()
         self.prepare_matrixes()
@@ -132,19 +137,28 @@ class BarinelTester:
             mkdir(self.experiment2_path)
             mkdir(join(self.experiment2_path, "data"))
 
+        if not exists(self.experiment3_path):
+            mkdir(self.experiment3_path)
+            mkdir(join(self.experiment3_path, "data"))
+
 
         path_to_save_into = join(self.experiment2_path, "data", f"data_{self.test_type}.csv")
         with open(path_to_save_into, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerows(self.rows)
-            pass
+
+        path_to_save_into = join(self.experiment3_path, "data", f"data_{self.test_type}.csv")
+        with open(path_to_save_into, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerows(self.rows_all)
+
 
 
 class BarinelTesterSanity(BarinelTester):
     def __init__(self, project_name, local):
         super().__init__(project_name, "Sanity",local)
-        self.high_similarity = [0.6, 0.7, 0.8, 0.9, 1]
-        self.low_similarity = [0.4, 0.3, 0.2, 0.1]
+        self.high_similarity = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+        self.low_similarity = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
         self.rows.append(
             [
                 "real bug diagnose sim",
@@ -161,51 +175,95 @@ class BarinelTesterSanity(BarinelTester):
                 "precision-both",
                 "recall-both",
                 "wasted-both",
+                "bug id",
+                "original score percentage"
+            ]
+        )
+        self.rows_all.append(
+            [
+                "real bug diagnose sim",
+                "unreal bug diagnose sim",
+                "original precision",
+                "original recall",
+                "original wasted",
+                "precision-comp",
+                "recall-comp",
+                "wasted-comp",
+                "precision-tests",
+                "recall-tests",
+                "wasted-tests",
+                "precision-both",
+                "recall-both",
+                "wasted-both",
+                "bug id",
+                "original score percentage"
             ]
         )
 
     def diagnose(self, matrix_name):
         # getting basic values
 
-        def diagnose_sanity(matrix_name, exp_type, good_sim, bad_sim):
-            ei = read_json_planning_file(matrix_name,exp_type,'sanity', good_sim=good_sim, bad_sim=bad_sim)
+        def diagnose_sanity(matrix_name, exp_type, good_sim, bad_sim, OriginalScorePercentage):
+            ei = read_json_planning_file(matrix_name,exp_type,'sanity', good_sim=good_sim, bad_sim=bad_sim, OriginalScorePercentage = OriginalScorePercentage)
             ei.diagnose()
             diagnosis = Diagnosis_Results(ei.diagnoses, ei.initial_tests, ei.error, ei.pool, ei.get_id_bugs()).metrics
             return diagnosis
 
-        diagnoses = diagnose_sanity(matrix_name, "normal", 0, 0)
+        diagnoses = diagnose_sanity(matrix_name, "normal", 0, 0, 0)
         original_precision = diagnoses["precision"]
         original_recall = diagnoses["recall"]
         original_wasted = diagnoses["wasted"]
 
         # if original_precision < self.epsilon or original_precision > 1 - self.epsilon:
         #     return
+        for percentage in self.percentages:
+            for good_sim in self.high_similarity:
+                for bad_sim in self.low_similarity:
+                    diagnosis_comp = diagnose_sanity(matrix_name, "CompSimilarity", good_sim, bad_sim, percentage)
+                    diagnosis_tests = diagnose_sanity(matrix_name, "TestsSimilarity", good_sim, bad_sim, percentage)
+                    diagnosis_both = diagnose_sanity(matrix_name, "BothSimilarities", good_sim, bad_sim, percentage)
 
-        for good_sim in self.high_similarity:
-            for bad_sim in self.low_similarity:
-                diagnosis_comp = diagnose_sanity(matrix_name, "CompSimilarity", good_sim, bad_sim)
-                diagnosis_tests = diagnose_sanity(matrix_name, "TestsSimilarity", good_sim, bad_sim)
-                diagnosis_both = diagnose_sanity(matrix_name, "BothSimilarities", good_sim, bad_sim)
-
-                self.rows.append(
-                    [
-                        good_sim,
-                        bad_sim,
-                        original_precision,
-                        original_recall,
-                        original_wasted,
-                        diagnosis_comp["precision"],
-                        diagnosis_comp["recall"],
-                        diagnosis_comp["wasted"],
-                        diagnosis_tests["precision"],
-                        diagnosis_tests["recall"],
-                        diagnosis_tests["wasted"],
-                        diagnosis_both["precision"],
-                        diagnosis_both["recall"],
-                        diagnosis_both["wasted"],
-                        self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]]
-                    ]
-                )
+                    self.rows_all.append(
+                        [
+                            good_sim,
+                            bad_sim,
+                            original_precision,
+                            original_recall,
+                            original_wasted,
+                            diagnosis_comp["precision"],
+                            diagnosis_comp["recall"],
+                            diagnosis_comp["wasted"],
+                            diagnosis_tests["precision"],
+                            diagnosis_tests["recall"],
+                            diagnosis_tests["wasted"],
+                            diagnosis_both["precision"],
+                            diagnosis_both["recall"],
+                            diagnosis_both["wasted"],
+                            self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]],
+                            percentage
+                        ]
+                    )
+                    if percentage == self.optimal_original_score_percentage:
+                        self.rows.append(
+                        [
+                            good_sim,
+                            bad_sim,
+                            original_precision,
+                            original_recall,
+                            original_wasted,
+                            diagnosis_comp["precision"],
+                            diagnosis_comp["recall"],
+                            diagnosis_comp["wasted"],
+                            diagnosis_tests["precision"],
+                            diagnosis_tests["recall"],
+                            diagnosis_tests["wasted"],
+                            diagnosis_both["precision"],
+                            diagnosis_both["recall"],
+                            diagnosis_both["wasted"],
+                            self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]],
+                            percentage
+                        ]
+                    )
 
 
 class BarinelTesterTopicModeling(BarinelTester):
@@ -227,21 +285,42 @@ class BarinelTesterTopicModeling(BarinelTester):
                 "precision-both",
                 "recall-both",
                 "wasted-both",
+                "bug id",
+                "original score percentage"
+            ]
+        )
+        self.rows_all.append(
+            [
+                "num topics",
+                "original precision",
+                "original recall",
+                "original wasted",
+                "precision-comp",
+                "recall-comp",
+                "wasted-comp",
+                "precision-tests",
+                "recall-tests",
+                "wasted-tests",
+                "precision-both",
+                "recall-both",
+                "wasted-both",
+                "bug id",
+                "original score percentage"
             ]
         )
 
     def diagnose(self, matrix_name):
         # getting basic values
 
-        def diagnose_real(matrix_name, exp_type, topic):
-            ei = read_json_planning_file(matrix_name, exp_type,'topic modeling', num_topics=topic, Project_name=self.project_name)
+        def diagnose_real(matrix_name, exp_type, topic,OriginalScorePercentage):
+            ei = read_json_planning_file(matrix_name, exp_type,'topic modeling', num_topics=topic, Project_name=self.project_name, OriginalScorePercentage=OriginalScorePercentage)
             ei.diagnose()
 
             diagnosis = Diagnosis_Results(ei.diagnoses, ei.initial_tests, ei.error, ei.pool, ei.get_id_bugs()).metrics
             return diagnosis
 
        
-        diagnoses = diagnose_real(matrix_name, "normal", None)
+        diagnoses = diagnose_real(matrix_name, "normal", None, 0 )
         original_precision = diagnoses["precision"]
         original_recall = diagnoses["recall"]
         original_wasted = diagnoses["wasted"]
@@ -253,59 +332,82 @@ class BarinelTesterTopicModeling(BarinelTester):
         #     self.high_precision.append(matrix_name)
         #     return
 
-
-        for topic in self.topics:
-            diagnosis_comp = diagnose_real(matrix_name, "CompSimilarity", topic)
-            diagnosis_tests = diagnose_real(matrix_name, "TestsSimilarity", topic)
-            diagnosis_both = diagnose_real(matrix_name, "BothSimilarities", topic)
-            #print('finished topics ', topic)
-            self.rows.append(
-                [
-                    topic,
-                    original_precision,
-                    original_recall,
-                    original_wasted,
-                    diagnosis_comp["precision"],
-                    diagnosis_comp["recall"],
-                    diagnosis_comp["wasted"],
-                    diagnosis_tests["precision"],
-                    diagnosis_tests["recall"],
-                    diagnosis_tests["wasted"],
-                    diagnosis_both["precision"],                    diagnosis_both["recall"],
-                    diagnosis_both["wasted"],
-                    self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]]
-                ]
-            )
+        for percentage in self.percentages:
+            for topic in self.topics:
+                diagnosis_comp = diagnose_real(matrix_name, "CompSimilarity", topic, percentage)
+                diagnosis_tests = diagnose_real(matrix_name, "TestsSimilarity", topic, percentage)
+                diagnosis_both = diagnose_real(matrix_name, "BothSimilarities", topic, percentage)
+                #print('finished topics ', topic)
+                self.rows_all.append(
+                        [
+                            topic,
+                            original_precision,
+                            original_recall,
+                            original_wasted,
+                            diagnosis_comp["precision"],
+                            diagnosis_comp["recall"],
+                            diagnosis_comp["wasted"],
+                            diagnosis_tests["precision"],
+                            diagnosis_tests["recall"],
+                            diagnosis_tests["wasted"],
+                            diagnosis_both["precision"],                    diagnosis_both["recall"],
+                            diagnosis_both["wasted"],
+                            self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]],
+                            percentage
+                        ]
+                    )
+                if percentage == self.optimal_original_score_percentage:
+                    self.rows.append(
+                        [
+                            topic,
+                            original_precision,
+                            original_recall,
+                            original_wasted,
+                            diagnosis_comp["precision"],
+                            diagnosis_comp["recall"],
+                            diagnosis_comp["wasted"],
+                            diagnosis_tests["precision"],
+                            diagnosis_tests["recall"],
+                            diagnosis_tests["wasted"],
+                            diagnosis_both["precision"],                    diagnosis_both["recall"],
+                            diagnosis_both["wasted"],
+                            self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]],
+                            percentage
+                        ]
+                    )
 
 
 class BarinelTesterOtherAlgorithm(BarinelTester):
     def __init__(self, project_name, technique, local):
         super().__init__(project_name, technique, local)  # represnt what comes out from the github results of other teqniques
-        self.rows.append(["technique","precision", "recall", "wasted"])
+        self.rows.append(["technique","precision", "recall", "wasted","bug id","original score percentage"])
+        self.rows_all.append(["technique","precision", "recall", "wasted","bug id","original score percentage"])
+
         self.technique = technique
 
     def diagnose(self, matrix_name):
         # getting basic values
-        ei = read_json_planning_file(matrix_name, "CompSimilarity",'other method', Project_name=self.project_name, technique_and_project=self.technique)
-        ei.diagnose()
-        diagnoses = Diagnosis_Results(ei.diagnoses, ei.initial_tests, ei.error, ei.pool, ei.get_id_bugs()).metrics
+        for percentage in self.percentages:
+            ei = read_json_planning_file(matrix_name, "CompSimilarity",'other method', Project_name=self.project_name, technique_and_project=self.technique,OriginalScorePercentage=percentage)
+            ei.diagnose()
+            diagnoses = Diagnosis_Results(ei.diagnoses, ei.initial_tests, ei.error, ei.pool, ei.get_id_bugs()).metrics
 
-        precision = diagnoses["precision"]
-        recall = diagnoses["recall"]
-        wasted = diagnoses["wasted"]
 
-        self.rows.append([self.technique, diagnoses["precision"], diagnoses["recall"], diagnoses["wasted"],
-                          self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]]])
+            self.rows_all.append([self.technique, diagnoses["precision"], diagnoses["recall"], diagnoses["wasted"],
+                              self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]], percentage])
+            if percentage == self. optimal_original_score_percentage:
+                 self.rows.append([self.technique, diagnoses["precision"], diagnoses["recall"], diagnoses["wasted"],
+                              self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]], percentage])
 
-import sys
+
+
 if __name__ == "__main__":
-
-    project_name = "Compress"
+    project_name = "Codec"
     local = True
-    technique = "BugLocator"
+    technique = ["BugLocator", "BRTracer"]
     if len(sys.argv) == 4:
         project_name = sys.argv[1]
-        technique = sys.argv[2]
+        technique = [sys.argv[2]]
         if sys.argv[3] == 'git':
             local = False
 
@@ -317,7 +419,9 @@ if __name__ == "__main__":
     # select the test we want to do
     sanity = BarinelTesterSanity(project_name,local)
     topicModeling = BarinelTesterTopicModeling(project_name, (15, 26), local)
-    other_method = BarinelTesterOtherAlgorithm(project_name, f"{technique}_{project_name}",local)
+    other_methods = []
+    for t in technique:
+        other_methods.append(BarinelTesterOtherAlgorithm(project_name, f"{t}_{project_name}",local))
 
     path = join\
         (str(Path(__file__).parents[1]),'projects',project_name,"barinel","matrixes")
@@ -327,7 +431,9 @@ if __name__ == "__main__":
 
             sanity.diagnose(join(path, matrix.split("_")[0]))
             topicModeling.diagnose(join(path, matrix.split("_")[0]))
-            other_method.diagnose(join(path, matrix.split("_")[0]))
+            for other_method in other_methods:
+                other_method.diagnose(join(path, matrix.split("_")[0]))
+
             success.append(matrix)
         except Exception as e:
             failed.append((matrix, e))
@@ -340,7 +446,8 @@ if __name__ == "__main__":
 
     sanity.write_rows()
     topicModeling.write_rows()
-    other_method.write_rows()
+    for other_method in other_methods:
+        other_method.write_rows()
 
     print(f"success:{success},\n failed: {failed}")
 

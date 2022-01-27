@@ -223,7 +223,7 @@ def read_json_planning_file(file_path, experiment_type, experiment_method, **kwa
         return _read_json_planning_file_other_method(file_path,experiment_type, **kwargs)
 
 
-def _read_json_planning_file_sanity(file_path, experiment_type, good_sim, bad_sim ):
+def _read_json_planning_file_sanity(file_path, experiment_type, good_sim, bad_sim, OriginalScorePercentage ):
     with open(file_path, "r") as f:
         instance = json.loads(f.read())
     if experiment_type in ("CompSimilarity", "TestsSimilarity", "BothSimilarities"):
@@ -235,7 +235,7 @@ def _read_json_planning_file_sanity(file_path, experiment_type, good_sim, bad_si
         )
         instance["ExperimentType"] = experiment_type
 
-    return read_json_planning_instance(instance, experiment_type)
+    return read_json_planning_instance(instance, experiment_type, OriginalScorePercentage)
 
 
 def __create_similarity_vector(instance, good_sim, bad_sim):
@@ -273,7 +273,7 @@ def __create_similarity_vector_tests(instance, good_sim, bad_sim):
 
 PROJECTS_DIR_PATH = os.path.join(str(Path(__file__).parents[3]),'projects')
 
-def _read_json_planning_file_topic_modeling(file_path,experiment_type,num_topics,Project_name):
+def _read_json_planning_file_topic_modeling(file_path,experiment_type,num_topics,Project_name, OriginalScorePercentage):
     with open(file_path, "r") as f:
         instance = json.loads(f.read())
 
@@ -284,9 +284,9 @@ def _read_json_planning_file_topic_modeling(file_path,experiment_type,num_topics
         instance["TestsSimilarity"] = __get_real_test_similarity(instance,file_path,Project_name,path)
         instance["ExperimentType"] = experiment_type
 
-    return read_json_planning_instance(instance, experiment_type)
+    return read_json_planning_instance(instance, experiment_type, OriginalScorePercentage)
 
-def _read_json_planning_file_other_method(file_path,experiment_type,Project_name,technique_and_project):
+def _read_json_planning_file_other_method(file_path,experiment_type,Project_name,technique_and_project, OriginalScorePercentage):
     with open(file_path, "r") as f:
         instance = json.loads(f.read())
         
@@ -297,7 +297,7 @@ def _read_json_planning_file_other_method(file_path,experiment_type,Project_name
         instance["TestsSimilarity"] = __get_real_test_similarity(instance,file_path,Project_name,path)
         instance["ExperimentType"] = experiment_type
 
-    return read_json_planning_instance(instance, experiment_type)
+    return read_json_planning_instance(instance, experiment_type, OriginalScorePercentage)
 
 def __get_real_comp_similarity(instance,matrix_path,Project_name,similarities_path):
     
@@ -376,7 +376,7 @@ def __get_real_test_similarity(instance,matrix_path,Project_name,similarities_pa
 
 
 
-def read_json_planning_instance(instance, experiment_type):
+def read_json_planning_instance(instance, experiment_type, OriginalScorePercentage):
     assert "bugs" in instance, "bugs are not defined in planning_file"
     assert "tests_details" in instance, "tests_details are not defined in planning_file"
     assert "initial_tests" in instance, "initial_tests are not defined in planning_file"
@@ -399,6 +399,7 @@ def read_json_planning_instance(instance, experiment_type):
         components,
         estimatedTestsPool,
         experiment_type,
+        OriginalScorePercentage = OriginalScorePercentage
     )
 def write_json_planning_file(
     out_path, tests_details, bugs=None, initial_tests=None, **kwargs

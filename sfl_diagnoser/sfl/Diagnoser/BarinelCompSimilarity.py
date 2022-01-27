@@ -9,11 +9,12 @@ from .TFCompSimilarity import TFCompSimilarity
 
 class BarinelCompSimilarity(Barinel):
 
-    def __init__(self):
+    def __init__(self, OriginalScorePercentage):
         super(BarinelCompSimilarity, self).__init__()
         self.CompSimilarity = []
         self.TestsSimilarity = []
         self.ExperimentType = None
+        self.OriginalScorePercentage = OriginalScorePercentage
      
 
     def set_CompSimilarity(self, s):
@@ -27,4 +28,4 @@ class BarinelCompSimilarity(Barinel):
    
 
     def tf_for_diag(self, diagnosis):
-        return TFCompSimilarity(self.get_matrix(), self.get_error(), diagnosis, list(map(self.CompSimilarity.get, diagnosis)), self.TestsSimilarity,self.ExperimentType)
+        return TFCompSimilarity(self.get_matrix(), self.get_error(), diagnosis, list(map(self.CompSimilarity.get, diagnosis)), self.TestsSimilarity,self.ExperimentType, self.OriginalScorePercentage)

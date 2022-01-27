@@ -11,7 +11,7 @@ TERMINAL_PROB = 0.7
 
 
 class ExperimentInstanceCompSimilarity(ExperimentInstance):
-    def __init__(self, initial_tests, error, priors, bugs, pool, components, estimated_pool=None, **kwargs):
+    def __init__(self, initial_tests, error, priors, bugs, pool, components, estimated_pool=None,OriginalScorePercentage= -1, **kwargs):
         super(ExperimentInstanceCompSimilarity, self).__init__(initial_tests, error, priors, bugs, pool, components, estimated_pool, **kwargs)
         """ check the CompSimilarity matrix and CompSimilarity alpha"""
         for sim in Experiment_Data().CompSimilarity:
@@ -20,9 +20,10 @@ class ExperimentInstanceCompSimilarity(ExperimentInstance):
         for test in tests:
             assert len(set(Experiment_Data().POOL[test])) == len(Experiment_Data().POOL[test]), \
                 "trace of test {0} is faulty".format(test)
+        self.OriginalScorePercentage = OriginalScorePercentage
         
     def initials_to_DS(self):
-        ds = DynamicSpectrumCompSimilarity()
+        ds = DynamicSpectrumCompSimilarity(self.OriginalScorePercentage)
         ds.setTestsComponents(copy.deepcopy([Experiment_Data().POOL[test] for test in self.get_initials()]))
         ds.setprobabilities(list(self.priors))
         ds.seterror([self.get_error()[test] for test in self.get_initials()])

@@ -4,11 +4,12 @@ from functools import partial
 
 
 class DynamicSpectrumCompSimilarity(dynamicSpectrum):
-    def __init__(self):
+    def __init__(self, OriginalScorePercentage):
         super(DynamicSpectrumCompSimilarity, self).__init__()
         self.CompSimilarity = dict()
         self.TestsSimilarity = dict()
         self.ExperimentType = None
+        self.OriginalScorePercentage = OriginalScorePercentage
      
     def set_CompSimilarity(self, s):
         self.CompSimilarity = s
@@ -27,7 +28,7 @@ class DynamicSpectrumCompSimilarity(dynamicSpectrum):
             vector.extend(zeros_vector[len(vector):])
             return vector
 
-        ans = FullMatrixCompSimilarity()
+        ans = FullMatrixCompSimilarity(self.OriginalScorePercentage)
         ans.probabilities = list(self.getprobabilities())
         ans.error = list(self.geterror())
         ans.matrix = [get_test_vector(test) for test in self.getTestsComponents()]
