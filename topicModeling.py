@@ -155,6 +155,7 @@ class TopicModeling:
                 mkdir(join(self.project_path, "Experiments"))
                 mkdir(join(self.project_path, "Experiments", "Experiment_1"))
                 mkdir(join(self.project_path, "Experiments", "Experiment_1", "data"))
+                mkdir(join(self.project_path, "Experiments", "Experiment_1", "data", "topicModeling"))
 
             if not (exists(self.topicModeling_path)):
                 mkdir(self.topicModeling_path)
@@ -256,9 +257,7 @@ class TopicModeling:
             ]
 
             for NUM_TOPICS in range(15, 26):
-                ldamodel = gensim.models.ldamodel.LdaModel(
-                    corpus, num_topics=NUM_TOPICS, id2word=dictionary, passes=15
-                )
+                ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=NUM_TOPICS, id2word=dictionary, passes=15)
                 # returns the table of bug to max index for NUM TOPICS
                 num_topics_to_table.extend(
                     self.bug_to_func_and_similarity(
@@ -368,10 +367,10 @@ class TopicModeling:
                 join(
                     "bug to funcion and similarity",
                     "bug to functions and similarity " +
-                    str(NUM_TOPICS) + " topics",
+                    str(NUM_TOPICS) ,
                 ),
                 bug_to_func_and_similarity,
-                "bugs",
+                "bugs", str(NUM_TOPICS) + " topics"
             )
 
         # with open(join()(self.project_path , "topicModeling","bug to funcion and similarity","bug to functions and similarity " + str(NUM_TOPICS) + " topics.txt")) as outfile:
@@ -412,8 +411,7 @@ class TopicModeling:
             if len(bug["function that changed"]) > 10:
                 continue
 
-            index_len_all_funcs = self.find_max_index_all_functions(
-                bug, bug_to_func_and_similarity
+            index_len_all_funcs = self.find_max_index_all_functions( bug, bug_to_func_and_similarity
             )
             index_len_all_funcs_no_tests = self.find_max_index_all_functions_no_tests(
                 bug, bug_to_func_and_similarity
@@ -606,14 +604,22 @@ class TopicModeling:
         ) as outfile:
             json.dump(data, outfile, indent=4)
 
-    def save_into_file_sim(self, file_name, new_data, dictionary_value):
+    def save_into_file_sim(self, path, new_data, dictionary_value, file_name ):
         data = {}
         data[dictionary_value] = new_data
 
         data2 = DataFrame.from_dict(data)
         data2.to_parquet(
-            path=join(self.project_path, "topicModeling", file_name)
+            path=join(self.project_path, "topicModeling", path)
         )
+        data2.to_parquet(
+            path=join(self.project_path, "Experiments", "Experiment_1", "data", "topicModeling", file_name)
+        )
+
+
+
+
+
 
         # with open(join()(self.project_path , "topicModeling", file_name + ".txt"), 'w') as outfile:
         #     json.dump(data, outfile, indent=4)
