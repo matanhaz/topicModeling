@@ -17,8 +17,7 @@ import re
 import csv
 import warnings
 import sys
-
-from pandas import *
+import pandas
 
 # Load the LDA model from sk-learn
 warnings.simplefilter("ignore", DeprecationWarning)
