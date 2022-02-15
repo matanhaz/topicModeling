@@ -366,7 +366,7 @@ class TopicModeling:
                 join(
                     "bug to funcion and similarity",
                     "bug to functions and similarity " +
-                    str(NUM_TOPICS) ,
+                    str(NUM_TOPICS)+ " topics" ,
                 ),
                 bug_to_func_and_similarity,
                 "bugs", str(NUM_TOPICS) + " topics"
