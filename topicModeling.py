@@ -17,7 +17,7 @@ import re
 import csv
 import warnings
 import sys
-import pandas
+from pandas import *
 
 # Load the LDA model from sk-learn
 warnings.simplefilter("ignore", DeprecationWarning)
@@ -375,7 +375,7 @@ class TopicModeling:
         # with open(join()(self.project_path , "topicModeling","bug to funcion and similarity","bug to functions and similarity " + str(NUM_TOPICS) + " topics.txt")) as outfile:
         #     bug_to_func_and_similarity = json.load(outfile)['bugs']
 
-        df = pandas.read_parquet(
+        df = read_parquet(
             path=join(
                 self.project_path,
                 "topicModeling",
@@ -386,7 +386,7 @@ class TopicModeling:
         )
         bug_to_func_and_similarity = df.to_dict()["bugs"]
 
-        df = pandas.read_parquet(
+        df = read_parquet(
             path=join(self.analysis_path, "commitId to all functions")
         )
         commit_to_exist_functions = df.to_dict()["commit id"]
