@@ -1,11 +1,13 @@
-
-from os.path import join, exists
+import json
+from os.path import join, exists, isdir
 from os import mkdir, listdir
 
 import csv
 from collections import defaultdict
 import matplotlib.pyplot as plt
 from functools import reduce
+
+import pandas
 from tqdm import tqdm
 from abc import ABC, abstractmethod
 import numpy as np
@@ -14,6 +16,8 @@ import numpy as np
 class Experiment(ABC):
     def __init__(self, project_name, experiment_name):
         self.project_name = project_name
+        self.project_path = join("projects", project_name)
+        self.analysis_path = join(self.project_path, "analysis")
         self.experiment_path = join('projects', project_name, 'Experiments', experiment_name)
         self.data_path = join(self.experiment_path, 'data')
         self.results_path = join(self.experiment_path, 'results')
@@ -55,15 +59,25 @@ class Experiment1(Experiment):
         super().__init__(project_name, 'Experiment_1')
         self.x = []
         self.y = []
+        self.x_map = []
+        self.y_map = []
+        self.x_mrr = []
+        self.y_mrr = []
+        self.relevant_bugs = set()
 
     def __call__(self):
+        map = self.MAP()
         for file in listdir(self.data_path):
-            if 'topicModeling' in file:
-                self.run(file)
-            else:
-                self.run(file, 3, 4)
+            if not isdir(join(self.data_path, file)):
+                if 'topicModeling' in file:
+                    self.run(file)
+                else:
+                    self.run(file, 3, 4)
 
-        self.save_plot(self.x,self.y, 'num topics / method', 'average max index of all functions in results', 'Experiment_1_results', f'Experiment 1 - {self.project_name}')
+        self.save_plot(self.x,self.y, 'num topics / method', 'average max index of all functions in results', 'Experiment_1_results_topK', f'Experiment 1 - {self.project_name}')
+        self.save_plot(self.x_map,self.y_map, 'num topics / method', 'MAP', 'Experiment_1_results_MAP', f'Experiment 1 - {self.project_name}')
+        self.save_plot(self.x_mrr,self.y_mrr, 'num topics / method', 'MRR', 'Experiment_1_results_MRR', f'Experiment 1 - {self.project_name}')
+
 
     def run(self, file_name='topicModeling_indexes.csv', max_index=8, num_functions_checked=9):
         with open(join(self.data_path, file_name)) as outfile:
@@ -90,6 +104,98 @@ class Experiment1(Experiment):
 
         self.x.extend(percentages.keys())
         self.y.extend([p['without_negative'] for p in percentages.values()])
+
+    def get_relevant_bugs(self):
+        first = True
+        for file in listdir(join(self.data_path, 'methods')):
+            df = pandas.read_parquet(path=join(self.data_path, "methods" ,file))
+            bug_to_func_and_similarity = df.to_dict()["bugs"]
+            if first:
+                first = False
+                self.relevant_bugs = set(bug_to_func_and_similarity.keys())
+            else:
+                self.relevant_bugs = self.relevant_bugs & set(bug_to_func_and_similarity.keys())
+
+    def MAP(self):
+        self.get_relevant_bugs()
+        for file in listdir(join(self.data_path, 'methods')):
+            map = 0
+            mrr = 0
+            with open(join(self.project_path, "analysis", "bug_to_commit_that_solved.txt")) as outfile:
+                bugs = json.load(outfile)["bugs to commit"]
+            df = pandas.read_parquet(path=join(self.data_path, "methods" ,file))
+            bug_to_func_and_similarity = df.to_dict()["bugs"]
+
+            df = pandas.read_parquet(
+                path=join(self.analysis_path, "commitId to all functions")
+            )
+            commit_to_exist_functions = df.to_dict()["commit id"]
+
+            count_works = 0
+            for bug in tqdm(bugs):
+                #len(bug["function that changed"]) > 10 or
+                if bug["bug id"] not in self.relevant_bugs:
+                    continue
+
+                indexes = self._find_indexes(bug, bug_to_func_and_similarity, commit_to_exist_functions[bug["commit number"]]["all functions"].tolist())
+                if indexes != []:
+                    count_works += 1
+                    a_p = self._find_AP(indexes)
+                    map += a_p
+                    min_index = min(indexes) +1
+                    mrr += (1/min_index)
+                else:
+                    print(bug['bug id'])
+            map /= count_works
+            mrr /= count_works
+            self.x_map.append(file), self.y_map.append(map)
+            self.x_mrr.append(file), self.y_mrr.append(mrr)
+
+
+    def _find_indexes(self, bug, bug_to_func_and_similarity, commit_to_exist_functions):
+        # filter only exists functions
+        func_and_similarity_of_bug = (
+            bug_to_func_and_similarity[bug["bug id"]].tolist().copy()
+        )
+        for i in range(len(func_and_similarity_of_bug)):
+            func_and_similarity_of_bug[i] = func_and_similarity_of_bug[i].tolist(
+            )
+        # now im finiding the index only on the list of existing functions in the commit
+        exist_funcs_with_similarity = []
+
+        for func_exist in commit_to_exist_functions:
+            for func_and_similarity in func_and_similarity_of_bug:
+                if func_exist == func_and_similarity[0]:
+                    exist_funcs_with_similarity.append(func_and_similarity)
+                    func_and_similarity_of_bug.remove(func_and_similarity)
+                    break
+        exist_funcs_with_similarity.sort(key=lambda x: x[1], reverse=True)
+
+        #find all indexes of relevant functions
+        indexes = set()
+        for func in bug["function that changed"]:
+            index = 0
+            for exist_func_and_similarity in exist_funcs_with_similarity:
+                if func["function name"] == exist_func_and_similarity[0]:
+                    indexes.add(index)
+                    break
+                index += 1
+        indexes = list(indexes)
+        indexes.sort()
+        return indexes
+
+    def _find_AP(self,indexes):
+
+        a_p = 0
+        for i, index in enumerate(indexes):
+            p_k = (i+1) / (index+1)
+            a_p += (p_k / len(indexes))
+
+
+
+        return a_p
+
+
 
 
 class Experiment2(Experiment):
@@ -442,6 +548,6 @@ if __name__ == '__main__':
     if len(sys.argv) == 2:
         project = str(sys.argv[1])
     Experiment1(project)()
-    Experiment2(project,True)()
-    Experiment2(project,False)()
-    Experiment3(project,False)()
+    # Experiment2(project,True)()
+    # Experiment2(project,False)()
+    # Experiment3(project,False)()

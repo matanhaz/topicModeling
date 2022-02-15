@@ -270,4 +270,4 @@ class analyzer:
 
 
 if __name__ == "__main__":
-    analyzer("apache_commons-lang").run()
+    analyzer("Codec").run()

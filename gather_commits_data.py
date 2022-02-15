@@ -3,6 +3,7 @@ from os import mkdir
 import json
 import sys
 from pydriller import repository
+from git import Repo
 
 from pandas import *
 
@@ -27,7 +28,8 @@ class GatherCommitsData:
 
 
     def gather(self):
-        commits = repository.Repository(self.git, num_workers=4, only_modifications_with_file_types=['.java']).traverse_commits()
+
+        commits = repository.Repository(self.git,  only_modifications_with_file_types=['.java']).traverse_commits()
 
         for commit in commits:
             if not commit.in_main_branch:
@@ -201,4 +203,4 @@ class GatherCommitsData:
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
-        GatherCommitsData("https://github.com/apache/commons-lang.git","apache_commons-lang-testing-paraquet").gather()
+        GatherCommitsData("https://github.com/apache/commons-codec.git","Codec").gather()

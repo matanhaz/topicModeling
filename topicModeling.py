@@ -155,7 +155,7 @@ class TopicModeling:
                 mkdir(join(self.project_path, "Experiments"))
                 mkdir(join(self.project_path, "Experiments", "Experiment_1"))
                 mkdir(join(self.project_path, "Experiments", "Experiment_1", "data"))
-                mkdir(join(self.project_path, "Experiments", "Experiment_1", "data", "topicModeling"))
+                mkdir(join(self.project_path, "Experiments", "Experiment_1", "data", "methods"))
 
             if not (exists(self.topicModeling_path)):
                 mkdir(self.topicModeling_path)
