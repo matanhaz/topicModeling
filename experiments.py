@@ -548,6 +548,6 @@ if __name__ == '__main__':
     if len(sys.argv) == 2:
         project = str(sys.argv[1])
     Experiment1(project)()
-    # Experiment2(project,True)()
-    # Experiment2(project,False)()
-    # Experiment3(project,False)()
+    Experiment2(project,True)()
+    Experiment2(project,False)()
+    Experiment3(project,False)()
