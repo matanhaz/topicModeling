@@ -169,6 +169,12 @@ class TopicModeling:
                 with open(join(self.analysis_path,"func to commits message.txt")) as outfile:
                     data = json.load(outfile)
 
+                with open(join(self.analysis_path, "bugs.txt")) as outfile:
+                    all_bugs = json.load(outfile)
+
+                all_bugs = all_bugs['bugs info']['bugs']
+                all_bug_to_messages = []
+
                 data = data["functions"]
                 all_func_to_commit_messages = []
                 func_to_avg = {}
@@ -192,7 +198,24 @@ class TopicModeling:
                     # list of dictionaries each represent func and one string of all commit messages
                     all_func_to_commit_messages.append(func_to_commit_messages)
 
+                for bug in all_bugs:
+                    # returns a list, each element in the list is a filtered commit message
+                    m = bug["description"]
+                    if m is None:
+                        continue
+                    filtered = clean_list_of_strings(m.split())
+
+                    bug_to_messages = {
+                        "name": bug,
+                        "messages": " ".join(str(e) for e in filtered),
+                    }
+
+                    # list of dictionaries each represent func and one string of all commit messages
+                    all_bug_to_messages.append(bug_to_messages)
+
                 func_to_prepared_commit_messages = []
+                bug_to_prepared_messages = []
+
                 for func in all_func_to_commit_messages:
                     messages = func["commit_messages"]
                     list_of_words = messages.split(sep=" ")
@@ -208,25 +231,38 @@ class TopicModeling:
                     func_to_prepared_commit_messages, word_to_counts
                 )
 
+                for bug in all_bug_to_messages:
+                    messages = bug["messages"]
+                    list_of_words = messages.split(sep=" ")
+                    list_of_words_without_numbers = remove_number(list_of_words)
+
+                    # prepared text for lda, removed stop words and small words
+                    text_data = prepare_text_for_lda(list_of_words_without_numbers)
+
+                    bug_to_prepared_messages.append({"name": bug["name"], "messages": text_data})
+
                 self.save_into_file("word_to_counts", word_to_counts, "words")
                 self.save_into_file("filtered_data", func_to_prepared_commit_messages, "strings")
+                self.save_into_file("filtered_data_bugs", bug_to_prepared_messages, "strings")
                 self.save_into_file("function_to_avg_commit_len", func_to_avg, "function to avg")
                 
             else:
-                with open(
-                    join(self.topicModeling_path, "filtered_data.txt")
-                ) as outfile:
+                with open(join(self.topicModeling_path, "filtered_data.txt")) as outfile:
                     func_to_prepared_commit_messages = json.load(outfile)[
                         "strings"]
+
+                with open(join(self.topicModeling_path, "filtered_data_bugs.txt")) as outfile:
+                    bug_to_prepared_messages = json.load(outfile)[
+                        "strings"]
+
                 with open(
                     join(self.topicModeling_path, "word_to_counts.txt")
                 ) as outfile:
                     word_to_counts = json.load(outfile)["words"]
 
             # gather the prepared messages
-            prepared_commit_messages = list(
-                dict["messages"] for dict in func_to_prepared_commit_messages
-            )
+            prepared_commit_messages = list(dict["messages"] for dict in func_to_prepared_commit_messages)
+            prepared_commit_messages.extend(list(dict["messages"] for dict in bug_to_prepared_messages))
 
             dictionary = corpora.Dictionary(prepared_commit_messages)
             corpus = [dictionary.doc2bow(text)
@@ -648,7 +684,7 @@ class TopicModeling:
 
 
 if __name__ == "__main__":
-    project_name = "Codec"
+    project_name = "Lang"
     if len(sys.argv) == 2:
         project_name = str(sys.argv[1])
     TopicModeling(project_name).run()

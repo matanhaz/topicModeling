@@ -144,8 +144,10 @@ class Experiment1(Experiment):
                     map += a_p
                     min_index = min(indexes) +1
                     mrr += (1/min_index)
-                else:
-                    print(bug['bug id'])
+                # else:
+                #     print(bug['bug id'])
+                #     print(bug['function that changed'])
+                #     print(bug['hexsha'])
             map /= count_works
             mrr /= count_works
             self.x_map.append(file), self.y_map.append(map)
@@ -544,7 +546,7 @@ class Experiment3(Experiment):
 
 import sys
 if __name__ == '__main__':
-    project = 'Codec'
+    project = 'Lang'
     if len(sys.argv) == 2:
         project = str(sys.argv[1])
     Experiment1(project)()
