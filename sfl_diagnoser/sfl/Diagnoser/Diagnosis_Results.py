@@ -38,6 +38,7 @@ class Diagnosis_Results(object):
         """
         metrics = {}
         precision, recall = self.calc_precision_recall()
+        metrics["fscore"] = (precision * recall * 2) / (precision + recall) if (precision + recall) != 0 else 0
         metrics["precision"] = precision
         metrics["recall"] = recall
         metrics["entropy"] = self.calc_entropy()

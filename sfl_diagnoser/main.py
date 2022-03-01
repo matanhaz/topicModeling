@@ -176,7 +176,8 @@ class BarinelTesterSanity(BarinelTester):
                 "recall-both",
                 "wasted-both",
                 "bug id",
-                "original score percentage"
+                "original score percentage",
+                "f-score-original","f-score-comp", "f-score-tests", "f-score-both"
             ]
         )
         self.rows_all.append(
@@ -196,7 +197,8 @@ class BarinelTesterSanity(BarinelTester):
                 "recall-both",
                 "wasted-both",
                 "bug id",
-                "original score percentage"
+                "original score percentage",
+                "f-score-original","f-score-comp", "f-score-tests", "f-score-both"
             ]
         )
 
@@ -213,6 +215,7 @@ class BarinelTesterSanity(BarinelTester):
         original_precision = diagnoses["precision"]
         original_recall = diagnoses["recall"]
         original_wasted = diagnoses["wasted"]
+        original_fscore = diagnoses["fscore"]
 
         # if original_precision < self.epsilon or original_precision > 1 - self.epsilon:
         #     return
@@ -240,7 +243,11 @@ class BarinelTesterSanity(BarinelTester):
                             diagnosis_both["recall"],
                             diagnosis_both["wasted"],
                             self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]],
-                            percentage
+                            percentage,
+                            original_fscore,
+                            diagnosis_comp["fscore"],
+                            diagnosis_tests["fscore"],
+                            diagnosis_both["fscore"],
                         ]
                     )
                     if percentage == self.optimal_original_score_percentage:
@@ -261,7 +268,11 @@ class BarinelTesterSanity(BarinelTester):
                             diagnosis_both["recall"],
                             diagnosis_both["wasted"],
                             self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]],
-                            percentage
+                            percentage,
+                            original_fscore,
+                            diagnosis_comp["fscore"],
+                            diagnosis_tests["fscore"],
+                            diagnosis_both["fscore"],
                         ]
                     )
 
@@ -286,7 +297,8 @@ class BarinelTesterTopicModeling(BarinelTester):
                 "recall-both",
                 "wasted-both",
                 "bug id",
-                "original score percentage"
+                "original score percentage",
+                "f-score-original","f-score-comp", "f-score-tests", "f-score-both"
             ]
         )
         self.rows_all.append(
@@ -305,7 +317,8 @@ class BarinelTesterTopicModeling(BarinelTester):
                 "recall-both",
                 "wasted-both",
                 "bug id",
-                "original score percentage"
+                "original score percentage",
+                "f-score-original","f-score-comp", "f-score-tests", "f-score-both"
             ]
         )
 
@@ -324,6 +337,8 @@ class BarinelTesterTopicModeling(BarinelTester):
         original_precision = diagnoses["precision"]
         original_recall = diagnoses["recall"]
         original_wasted = diagnoses["wasted"]
+        original_fscore = diagnoses["fscore"]
+
 
         # if original_precision < self.epsilon:
         #     self.low_precision.append(matrix_name)
@@ -353,7 +368,11 @@ class BarinelTesterTopicModeling(BarinelTester):
                             diagnosis_both["precision"],                    diagnosis_both["recall"],
                             diagnosis_both["wasted"],
                             self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]],
-                            percentage
+                            percentage,
+                            original_fscore,
+                            diagnosis_comp["fscore"],
+                            diagnosis_tests["fscore"],
+                            diagnosis_both["fscore"],
                         ]
                     )
                 if percentage == self.optimal_original_score_percentage:
@@ -372,7 +391,11 @@ class BarinelTesterTopicModeling(BarinelTester):
                             diagnosis_both["precision"],                    diagnosis_both["recall"],
                             diagnosis_both["wasted"],
                             self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]],
-                            percentage
+                            percentage,
+                            original_fscore,
+                            diagnosis_comp["fscore"],
+                            diagnosis_tests["fscore"],
+                            diagnosis_both["fscore"],
                         ]
                     )
 
@@ -380,8 +403,10 @@ class BarinelTesterTopicModeling(BarinelTester):
 class BarinelTesterOtherAlgorithm(BarinelTester):
     def __init__(self, project_name, technique, local):
         super().__init__(project_name, technique, local)  # represnt what comes out from the github results of other teqniques
-        self.rows.append(["technique","precision", "recall", "wasted","bug id","original score percentage"])
-        self.rows_all.append(["technique","precision", "recall", "wasted","bug id","original score percentage"])
+        self.rows.append(["technique","precision", "recall", "wasted","bug id","original score percentage",
+                "f-score"])
+        self.rows_all.append(["technique","precision", "recall", "wasted","bug id","original score percentage",
+                "f-score"])
 
         self.technique = technique
 
@@ -394,10 +419,10 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 
 
             self.rows_all.append([self.technique, diagnoses["precision"], diagnoses["recall"], diagnoses["wasted"],
-                              self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]], percentage])
+                              self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]], percentage, diagnoses['fscore']])
             if percentage == self. optimal_original_score_percentage:
                  self.rows.append([self.technique, diagnoses["precision"], diagnoses["recall"], diagnoses["wasted"],
-                              self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]], percentage])
+                              self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]], percentage, diagnoses['fscore']])
 
 
 
