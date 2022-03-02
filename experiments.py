@@ -215,6 +215,12 @@ class Experiment2(Experiment):
         else:
             self.run()
 
+    def _label_to_index(self, labels_row):
+        indexes = {}
+        for index, label in enumerate(labels_row):
+            indexes[label] = index
+        return indexes
+
     def run_sanity(self):
         for file in listdir(self.data_path):
             if 'Sanity' in file:
@@ -243,6 +249,7 @@ class Experiment2(Experiment):
 
         labels_row, values_rows = rows[0], rows[1:]
 
+        label_to_index = self._label_to_index(labels_row)
         num_of_rows = len(values_rows) / 121
 
 
@@ -261,17 +268,24 @@ class Experiment2(Experiment):
                     row = values_rows[i+j*11+k]
 
 
-                    key_to_rows['precision'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[5])/ num_of_rows)
+                    # key_to_rows['precision'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[5])/ num_of_rows)
+                    #
+                    #
+                    # key_to_rows['recall'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[6])/ num_of_rows)
+                    #
+                    #
+                    # key_to_rows['wasted'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[7])/ num_of_rows)
+                    #
+                    # f_score = (float(row[5]) * float(row[6]) * 2) / (float(row[5]) + float(row[6])) if (float(row[5]) + float(row[6])) != 0 else 0
+                    #
+                    # key_to_rows['f-score'][all_similarities_values[j]][all_similarities_values[k]] += (f_score/ num_of_rows)
+                    key_to_rows['precision'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[label_to_index['precision-sigmoid']])/ num_of_rows)
 
+                    key_to_rows['recall'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[label_to_index['recall-sigmoid']])/ num_of_rows)
 
-                    key_to_rows['recall'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[6])/ num_of_rows)
+                    key_to_rows['wasted'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[label_to_index['wasted-sigmoid']])/ num_of_rows)
 
-
-                    key_to_rows['wasted'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[7])/ num_of_rows)
-
-                    f_score = (float(row[5]) * float(row[6]) * 2) / (float(row[5]) + float(row[6])) if (float(row[5]) + float(row[6])) != 0 else 0
-
-                    key_to_rows['f-score'][all_similarities_values[j]][all_similarities_values[k]] += (f_score/ num_of_rows)
+                    key_to_rows['f-score'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[label_to_index['f-score-sigmoid']])/ num_of_rows)
 
 
 
@@ -286,7 +300,7 @@ class Experiment2(Experiment):
             rows = list(csv.reader(outfile))
 
         labels_row, values_rows = rows[0], rows[1:]
-
+        label_to_index = self._label_to_index(labels_row)
         num_of_rows = len(values_rows)
 
         key_to_rows = {}
@@ -294,15 +308,13 @@ class Experiment2(Experiment):
 
         for row in tqdm(values_rows):
             technique_name = row[0].split('_')[0]
-            key_to_rows[technique_name]['precision'] += (float(row[1]) / num_of_rows)
+            key_to_rows[technique_name]['precision'] += (float(row[label_to_index['precision']]) / num_of_rows)
 
-            key_to_rows[technique_name]['recall'] += (float(row[2])/ num_of_rows)
+            key_to_rows[technique_name]['recall'] += (float(row[label_to_index['recall']])/ num_of_rows)
 
-            key_to_rows[technique_name]['wasted'] += (float(row[3])/ num_of_rows)
+            key_to_rows[technique_name]['wasted'] += (float(row[label_to_index['wasted']])/ num_of_rows)
 
-            f_score = (float(row[1]) * float(row[2]) * 2) / (float(row[1]) + float(row[2])) if (float(row[1]) + float(row[2])) != 0 else 0
-
-            key_to_rows[technique_name]['f-score'] += (f_score/ num_of_rows)
+            key_to_rows[technique_name]['f-score'] += (float(row[label_to_index['f-score']])/ num_of_rows)
 
 
         for key in key_to_rows:
@@ -315,7 +327,7 @@ class Experiment2(Experiment):
             rows = list(csv.reader(outfile))
 
         labels_row, values_rows = rows[0], rows[1:]
-
+        label_to_index = self._label_to_index(labels_row)
         num_of_rows = len(values_rows) / 11
 
         key_to_rows = {}
@@ -327,29 +339,29 @@ class Experiment2(Experiment):
             for j in range(i,i+11):
                 if values_rows[j][4] == maxx:
                     row = values_rows[j]
-                    key_to_rows['precision']['original'] += (float(row[1]) / num_of_rows)
-                    key_to_rows['precision']['sigmuid'] += (float(row[4])/ num_of_rows)
+                    key_to_rows['precision']['original'] += (float(row[label_to_index['original precision']]) / num_of_rows)
+                    key_to_rows['precision']['sigmuid'] += (float(row[label_to_index['precision-sigmoid']])/ num_of_rows)
                     #key_to_rows['precision']['tests'] += (float(row[7])/ num_of_rows)
-                    key_to_rows['precision']['multiply'] += (float(row[10])/ num_of_rows)
+                    key_to_rows['precision']['multiply'] += (float(row[label_to_index['precision-multiply']])/ num_of_rows)
 
-                    key_to_rows['recall']['original'] += (float(row[2])/ num_of_rows)
-                    key_to_rows['recall']['sigmuid'] += (float(row[5])/ num_of_rows)
+                    key_to_rows['recall']['original'] += (float(row[label_to_index['original recall']])/ num_of_rows)
+                    key_to_rows['recall']['sigmuid'] += (float(row[label_to_index['recall-sigmoid']])/ num_of_rows)
                     #key_to_rows['recall']['tests'] += (float(row[8])/ num_of_rows)
-                    key_to_rows['recall']['multiply'] += (float(row[11])/ num_of_rows)
+                    key_to_rows['recall']['multiply'] += (float(row[label_to_index['recall-multiply']])/ num_of_rows)
 
-                    key_to_rows['wasted']['original'] += (float(row[3])/ num_of_rows)
-                    key_to_rows['wasted']['sigmuid'] += (float(row[6])/ num_of_rows)
+                    key_to_rows['wasted']['original'] += (float(row[label_to_index['original wasted']])/ num_of_rows)
+                    key_to_rows['wasted']['sigmuid'] += (float(row[label_to_index['wasted-sigmoid']])/ num_of_rows)
                     #key_to_rows['wasted']['tests'] += (float(row[9])/ num_of_rows)
-                    key_to_rows['wasted']['multiply'] += (float(row[12])/ num_of_rows)
+                    key_to_rows['wasted']['multiply'] += (float(row[label_to_index['wasted-multiply']])/ num_of_rows)
 
 
-                    f_score_original = (float(row[1]) * float(row[2]) * 2) / (float(row[1]) + float(row[2])) if (float(row[1]) + float(row[2])) != 0 else 0
-                    f_score_sigmuid = (float(row[4]) * float(row[5]) * 2) / (float(row[4]) + float(row[5])) if (float(row[4]) + float(row[5])) != 0 else 0
-                    f_score_multiply = (float(row[10]) * float(row[11]) * 2) / (float(row[10]) + float(row[11])) if (float(row[10]) + float(row[11])) != 0 else 0
+                    # f_score_original = (float(row[1]) * float(row[2]) * 2) / (float(row[1]) + float(row[2])) if (float(row[1]) + float(row[2])) != 0 else 0
+                    # f_score_sigmuid = (float(row[4]) * float(row[5]) * 2) / (float(row[4]) + float(row[5])) if (float(row[4]) + float(row[5])) != 0 else 0
+                    # f_score_multiply = (float(row[10]) * float(row[11]) * 2) / (float(row[10]) + float(row[11])) if (float(row[10]) + float(row[11])) != 0 else 0
 
-                    key_to_rows['f-score']['original'] += (f_score_original/ num_of_rows)
-                    key_to_rows['f-score']['sigmuid'] += (f_score_sigmuid/ num_of_rows)
-                    key_to_rows['f-score']['multiply'] += (f_score_multiply/ num_of_rows)
+                    key_to_rows['f-score']['original'] += (float(row[label_to_index['f-score-original']])/ num_of_rows)
+                    key_to_rows['f-score']['sigmuid'] += (float(row[label_to_index['f-score-sigmoid']])/ num_of_rows)
+                    key_to_rows['f-score']['multiply'] += (float(row[label_to_index['f-score-multiply']])/ num_of_rows)
 
                     break
 

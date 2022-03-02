@@ -147,7 +147,7 @@ class BarinelTester:
             writer = csv.writer(f)
             writer.writerows(self.rows)
 
-        path_to_save_into = join(self.experiment3_path, "data", f"data_{self.test_type}.csv")
+        path_to_save_into = join(self.experiment3_path, "data", f"data_{self.test_type}_all.csv")
         with open(path_to_save_into, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerows(self.rows_all)
@@ -166,18 +166,21 @@ class BarinelTesterSanity(BarinelTester):
                 "original precision",
                 "original recall",
                 "original wasted",
-                "precision-comp",
-                "recall-comp",
-                "wasted-comp",
-                "precision-tests",
-                "recall-tests",
-                "wasted-tests",
-                "precision-both",
-                "recall-both",
-                "wasted-both",
+                "precision-sigmoid",
+                "recall-sigmoid",
+                "wasted-sigmoid",
+                # "precision-tests",
+                # "recall-tests",
+                # "wasted-tests",
+                "precision-multiply",
+                "recall-multiply",
+                "wasted-multiply",
                 "bug id",
                 "original score percentage",
-                "f-score-original","f-score-comp", "f-score-tests", "f-score-both"
+                "f-score-original","f-score-sigmoid",
+                # "f-score-tests",
+                "f-score-multiply"
+
             ]
         )
         self.rows_all.append(
@@ -187,18 +190,20 @@ class BarinelTesterSanity(BarinelTester):
                 "original precision",
                 "original recall",
                 "original wasted",
-                "precision-comp",
-                "recall-comp",
-                "wasted-comp",
-                "precision-tests",
-                "recall-tests",
-                "wasted-tests",
-                "precision-both",
-                "recall-both",
-                "wasted-both",
+                "precision-sigmoid",
+                "recall-sigmoid",
+                "wasted-sigmoid",
+                # "precision-tests",
+                # "recall-tests",
+                # "wasted-tests",
+                "precision-multiply",
+                "recall-multiply",
+                "wasted-multiply",
                 "bug id",
                 "original score percentage",
-                "f-score-original","f-score-comp", "f-score-tests", "f-score-both"
+                "f-score-original","f-score-sigmoid",
+                # "f-score-tests",
+                "f-score-multiply"
             ]
         )
 
@@ -223,7 +228,7 @@ class BarinelTesterSanity(BarinelTester):
             for good_sim in self.high_similarity:
                 for bad_sim in self.low_similarity:
                     diagnosis_comp = diagnose_sanity(matrix_name, "CompSimilarity", good_sim, bad_sim, percentage)
-                    diagnosis_tests = diagnose_sanity(matrix_name, "TestsSimilarity", good_sim, bad_sim, percentage)
+                    # diagnosis_tests = diagnose_sanity(matrix_name, "TestsSimilarity", good_sim, bad_sim, percentage)
                     diagnosis_both = diagnose_sanity(matrix_name, "BothSimilarities", good_sim, bad_sim, percentage)
 
                     self.rows_all.append(
@@ -236,9 +241,9 @@ class BarinelTesterSanity(BarinelTester):
                             diagnosis_comp["precision"],
                             diagnosis_comp["recall"],
                             diagnosis_comp["wasted"],
-                            diagnosis_tests["precision"],
-                            diagnosis_tests["recall"],
-                            diagnosis_tests["wasted"],
+                            # diagnosis_tests["precision"],
+                            # diagnosis_tests["recall"],
+                            # diagnosis_tests["wasted"],
                             diagnosis_both["precision"],
                             diagnosis_both["recall"],
                             diagnosis_both["wasted"],
@@ -246,7 +251,7 @@ class BarinelTesterSanity(BarinelTester):
                             percentage,
                             original_fscore,
                             diagnosis_comp["fscore"],
-                            diagnosis_tests["fscore"],
+                            # diagnosis_tests["fscore"],
                             diagnosis_both["fscore"],
                         ]
                     )
@@ -261,9 +266,9 @@ class BarinelTesterSanity(BarinelTester):
                             diagnosis_comp["precision"],
                             diagnosis_comp["recall"],
                             diagnosis_comp["wasted"],
-                            diagnosis_tests["precision"],
-                            diagnosis_tests["recall"],
-                            diagnosis_tests["wasted"],
+                            # diagnosis_tests["precision"],
+                            # diagnosis_tests["recall"],
+                            # diagnosis_tests["wasted"],
                             diagnosis_both["precision"],
                             diagnosis_both["recall"],
                             diagnosis_both["wasted"],
@@ -271,7 +276,7 @@ class BarinelTesterSanity(BarinelTester):
                             percentage,
                             original_fscore,
                             diagnosis_comp["fscore"],
-                            diagnosis_tests["fscore"],
+                            # diagnosis_tests["fscore"],
                             diagnosis_both["fscore"],
                         ]
                     )
@@ -287,18 +292,20 @@ class BarinelTesterTopicModeling(BarinelTester):
                 "original precision",
                 "original recall",
                 "original wasted",
-                "precision-comp",
-                "recall-comp",
-                "wasted-comp",
-                "precision-tests",
-                "recall-tests",
-                "wasted-tests",
-                "precision-both",
-                "recall-both",
-                "wasted-both",
+                "precision-sigmoid",
+                "recall-sigmoid",
+                "wasted-sigmoid",
+                # "precision-tests",
+                # "recall-tests",
+                # "wasted-tests",
+                "precision-multiply",
+                "recall-multiply",
+                "wasted-multiply",
                 "bug id",
                 "original score percentage",
-                "f-score-original","f-score-comp", "f-score-tests", "f-score-both"
+                "f-score-original","f-score-sigmoid",
+                # "f-score-tests",
+                "f-score-multiply"
             ]
         )
         self.rows_all.append(
@@ -307,18 +314,20 @@ class BarinelTesterTopicModeling(BarinelTester):
                 "original precision",
                 "original recall",
                 "original wasted",
-                "precision-comp",
-                "recall-comp",
-                "wasted-comp",
-                "precision-tests",
-                "recall-tests",
-                "wasted-tests",
-                "precision-both",
-                "recall-both",
-                "wasted-both",
+                "precision-sigmoid",
+                "recall-sigmoid",
+                "wasted-sigmoid",
+                # "precision-tests",
+                # "recall-tests",
+                # "wasted-tests",
+                "precision-multiply",
+                "recall-multiply",
+                "wasted-multiply",
                 "bug id",
                 "original score percentage",
-                "f-score-original","f-score-comp", "f-score-tests", "f-score-both"
+                "f-score-original","f-score-sigmoid",
+                # "f-score-tests",
+                "f-score-multiply"
             ]
         )
 
@@ -350,7 +359,7 @@ class BarinelTesterTopicModeling(BarinelTester):
         for percentage in self.percentages:
             for topic in self.topics:
                 diagnosis_comp = diagnose_real(matrix_name, "CompSimilarity", topic, percentage)
-                diagnosis_tests = diagnose_real(matrix_name, "TestsSimilarity", topic, percentage)
+                # diagnosis_tests = diagnose_real(matrix_name, "TestsSimilarity", topic, percentage)
                 diagnosis_both = diagnose_real(matrix_name, "BothSimilarities", topic, percentage)
                 #print('finished topics ', topic)
                 self.rows_all.append(
@@ -362,16 +371,16 @@ class BarinelTesterTopicModeling(BarinelTester):
                             diagnosis_comp["precision"],
                             diagnosis_comp["recall"],
                             diagnosis_comp["wasted"],
-                            diagnosis_tests["precision"],
-                            diagnosis_tests["recall"],
-                            diagnosis_tests["wasted"],
+                            # diagnosis_tests["precision"],
+                            # diagnosis_tests["recall"],
+                            # diagnosis_tests["wasted"],
                             diagnosis_both["precision"],                    diagnosis_both["recall"],
                             diagnosis_both["wasted"],
                             self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]],
                             percentage,
                             original_fscore,
                             diagnosis_comp["fscore"],
-                            diagnosis_tests["fscore"],
+                            # diagnosis_tests["fscore"],
                             diagnosis_both["fscore"],
                         ]
                     )
@@ -385,16 +394,16 @@ class BarinelTesterTopicModeling(BarinelTester):
                             diagnosis_comp["precision"],
                             diagnosis_comp["recall"],
                             diagnosis_comp["wasted"],
-                            diagnosis_tests["precision"],
-                            diagnosis_tests["recall"],
-                            diagnosis_tests["wasted"],
+                            # diagnosis_tests["precision"],
+                            # diagnosis_tests["recall"],
+                            # diagnosis_tests["wasted"],
                             diagnosis_both["precision"],                    diagnosis_both["recall"],
                             diagnosis_both["wasted"],
                             self.mapping[matrix_name.replace('/', '\\').split('\\')[-1]],
                             percentage,
                             original_fscore,
                             diagnosis_comp["fscore"],
-                            diagnosis_tests["fscore"],
+                            # diagnosis_tests["fscore"],
                             diagnosis_both["fscore"],
                         ]
                     )
