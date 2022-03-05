@@ -39,6 +39,11 @@ class Diagnosis_Results(object):
         metrics = {}
         precision, recall = self.calc_precision_recall()
         metrics["fscore"] = (precision * recall * 2) / (precision + recall) if (precision + recall) != 0 else 0
+        expense_tscore = self.calc_expense()
+        metrics["expense"] = expense_tscore
+        metrics["tscore"] = expense_tscore
+        metrics["cost"] = expense_tscore / 100
+        metrics['exam_score'] = self.calc_exam_score()
         metrics["precision"] = precision
         metrics["recall"] = recall
         metrics["entropy"] = self.calc_entropy()
@@ -195,6 +200,31 @@ class Diagnosis_Results(object):
                 return len(components)
             wasted += components.index(b)
         return wasted / len(self.get_bugs())
+
+    def calc_expense(self):
+        components = list(map(lambda x: x[0], self.get_components_probabilities()))
+        total_expense = None
+        total_bugs_in_components = 0
+        for bug in self.get_bugs():
+            if bug in components:
+                if total_expense:
+                    total_expense += ((components.index(bug)/len(components)) * 100)
+                    total_bugs_in_components += 1
+                else:
+                    total_expense = (components.index(bug)/len(components)) * 100
+                    total_bugs_in_components += 1
+        if total_expense:
+            total_expense /= total_bugs_in_components
+        return total_expense or 100
+
+    def calc_exam_score(self):
+        components = list(map(lambda x: x[0], self.get_components_probabilities()))
+
+        for component in components:
+            if component in self.get_bugs():
+                return ((components.index(component)/len(components)) * 100)
+
+        return 100
 
     def calc_top_k(self):
         components = list(map(lambda x: x[0], self.get_components_probabilities()))
