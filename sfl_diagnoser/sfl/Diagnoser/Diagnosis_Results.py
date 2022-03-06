@@ -215,7 +215,9 @@ class Diagnosis_Results(object):
                     total_bugs_in_components += 1
         if total_expense:
             total_expense /= total_bugs_in_components
-        return total_expense or 100
+        if total_expense is None:
+            return 100
+        return total_expense
 
     def calc_exam_score(self):
         components = list(map(lambda x: x[0], self.get_components_probabilities()))
@@ -235,7 +237,9 @@ class Diagnosis_Results(object):
                     top_k = max(top_k, components.index(bug))
                 else:
                     top_k = components.index(bug)
-        return top_k or len(components)
+        if top_k is None:
+            return len(components)
+        return top_k
 
     def calc_entropy(self):
         return entropy(list(map(lambda diag: diag.probability, self.diagnoses)))
