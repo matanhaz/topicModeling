@@ -622,7 +622,7 @@ class TopicModeling:
         )
 
         if len(functions_that_changed_no_tests) == 0:
-            return -1,-1, len(exist_funcs_with_similarity_without_tests)
+            return -1,-1, len(exist_funcs_with_similarity_without_tests),[]
 
         min_index = len(exist_funcs_with_similarity_without_tests)
         all_indexes = []
