@@ -1,8 +1,8 @@
-import pyLDAvis.gensim_models
+#import pyLDAvis.gensim_models
 import gensim
 import pickle
 from gensim import corpora
-import matplotlib.pyplot as plt
+
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.corpus import wordnet as wn
 
