@@ -19,7 +19,7 @@ jobs:
         #techniques: [BugLocator,  BRTracer, BLUiR, AmaLgam,  BLIA, Locus]
         techniques: [BugLocator, BRTracer]
         #group: [Commons]
-        project: [Lang]
+        project: [Codec]
         #folder_name: [BugLocator_lang]
     
     outputs:
