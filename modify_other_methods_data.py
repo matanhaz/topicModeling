@@ -24,10 +24,14 @@ class ModifyOtherMethods:
         self.analysis_path = join(self.project_path, "analysis")
 
         self.rows = [
-                ['technique', 'bug id',
+                ['technique', 'bug id','num of functions that changed'
                  'num of functions that changed no tests' ,
-                 'max index exist functions no tests',
-                 'num of functions checked']]
+                    "first index exist functions",
+                    "max index exist functions",
+                    "num of functions checked exist functions","all indexes"
+                    "first index exist functions no tests",
+                    "max index exist functions no tests",
+                    "num of functions checked exist functions no tests","all indexes no tests"]]
 
     def change_file_presentation(self):
 
@@ -108,17 +112,57 @@ class ModifyOtherMethods:
                 if bug not in exists_bugs:
                     continue
 
-     #          max_index = -1 if len(exist_bugs_and_changed_functions[bug]['function that changed']) == 0 else max([[function[2] for function in all_bugs[bug] if function[0] == func][0] for func in exist_bugs_and_changed_functions[bug]['function that changed']])
-                all_indexes = [[function[2] for function in all_bugs[bug] if function[0] == func] for func in exist_bugs_and_changed_functions[bug]['function that changed no tests']]
-                max_index_no_test = -1 if len(all_indexes)==0 else len(exist_bugs_and_changed_functions[bug]['exists functions no tests'])-1 if [] in all_indexes else max(all_indexes)[0]
-                self.rows.append([self.technique,bug,
-                             len(exist_bugs_and_changed_functions[bug]['function that changed no tests']),
-                             max_index_no_test,
-                             len(exist_bugs_and_changed_functions[bug]['exists functions no tests'])])
+                functions_that_changed = exist_bugs_and_changed_functions[bug]['function that changed']
+                exists_functions = exist_bugs_and_changed_functions[bug]['exists functions']
+                min_index, max_index, num_functions, all_indexes = \
+                    self.find_indexes_exist_functions(functions_that_changed, all_bugs[bug], exists_functions)
+
+                functions_that_changed_no_tests = exist_bugs_and_changed_functions[bug]['function that changed no tests']
+                exists_functions_no_tests = exist_bugs_and_changed_functions[bug]['exists functions no tests']
+                min_index_no_tests, max_index_no_tests, num_functions_no_tests, all_indexes_no_tests = \
+                    self.find_indexes_exist_functions(functions_that_changed_no_tests, all_bugs[bug], exists_functions_no_tests)
+
+                self.rows.append([self.technique,bug,len(functions_that_changed),len(functions_that_changed_no_tests),
+                                  min_index,max_index,num_functions,all_indexes,
+                                 min_index_no_tests,max_index_no_tests,num_functions_no_tests,all_indexes_no_tests])
 
             with open(join(self.project_path, "Experiments", "Experiment_1", "data", f"{self.method_folder_name}_indexes.csv"), 'w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerows(self.rows)
+
+    def find_indexes_exist_functions(self,changed_functions,  funcs_and_similarities, exists_functions):
+        max_index = -1
+
+        exist_funcs_with_similarity = []
+
+        for func_exist in exists_functions:
+            for func_and_similarity in funcs_and_similarities:
+                if func_exist == func_and_similarity[0]:
+                    exist_funcs_with_similarity.append(func_and_similarity)
+                    break
+        exist_funcs_with_similarity.sort(key=lambda x: x[1], reverse=True)
+
+        if len(changed_functions) == 0:
+            return -1,-1, len(exist_funcs_with_similarity)
+
+        min_index = len(exist_funcs_with_similarity)
+        all_indexes = []
+        for func in changed_functions:
+            index = 0
+            for exist_func_and_similarity in exist_funcs_with_similarity:
+                if func == exist_func_and_similarity[0]:
+                    max_index = max(max_index, index)
+                    min_index = min(min_index, index)
+                    all_indexes.append(index)
+                    break
+                index += 1
+            else:
+                max_index = max(max_index, index)
+                min_index = min(min_index, index)
+                all_indexes.append(index)
+
+        return min_index, max_index, len(exist_funcs_with_similarity), all_indexes
+
 
 
 if __name__ == "__main__":

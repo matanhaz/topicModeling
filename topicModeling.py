@@ -280,14 +280,18 @@ class TopicModeling:
                     "bug id",
                     "num of functions that changed",
                     "num of functions that changed no tests",
-                    "max index all functions",
-                    "num of functions checked",
-                    "max index all functions no test functions",
-                    "num of functions checked",
+                    # "max index all functions",
+                    # "num of functions checked",
+                    # "max index all functions no test functions",
+                    # "num of functions checked",
+                    "first index exist functions",
                     "max index exist functions",
-                    "num of functions checked",
+                    "num of functions checked exist functions",
+                    "all indexes",
+                    "first index exist functions no tests",
                     "max index exist functions no tests",
-                    "num of functions checked",
+                    "num of functions checked exist functions no tests",
+                    "all indexes no tests"
                 ]
             ]
 
@@ -443,14 +447,14 @@ class TopicModeling:
 
         i = 1
         for bug in bugs:
-            if len(bug["function that changed"]) > 10:
-                continue
+            # if len(bug["function that changed"]) > 10:
+            #     continue
 
-            index_len_all_funcs = self.find_max_index_all_functions( bug, bug_to_func_and_similarity
-            )
-            index_len_all_funcs_no_tests = self.find_max_index_all_functions_no_tests(
-                bug, bug_to_func_and_similarity
-            )
+            # index_len_all_funcs = self.find_max_index_all_functions( bug, bug_to_func_and_similarity
+            # )
+            # index_len_all_funcs_no_tests = self.find_max_index_all_functions_no_tests(
+            #     bug, bug_to_func_and_similarity
+            # )
             index_len_exist_funcs = self.find_max_index_exist_functions(
                 bug,
                 bug_to_func_and_similarity,
@@ -483,14 +487,18 @@ class TopicModeling:
                             if ("test" or "Test") not in func["function name"]
                         )
                     ),
-                    str(index_len_all_funcs[0]),
-                    str(index_len_all_funcs[1]),
-                    str(index_len_all_funcs_no_tests[0]),
-                    str(index_len_all_funcs_no_tests[1]),
+                    # str(index_len_all_funcs[0]),
+                    # str(index_len_all_funcs[1]),
+                    # str(index_len_all_funcs_no_tests[0]),
+                    # str(index_len_all_funcs_no_tests[1]),
                     str(index_len_exist_funcs[0]),
                     str(index_len_exist_funcs[1]),
+                    str(index_len_exist_funcs[2]),
+                    str(index_len_exist_funcs[3]),
                     str(index_len_exist_funcs_no_tests[0]),
                     str(index_len_exist_funcs_no_tests[1]),
+                    str(index_len_exist_funcs_no_tests[2]),
+                    str(index_len_exist_funcs_no_tests[3])
                 ]
             )
 
@@ -563,15 +571,22 @@ class TopicModeling:
                     break
         exist_funcs_with_similarity.sort(key=lambda x: x[1], reverse=True)
 
+        min_index = len(exist_funcs_with_similarity)
+        all_indexes = []
         for func in bug["function that changed"]:
             index = 0
             for exist_func_and_similarity in exist_funcs_with_similarity:
                 if func["function name"] == exist_func_and_similarity[0]:
                     max_index_smaller_list = max(max_index_smaller_list, index)
+                    min_index = min(min_index, index)
                     break
                 index += 1
+            else:
+                max_index_smaller_list = max(max_index_smaller_list, index)
+                min_index = min(min_index, index)
+                all_indexes.append(index)
 
-        return max_index_smaller_list, len(exist_funcs_with_similarity)
+        return min_index,max_index_smaller_list, len(exist_funcs_with_similarity), all_indexes
 
     def find_max_index_exist_functions_no_tests(
         self, bug, bug_to_func_and_similarity, exists_functions
@@ -607,8 +622,10 @@ class TopicModeling:
         )
 
         if len(functions_that_changed_no_tests) == 0:
-            return -1, len(exist_funcs_with_similarity_without_tests)
+            return -1,-1, len(exist_funcs_with_similarity_without_tests)
 
+        min_index = len(exist_funcs_with_similarity_without_tests)
+        all_indexes = []
         for func in functions_that_changed_no_tests:
             index = 0
             for exist_func_and_similarity in exist_funcs_with_similarity_without_tests:
@@ -616,12 +633,16 @@ class TopicModeling:
                     max_index_smaller_list_no_tests = max(
                         max_index_smaller_list_no_tests, index
                     )
+                    min_index = min(min_index, index)
                     break
                 index += 1
+            else:
+                max_index_smaller_list_no_tests = max(max_index_smaller_list_no_tests, index)
+                min_index = min(min_index, index)
+                all_indexes.append(index)
 
-        return max_index_smaller_list_no_tests, len(
-            exist_funcs_with_similarity_without_tests
-        )
+        return min_index, max_index_smaller_list_no_tests, \
+               len(exist_funcs_with_similarity_without_tests), all_indexes
 
     def create_table(self, rows):
 

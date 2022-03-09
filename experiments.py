@@ -24,6 +24,12 @@ class Experiment(ABC):
         self.percentage_metrics = ["expense","t-score","exam-score"]
 
 
+    def label_to_index(self, labels_row):
+        indexes = {}
+        for index, label in enumerate(labels_row):
+            indexes[label] = index
+        return indexes
+
     def save_plot(self,x,y, x_label, y_label, file_name,title, sanity = False):
         colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
@@ -76,40 +82,48 @@ class Experiment1(Experiment):
         self.best_topic = ""
 
     def __call__(self):
-        map = self.MAP()
+       # map = self.MAP()
         for file in listdir(self.data_path):
             if not isdir(join(self.data_path, file)):
-                if 'topicModeling' in file:
-                    self.run(file)
-                else:
-                    self.run(file, 3, 4)
+                self.run(file)
+
 
         self.save_plot(self.x,self.y, 'num topics / method', 'average max index of all functions in results', 'Experiment_1_results_topK', f'Experiment 1 - {self.project_name}')
         self.save_plot(self.x_map,self.y_map, 'num topics / method', 'MAP', 'Experiment_1_results_MAP', f'Experiment 1 - {self.project_name}')
         self.save_plot(self.x_mrr,self.y_mrr, 'num topics / method', 'MRR', 'Experiment_1_results_MRR', f'Experiment 1 - {self.project_name}')
 
 
-    def run(self, file_name='topicModeling_indexes.csv', max_index=8, num_functions_checked=9):
+    def run(self, file_name='topicModeling_indexes.csv'):
         with open(join(self.data_path, file_name)) as outfile:
             rows = list(csv.reader(outfile))
 
         labels_row, values_rows = rows[0], rows[1:]
+
+        label_to_index = self.label_to_index(labels_row)
 
         key_to_rows = {}
         key_to_rows = defaultdict(lambda:{'all':[],'without_negative':[]}, key_to_rows)
 
         for row in tqdm(values_rows):
             key_to_rows[row[0]]['all'].append(row)
-            if row[max_index] != '-1':
+            if row[label_to_index['num of functions that changed no tests']] != '0':
                 key_to_rows[row[0]]['without_negative'].append(row)
 
 
+        max_index = label_to_index['max index exist functions no tests']
+        min_index = label_to_index['first index exist functions no tests']
+        all_indexes = label_to_index['all indexes no tests']
+        num_functions_checked = label_to_index['num of functions checked exist functions no tests']
 
-        get_percentage = lambda value, row: value + (float(row[max_index]) / float(row[num_functions_checked]))
+        get_percentage_max = lambda value, row: value + (float(row[max_index]) / float(row[num_functions_checked]))
+        get_percentage_mrr = lambda value, row: value + (1 / (float(row[min_index]) + 1))
+        get_percentage_map = lambda value, row: value + (self._find_AP(row[all_indexes]))
 
         percentages = {key: {
-                'all': reduce(get_percentage, key_to_rows[key]['all'], 0)/len(key_to_rows[key]['all']),
-                'without_negative': reduce(get_percentage, key_to_rows[key]['without_negative'], 0)/len(key_to_rows[key]['without_negative'])
+                'all': reduce(get_percentage_max, key_to_rows[key]['all'], 0)/len(key_to_rows[key]['all']),
+                'without_negative': reduce(get_percentage_max, key_to_rows[key]['without_negative'], 0)/len(key_to_rows[key]['without_negative']),
+                'MAP': reduce(get_percentage_map, key_to_rows[key]['without_negative'], 0)/len(key_to_rows[key]['without_negative']),
+                'MRR':reduce(get_percentage_mrr, key_to_rows[key]['without_negative'], 0)/len(key_to_rows[key]['without_negative'])
                 } for key in key_to_rows}
 
         if "topic" in file_name:
@@ -117,6 +131,9 @@ class Experiment1(Experiment):
             self.best_topic = self.best_topic.split("_")[0]
         self.x.extend(percentages.keys())
         self.y.extend([p['without_negative'] for p in percentages.values()])
+
+        self.x_map.extend(percentages.keys()), self.y_map.extend([p['MAP'] for p in percentages.values()])
+        self.x_mrr.extend(percentages.keys()), self.y_mrr.extend([p['MRR'] for p in percentages.values()])
 
     def get_relevant_bugs(self):
         first = True
@@ -130,6 +147,7 @@ class Experiment1(Experiment):
                 self.relevant_bugs = self.relevant_bugs & set(bug_to_func_and_similarity.keys())
 
     def MAP(self):
+
         self.get_relevant_bugs()
         for file in listdir(join(self.data_path, 'methods')):
             map = 0
@@ -200,10 +218,10 @@ class Experiment1(Experiment):
         return indexes
 
     def _find_AP(self,indexes):
-
+        filtered = indexes[1:-1].split(', ')
         a_p = 0
-        for i, index in enumerate(indexes):
-            p_k = (i+1) / (index+1)
+        for i, index in enumerate(filtered):
+            p_k = (i+1) / (int(index)+1)
             a_p += (p_k / len(indexes))
 
 
@@ -230,11 +248,7 @@ class Experiment2(Experiment):
         else:
             self.run()
 
-    def _label_to_index(self, labels_row):
-        indexes = {}
-        for index, label in enumerate(labels_row):
-            indexes[label] = index
-        return indexes
+
 
     def run_sanity(self):
         for file in listdir(self.data_path):
@@ -264,7 +278,7 @@ class Experiment2(Experiment):
 
         labels_row, values_rows = rows[0], rows[1:]
 
-        label_to_index = self._label_to_index(labels_row)
+        label_to_index = self.label_to_index(labels_row)
         num_of_rows = len(values_rows) / 121
 
 
@@ -393,7 +407,7 @@ class Experiment2(Experiment):
         file_name = file_name.split('.')[0]
 
         labels_row, values_rows = rows[0], rows[1:]
-        label_to_index = self._label_to_index(labels_row)
+        label_to_index = self.label_to_index(labels_row)
 
         key_to_rows = {}
         key_to_rows = defaultdict(lambda:{file_name:0}, key_to_rows)
@@ -415,7 +429,7 @@ class Experiment2(Experiment):
             rows = list(csv.reader(outfile))
         file_name = file_name.split('.')[0]
         labels_row, values_rows = rows[0], rows[1:]
-        label_to_index = self._label_to_index(labels_row)
+        label_to_index = self.label_to_index(labels_row)
         num_of_rows = len(values_rows) / 11
 
         key_to_rows = {}
