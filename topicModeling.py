@@ -280,10 +280,6 @@ class TopicModeling:
                     "bug id",
                     "num of functions that changed",
                     "num of functions that changed no tests",
-                    # "max index all functions",
-                    # "num of functions checked",
-                    # "max index all functions no test functions",
-                    # "num of functions checked",
                     "first index exist functions",
                     "max index exist functions",
                     "num of functions checked exist functions",
@@ -579,6 +575,7 @@ class TopicModeling:
                 if func["function name"] == exist_func_and_similarity[0]:
                     max_index_smaller_list = max(max_index_smaller_list, index)
                     min_index = min(min_index, index)
+                    all_indexes.append(index)
                     break
                 index += 1
             else:
@@ -634,6 +631,7 @@ class TopicModeling:
                         max_index_smaller_list_no_tests, index
                     )
                     min_index = min(min_index, index)
+                    all_indexes.append(index)
                     break
                 index += 1
             else:

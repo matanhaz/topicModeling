@@ -24,14 +24,18 @@ class ModifyOtherMethods:
         self.analysis_path = join(self.project_path, "analysis")
 
         self.rows = [
-                ['technique', 'bug id','num of functions that changed'
-                 'num of functions that changed no tests' ,
+                ['technique', "bug id",
+                    "num of functions that changed",
+                    "num of functions that changed no tests",
                     "first index exist functions",
                     "max index exist functions",
-                    "num of functions checked exist functions","all indexes"
+                    "num of functions checked exist functions",
+                    "all indexes",
                     "first index exist functions no tests",
                     "max index exist functions no tests",
-                    "num of functions checked exist functions no tests","all indexes no tests"]]
+                    "num of functions checked exist functions no tests",
+                    "all indexes no tests"
+                ]]
 
     def change_file_presentation(self):
 

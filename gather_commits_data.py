@@ -122,13 +122,15 @@ class GatherCommitsData:
 
     def gather_all_functions(self, commit, modified_files):
         add_functions, delete_functions = self.classify_functions(modified_files)
-        for method in delete_functions:
-            if method in self.existing_functions:
-                self.existing_functions.remove(method)
+
         for method in add_functions:
             self.existing_functions.append(method)
 
         self.commit_id_to_functions[self.commit_index] = {'hexsha' : commit.hash, 'all functions': self.existing_functions.copy()}
+
+        for method in delete_functions:
+            if method in self.existing_functions:
+                self.existing_functions.remove(method)
 
         print(self.commit_index)
 
