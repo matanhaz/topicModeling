@@ -143,7 +143,7 @@ class ModifyOtherMethods:
         exist_funcs_with_similarity.sort(key=lambda x: x[1], reverse=True)
 
         if len(changed_functions) == 0:
-            return -1,-1, len(exist_funcs_with_similarity)
+            return -1,-1, len(exist_funcs_with_similarity),[]
 
         min_index = len(exist_funcs_with_similarity)
         all_indexes = []
