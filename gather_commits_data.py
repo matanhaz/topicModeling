@@ -159,6 +159,8 @@ class GatherCommitsData:
                 if not exist_now:
                     delete_functions.append(method_name)
                     continue
+                exist_now = False
+                exist_before = False
         return add_functions, delete_functions
 
     def extract_modified_functions(self, modified_files):
