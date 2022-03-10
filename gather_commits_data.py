@@ -150,6 +150,8 @@ class GatherCommitsData:
                 method_name = self.clear_name(method.name)
                 if not exist_before:
                     add_functions.append(method_name)
+                    exist_now = False
+                    exist_before = False
                     continue
 
                 for new_method in modified_file.methods:
@@ -158,6 +160,8 @@ class GatherCommitsData:
                         break
                 if not exist_now:
                     delete_functions.append(method_name)
+                    exist_now = False
+                    exist_before = False
                     continue
                 exist_now = False
                 exist_before = False
