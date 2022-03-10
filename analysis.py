@@ -167,7 +167,9 @@ class analyzer:
                         commit['functions'])
             counter += 1
 
-        for commit_id in commits:
+        commits_reversed = list(commits.keys())
+        commits_reversed.reverse()
+        for commit_id in commits_reversed:
             for id in bugs_id_list:
                 if id[0] in commits[commit_id]['commit_summary'] and self.not_followed_by_a_number(id[0], commits[commit_id]['commit_summary']):
                     bug_to_commit_that_solved.append({
