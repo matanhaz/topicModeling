@@ -563,8 +563,10 @@ class TopicModeling:
             for func_and_similarity in func_and_similarity_of_bug:
                 if func_exist == func_and_similarity[0]:
                     exist_funcs_with_similarity.append(func_and_similarity)
-                    func_and_similarity_of_bug.remove(func_and_similarity)
+                    #func_and_similarity_of_bug.remove(func_and_similarity)
                     break
+            else:
+                pass
         exist_funcs_with_similarity.sort(key=lambda x: x[1], reverse=True)
 
         min_index = len(exist_funcs_with_similarity)
@@ -603,7 +605,7 @@ class TopicModeling:
             for func_and_similarity in func_and_similarity_of_bug:
                 if func_exist == func_and_similarity[0]:
                     exist_funcs_with_similarity.append(func_and_similarity)
-                    func_and_similarity_of_bug.remove(func_and_similarity)
+                    #func_and_similarity_of_bug.remove(func_and_similarity)
                     break
         exist_funcs_with_similarity.sort(key=lambda x: x[1], reverse=True)
 
@@ -703,7 +705,7 @@ class TopicModeling:
 
 
 if __name__ == "__main__":
-    project_name = "Lang"
+    project_name = "Codec"
     if len(sys.argv) == 2:
         project_name = str(sys.argv[1])
     TopicModeling(project_name).run()
