@@ -9,7 +9,7 @@ on:
         repo_name:
           description: 'name of repository'
           required: true
-          default: 'Compress'
+          default: 'Codec'
 
 jobs:
   
