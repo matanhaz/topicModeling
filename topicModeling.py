@@ -291,7 +291,7 @@ class TopicModeling:
                 ]
             ]
 
-            for NUM_TOPICS in range(15, 26):
+            for NUM_TOPICS in range(100, 601, 50):
                 ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=NUM_TOPICS, id2word=dictionary, passes=15)
                 # returns the table of bug to max index for NUM TOPICS
                 num_topics_to_table.extend(

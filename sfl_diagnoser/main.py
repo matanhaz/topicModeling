@@ -278,7 +278,7 @@ class BarinelTesterSanity(BarinelTester):
 class BarinelTesterTopicModeling(BarinelTester):
     def __init__(self, project_name, topics_range, local):
         super().__init__(project_name, "TopicModeling", local)
-        self.topics = range(topics_range[0], topics_range[1])
+        self.topics = topics_range
 
     def diagnose(self, matrix_name):
         # getting basic values
@@ -348,7 +348,7 @@ class BarinelTesterTopicModeling(BarinelTester):
 class BarinelTesterMultiply(BarinelTester):
     def __init__(self, project_name, topics_range, local, ):
         super().__init__(project_name, "Multiply", local)
-        self.topics = range(topics_range[0], topics_range[1])
+        self.topics = topics_range
 
 
     def diagnose(self, matrix_name):
@@ -539,8 +539,8 @@ if __name__ == "__main__":
 
     all_methods = []
     sanity = BarinelTesterSanity(project_name,local)
-    topicModeling = BarinelTesterTopicModeling(project_name, (15, 26), local)
-    multiply = BarinelTesterMultiply(project_name, (15, 26), local)
+    topicModeling = BarinelTesterTopicModeling(project_name, range(100, 601, 50), local)
+    multiply = BarinelTesterMultiply(project_name, range(100, 601, 50), local)
     original = BarinelTesterOriginalMethod(project_name, local)
 
     all_methods.extend([sanity,original,topicModeling, multiply])
