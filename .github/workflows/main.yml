@@ -162,7 +162,7 @@ jobs:
               mkdir data
               name=${{github.event.inputs.repo_name}}
               project=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
-              unzip archives/${{project}}.zip -d data
+              unzip archives/($project).zip -d data
               
     - name: Install Indri
       run: |
