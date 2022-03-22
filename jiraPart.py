@@ -19,7 +19,7 @@ class GatherJiraData:
 
         block_size = self.block_size
         block_num = 0
-        sql_req = "project = " + self.jira_query_symbol + " and (status = RESOLVED or status = closed)"
+        sql_req = "project = " + self.jira_query_symbol + " and type = bug and (status = RESOLVED or status = closed)"
 
         while True:  # while true
             print(block_num)
