@@ -19,7 +19,7 @@ class GatherJiraData:
 
         block_size = self.block_size
         block_num = 0
-        sql_req = "project = " + self.jira_query_symbol + " and type = bug and (status = RESOLVED or status = closed)"
+        sql_req = "project = " + self.jira_query_symbol + " and type = bug and (status = RESOLVED or status = closed) and resolution  = Fixed and fixVersion  != None and affectedVersion != None and affectedVersion != \"Nightly Build\""
 
         while True:  # while true
             print(block_num)
@@ -43,7 +43,9 @@ class GatherJiraData:
         for issue in issues:
             new_issue = {
                 'issue_id': issue.key, 'project': issue.fields.project.name, 'title': issue.fields.summary,
-                'type': issue.fields.issuetype.name, 'description': issue.fields.description}
+                'type': issue.fields.issuetype.name, 'description': issue.fields.description,
+                'versions': [i.name for i in issue.fields.versions],
+                'fixVersions': [i.name for i in issue.fields.fixVersions]}
 
             issues_dict['issues'].append(new_issue)
 
@@ -76,6 +78,6 @@ class GatherJiraData:
 
 if __name__ == "__main__":
     jira_url = 'http://issues.apache.org/jira'
-    jira_query_symbol = 'LANG'
-    project_name = "apache_commons-lang"
+    jira_query_symbol = 'CODEC'
+    project_name = "cccc"
     GatherJiraData(jira_url, jira_query_symbol, project_name).gather()

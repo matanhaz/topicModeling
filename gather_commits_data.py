@@ -1,8 +1,10 @@
+import os
+import subprocess
 from os.path import exists, join
 from os import mkdir
 import json
 import sys
-from pydriller import repository
+from pydriller import repository, git
 from git import Repo
 
 from pandas import *
@@ -13,6 +15,7 @@ class GatherCommitsData:
         self.project_path = join("projects", project_name)
         self.data_path = join(self.project_path, "data")
         self.analysis_path = join(self.project_path, "analysis")
+        self.git_repo_path = join(self.project_path, "project")
 
         self.git = git_url
         self.changes_to_commits = []
@@ -26,15 +29,59 @@ class GatherCommitsData:
         self.create_dirs()
 
 
+    def clone(self):
+            if os.listdir(self.git_repo_path) == []:
+                try:
+                    subprocess.check_output(['git', 'clone', self.git, 'project'], cwd=self.project_path)
+                except Exception as e:
+                    print(e)
+                    raise
+
+
+    def get_tags(self):
+            result = subprocess.check_output(['git', 'tag'], cwd=self.git_repo_path)
+            if result is None:
+                return None
+            tags = result.decode().split('\n')
+            return tags
+
+
+    def filter_tag(self, tag):
+        i = -1;
+        for index, chr in enumerate(tag):
+            if chr.isdigit():
+                i = index
+                break
+        new_tag = ''
+        while i < len(tag) and (tag[i].isdigit() or tag[i] in ('.', '_')):
+            if tag[i] == '_':
+                new_tag += '.'
+            else:
+                new_tag += tag[i]
+            i += 1
+        return new_tag
 
     def gather(self):
+        self.clone()
+        tags = self.get_tags()
+        commits_of_tags = [(tag, git.Git(self.git_repo_path).get_commit_from_tag(tag), self.filter_tag(tag)) for tag in tags if tag != '' and ('RC' or 'Rc' or 'rC' or 'rc') not in tag]
+        commits_of_tags.sort(key= lambda x: x[1].committer_date)
+        cur_index = 0
+        last_index = len(commits_of_tags)
+        tag_to_hexsha = {}
 
-        commits = repository.Repository(self.git,  only_modifications_with_file_types=['.java']).traverse_commits()
+        repo = repository.Repository(self.git,  only_modifications_with_file_types=['.java'])
+        commits = repo.traverse_commits()
 
         for commit in commits:
             if not commit.in_main_branch:
                 self.commit_index += 1
                 continue
+
+            if cur_index < last_index and commit.committer_date > commits_of_tags[cur_index][1].committer_date:
+                while cur_index < last_index and commit.committer_date > commits_of_tags[cur_index][1].committer_date:
+                    tag_to_hexsha[commits_of_tags[cur_index][0]] = {'hash' :commit.hash, 'filtered name': commits_of_tags[cur_index][2]}
+                    cur_index += 1
 
             # data0, data1 ....
             modified_functions = self.extract_modified_functions(commit.modified_files)
@@ -64,6 +111,9 @@ class GatherCommitsData:
 
         self.save_into_file("data"+str(file_number), {'changes':self.changes_to_commits}, 'changes')
 
+        with open(join(self.analysis_path, "tag_to_commit_hexsha.txt"), 'w') as outfile:
+                json.dump(tag_to_hexsha,outfile, indent=4)
+
         # takes time, maybe seperate to 2 files
 
         # index = 0
@@ -90,6 +140,8 @@ class GatherCommitsData:
             mkdir(self.analysis_path)
         if not exists(self.data_path):
             mkdir(self.data_path)
+        if not exists(self.git_repo_path):
+            mkdir(self.git_repo_path)
 
     def get_file_number(self):
         return int(self.commit_index / 1000)
@@ -99,6 +151,7 @@ class GatherCommitsData:
 
         new_change = {
             'commit_id': self.commit_index,
+            'hash': commit.hash ,
             'commit_summary': commit.msg,
             'functions': list_of_modified_functions
         }
@@ -126,11 +179,11 @@ class GatherCommitsData:
         for method in add_functions:
             self.existing_functions.append(method)
 
-        self.commit_id_to_functions[self.commit_index] = {'hexsha' : commit.hash, 'all functions': self.existing_functions.copy()}
-
         for method in delete_functions:
             if method in self.existing_functions:
                 self.existing_functions.remove(method)
+
+        self.commit_id_to_functions[self.commit_index] = {'hexsha' : commit.hash, 'all functions': self.existing_functions.copy()}
 
         print(self.commit_index)
 
@@ -171,9 +224,14 @@ class GatherCommitsData:
         list_of_modified_functions = []
         for modified_file in modified_files:
             for method in modified_file.changed_methods:
-                list_of_modified_functions.append(
-                    {'function name': self.clear_name(method.name),
-                     'function params': method.parameters})
+                for new_method in modified_file.methods:
+                    if method.name == new_method.name:
+                        list_of_modified_functions.append(
+                        {'function name': self.clear_name(method.name),
+                        'function params': method.parameters})
+                        break
+
+
 
         return list_of_modified_functions
 
