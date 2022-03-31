@@ -47,7 +47,7 @@ class GatherCommitsData:
 
 
     def filter_tag(self, tag):
-        i = -1;
+        i = -1
         for index, chr in enumerate(tag):
             if chr.isdigit():
                 i = index
