@@ -18,7 +18,7 @@ from sfl.Diagnoser.Experiment_Data import Experiment_Data
 
 
 rows_combined_methods = []
-rows_combined_methods.append(["technique","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
+rows_combined_methods.append(["project", "technique","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
                               "t-score", "cost", "exam-score", ])
 
 
@@ -27,10 +27,10 @@ class BarinelTester:
         self.project_name = project_name
         self.epsilon = 0.01
         self.rows = []
-        self.rows.append(["technique","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
+        self.rows.append(["project", "technique","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
                               "t-score", "cost", "exam-score", ])
         self.rows_all_divisions = []
-        self.rows_all_divisions.append(["technique","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
+        self.rows_all_divisions.append(["project", "technique","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
                               "t-score", "cost", "exam-score", ])
 
         self.test_type = test_type
@@ -166,6 +166,7 @@ class BarinelTester:
     def _fill_row(self, diagnosis, matrix_name, percentage, is_sanity, *args):
         if is_sanity:
             return [
+                            self.project_name,
                             args[0], #good sim
                             args[1], # bad sim
                             diagnosis["precision"],
@@ -181,6 +182,7 @@ class BarinelTester:
                         ]
         else:
             return [
+                            self.project_name,
                             args[0], # technique
                             diagnosis["precision"],
                             diagnosis["recall"],
@@ -204,11 +206,11 @@ class BarinelTesterSanity(BarinelTester):
         self.rows = []
         self.rows_all_divisions = []
         self.rows.append(
-            ["real bug diagnose sim", "unreal bug diagnose sim","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
+            ["project","real bug diagnose sim", "unreal bug diagnose sim","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
                               "t-score", "cost", "exam-score", ]
         )
         self.rows_all_divisions.append(
-            ["real bug diagnose sim", "unreal bug diagnose sim","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
+            ["project","real bug diagnose sim", "unreal bug diagnose sim","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
                               "t-score", "cost", "exam-score", ]
         )
 
@@ -290,6 +292,7 @@ class BarinelTesterTopicModeling(BarinelTester):
             diagnosis = Diagnosis_Results(ei.diagnoses, ei.initial_tests, ei.error, ei.pool, ei.get_id_bugs()).metrics
             return diagnosis
 
+        tmp_rows = []
         for percentage in self.percentages:
             for topic in self.topics:
                 diagnosis_comp = diagnose_real(matrix_name, "CompSimilarity", topic, percentage)
@@ -328,7 +331,7 @@ class BarinelTesterTopicModeling(BarinelTester):
                     #         diagnosis_comp["exam_score"],
                     #     ]
                     # )
-                    rows_combined_methods.append(row)
+                    tmp_rows.append(row)
                     # rows_combined_methods.append(
                     #     [
                     #         f"{topic}_sigmuid",
@@ -344,6 +347,9 @@ class BarinelTesterTopicModeling(BarinelTester):
                     #         diagnosis_comp["exam_score"],
                     #     ]
                     # )
+            best_row = max(tmp_rows, key=lambda x:x[2])
+            best_row[1] = best_row[1].split('_')[1]
+            rows_combined_methods.append(best_row)
 
 class BarinelTesterMultiply(BarinelTester):
     def __init__(self, project_name, topics_range, local, ):
@@ -360,7 +366,7 @@ class BarinelTesterMultiply(BarinelTester):
 
             diagnosis = Diagnosis_Results(ei.diagnoses, ei.initial_tests, ei.error, ei.pool, ei.get_id_bugs()).metrics
             return diagnosis
-
+        tmp_rows = []
         for percentage in self.percentages:
             for topic in self.topics:
 
@@ -400,7 +406,7 @@ class BarinelTesterMultiply(BarinelTester):
                     #         diagnosis_both["exam_score"],
                     #     ]
                     # )
-                    rows_combined_methods.append(row)
+                    tmp_rows.append(row)
                     # rows_combined_methods.append(
                     #     [
                     #          f"{topic}_multiply",
@@ -416,6 +422,9 @@ class BarinelTesterMultiply(BarinelTester):
                     #         diagnosis_both["exam_score"],
                     #     ]
                     # )
+            best_row = max(tmp_rows, key=lambda x:x[2])
+            best_row[1] = best_row[1].split('_')[1]
+            rows_combined_methods.append(best_row)
 
 
 

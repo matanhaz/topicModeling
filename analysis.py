@@ -171,6 +171,22 @@ class analyzer:
                         commit['functions'])
             counter += 1
 
+
+
+        commits_reversed = list(commits.keys())
+        commits_reversed.reverse()
+        bug_id_to_changed_functions = {}
+        bugs_id_list_copy = bugs_id_list.copy()
+        for commit_id in commits_reversed:
+            if bugs_id_list_copy == []:
+                break
+            for id in bugs_id_list_copy:
+                if id[0] in commits[commit_id]['commit_summary'] and self.not_followed_by_a_number(id[0], commits[commit_id]['commit_summary']):
+                    bug_id_to_changed_functions[id[0]] = commits[commit_id]['functions']
+                    bugs_id_list_copy.remove(id)
+                    break
+
+
         for id in bugs_id_list:
             version = id[2][0]
             for v in versions:
@@ -181,7 +197,7 @@ class analyzer:
                         'hexsha': commit_hash,
                         'description': id[1],
                         'commit number': commits[commit_hash]['id'],
-                        'function that changed': commits[commit_hash]['functions']
+                        'function that changed': bug_id_to_changed_functions[id[0]]
                     })
                     #bugs_id_list.remove(id)
 
@@ -191,22 +207,6 @@ class analyzer:
 
 
 
-
-        # commits_reversed = list(commits.keys())
-        # commits_reversed.reverse()
-        # for commit_id in commits_reversed:
-        #     for id in bugs_id_list:
-        #         if id[0] in commits[commit_id]['commit_summary'] and self.not_followed_by_a_number(id[0], commits[commit_id]['commit_summary']):
-        #             bug_to_commit_that_solved.append({
-        #                 'bug id': id[0],
-        #                 'hexsha': commitId_to_hexsha[commit_id]['hexsha'],
-        #                 'description': id[1],
-        #                 'commit number': commit_id,
-        #                 'function that changed': commits[commit_id]['functions']
-        #             })
-        #             bugs_id_list.remove(id)
-        #
-        #             break
 
         self.save_into_file("bug_to_commit_that_solved",
                        bug_to_commit_that_solved, 'bugs to commit')
