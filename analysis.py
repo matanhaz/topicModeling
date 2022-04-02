@@ -190,7 +190,7 @@ class analyzer:
         for id in bugs_id_list:
             version = id[2][0]
             for v in versions:
-                if versions[v]['filtered name'] == version:
+                if versions[v]['filtered name'] == version and id[0] in bug_id_to_changed_functions.keys():
                     commit_hash = versions[v]['hash']
                     bug_to_commit_that_solved.append({
                         'bug id': id[0],
