@@ -89,7 +89,7 @@ class GatherCommitsData:
 
             # data0, data1 ....
             modified_functions = self.extract_modified_functions(commit.modified_files)
-            modified_files = [file.new_path for file in commit.modified_files if file.change_type.name != 'DELETE' and '.java' in file.filename]
+            modified_files = [file.new_path for file in commit.modified_files if file.change_type.name == 'MODIFY' and '.java' in file.filename]
             self.gather_commit_changes(commit, modified_functions, modified_files)
 
             # func to commits

@@ -149,8 +149,8 @@ class TopicModeling:
             self.path_to_commit_messages = join(self.analysis_path,"file to commits message.txt")
         else:
             self.topicModeling_path = join(self.project_path, "topicModeling")
-            self.bug_to_sim_name = "bug to funcion and similarity"
-            self.bug_to_sim_path = join(self.topicModeling_path, "bug to funcion and similarity")
+            self.bug_to_sim_name = "bug to functions and similarity"
+            self.bug_to_sim_path = join(self.topicModeling_path, "bug to functions and similarity")
             self.path_to_commit_messages = join(self.analysis_path,"func to commits message.txt")
 
     def run(self):

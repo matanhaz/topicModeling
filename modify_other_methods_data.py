@@ -119,7 +119,7 @@ class ModifyOtherMethods:
                 except:
                     print()
         final_dict_funcs['bugs'] = bugs_to_funcs
-        path_to_save = join("projects", self.project_folder,"topicModeling","bug to funcion and similarity",f"bug_to_function_and_similarity_{self.method_folder_name}")
+        path_to_save = join("projects", self.project_folder,"topicModeling","bug to functions and similarity",f"bug_to_function_and_similarity_{self.method_folder_name}")
 
         data2 = DataFrame.from_dict(final_dict)
         data2.to_parquet(

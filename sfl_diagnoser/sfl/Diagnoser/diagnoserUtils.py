@@ -277,7 +277,7 @@ def _read_json_planning_file_topic_modeling(file_path,experiment_type,num_topics
     with open(file_path, "r") as f:
         instance = json.loads(f.read())
 
-    path =os.path.join(PROJECTS_DIR_PATH,Project_name,'topicModeling','bug to funcion and similarity',f'bug to functions and similarity {str(num_topics)} topics' )
+    path =os.path.join(PROJECTS_DIR_PATH,Project_name,'topicModeling','bug to functions and similarity',f'bug to functions and similarity {str(num_topics)} topics' )
 
     if experiment_type in ("CompSimilarity", "TestsSimilarity", "BothSimilarities"):
         instance["CompSimilarity"] = __get_real_comp_similarity(instance,file_path,Project_name,path)
@@ -290,7 +290,7 @@ def _read_json_planning_file_other_method(file_path,experiment_type,Project_name
     with open(file_path, "r") as f:
         instance = json.loads(f.read())
         
-    path =os.path.join(PROJECTS_DIR_PATH,Project_name,'topicModeling','bug to funcion and similarity',f'bug_to_function_and_similarity_{technique_and_project}' )
+    path =os.path.join(PROJECTS_DIR_PATH,Project_name,'topicModeling','bug to functions and similarity',f'bug_to_function_and_similarity_{technique_and_project}' )
 
     if experiment_type in ("CompSimilarity", "TestsSimilarity", "BothSimilarities"):
         instance["CompSimilarity"] = __get_real_comp_similarity(instance,file_path,Project_name,path)
