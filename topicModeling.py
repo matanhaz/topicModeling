@@ -497,7 +497,7 @@ class TopicModeling:
                         list(
                             file
                             for file in bug["files that changed"]
-                            if ("test" or "Test") not in file
+                            if ("test" and "Test") not in file
                         )
                     ),
                     # str(index_len_all_funcs[0]),
@@ -541,12 +541,12 @@ class TopicModeling:
         func_and_similarity_of_bug_without_tests = list(
             func
             for func in func_and_similarity_of_bug
-            if ("test" or "Test") not in func[0]
+            if ("test" and "Test") not in func[0]
         )
         functions_that_changed_no_tests = list(
             func
             for func in bug["function that changed"]
-            if ("test" or "Test") not in func["function name"]
+            if ("test" and "Test") not in func["function name"]
         )
 
         if len(functions_that_changed_no_tests) == 0:
@@ -577,9 +577,9 @@ class TopicModeling:
         exist_funcs_with_similarity = []
 
         for func_exist in exists_functions:
-            func_name = func_exist.split('\\')[-1]
+            func_name = func_exist.split('\\')[-1].split('/')[-1]
             for func_and_similarity in func_and_similarity_of_bug:
-                func_sim_name = func_and_similarity[0].split('\\')[-1]
+                func_sim_name = func_and_similarity[0].split('\\')[-1].split('/')[-1]
                 if func_name == func_sim_name:
                     exist_funcs_with_similarity.append([func_sim_name,func_and_similarity[1],func_and_similarity[2]])
                     #exist_funcs_with_similarity.append(func_and_similarity)
@@ -592,7 +592,7 @@ class TopicModeling:
         all_indexes = []
        # for func in bug["function that changed"]:
         for file in bug["files that changed"]:
-            file_name = file.split('\\')[-1]
+            file_name = file.split('\\')[-1].split('/')[-1]
             index = 0
             for exist_func_and_similarity in exist_funcs_with_similarity:
                 if file_name == exist_func_and_similarity[0]:
@@ -623,9 +623,9 @@ class TopicModeling:
         exist_funcs_with_similarity = []
 
         for func_exist in exists_functions:
-            func_name = func_exist.split('\\')[-1]
+            func_name = func_exist.split('\\')[-1].split('/')[-1]
             for func_and_similarity in func_and_similarity_of_bug:
-                func_sim_name = func_and_similarity[0].split('\\')[-1]
+                func_sim_name = func_and_similarity[0].split('\\')[-1].split('/')[-1]
                 if func_name == func_sim_name:
                     exist_funcs_with_similarity.append([func_sim_name,func_and_similarity[1],func_and_similarity[2]])
                     #func_and_similarity_of_bug.remove(func_and_similarity)
@@ -635,12 +635,12 @@ class TopicModeling:
         exist_funcs_with_similarity_without_tests = list(
             func
             for func in exist_funcs_with_similarity
-            if ("test" or "Test") not in func
+            if ("test" and "Test") not in func[0]
         )
         functions_that_changed_no_tests = list(
             file
             for file in bug["files that changed"]
-            if ("test" or "Test") not in file
+            if ("test" and "Test") not in file
         )
 
         if len(functions_that_changed_no_tests) == 0:
@@ -649,7 +649,7 @@ class TopicModeling:
         min_index = len(exist_funcs_with_similarity_without_tests)
         all_indexes = []
         for file in functions_that_changed_no_tests:
-            file_name = file.split('\\')[-1]
+            file_name = file.split('\\')[-1].split('/')[-1]
             index = 0
             for exist_func_and_similarity in exist_funcs_with_similarity_without_tests:
                 if file_name == exist_func_and_similarity[0]:
@@ -735,4 +735,3 @@ if __name__ == "__main__":
         project_name = str(sys.argv[1])
         files = bool(int(sys.argv[2]))
     TopicModeling(project_name,files).run()
-    TopicModeling(project_name,False).run()

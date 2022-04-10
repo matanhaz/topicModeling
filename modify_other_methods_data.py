@@ -106,7 +106,7 @@ class ModifyOtherMethods:
             exist_files_filtered = {}
             for f in exist_files:
                 if exist_files[f] is not None:
-                    exist_files_filtered[f.split('\\')[-1]] = exist_files[f].tolist()
+                    exist_files_filtered[f.split('\\')[-1].split('/')[-1]] = exist_files[f].tolist()
 
             counter = 0
             for file in bugs[bug]:
@@ -143,15 +143,15 @@ class ModifyOtherMethods:
             #commit_to_exist_functions = json.load(f)['commit id']
             exist_bugs_and_changed_functions = {}
             for bug in all_bugs:
-                functions_that_changed = [func.split('\\')[-1] for func in bug["files that changed"]]
+                functions_that_changed = [func.split('\\')[-1].split('/')[-1] for func in bug["files that changed"]]
 
-                functions_that_changed_no_tests = [func.split('\\')[-1] for func in bug["files that changed"] if not ('test' in func or 'Test' in func)]
+                functions_that_changed_no_tests = [func.split('\\')[-1].split('/')[-1] for func in bug["files that changed"] if not ('test' in func and 'Test' in func)]
 
                 commit_id = [commit for commit in commit_to_exist_functions if commit_to_exist_functions[commit]['hexsha'] == bug['hexsha']][0]
 
-                exists_functions = [func.split('\\')[-1] for func in list(commit_to_exist_functions[commit_id]['file to functions'].keys())]
+                exists_functions = [func.split('\\')[-1].split('/')[-1] for func in list(commit_to_exist_functions[commit_id]['file to functions'].keys())]
 
-                exists_functions_no_tests = [func for func in exists_functions if not ('test' in func or 'Test' in func)]
+                exists_functions_no_tests = [func for func in exists_functions if not ('test' in func and 'Test' in func)]
 
                 exist_bugs_and_changed_functions[bug['bug id']] = {'function that changed':functions_that_changed,
                                                                    'function that changed no tests':functions_that_changed_no_tests,
