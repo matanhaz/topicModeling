@@ -8,7 +8,7 @@ import pandas
 import tqdm
 import sys
 
-from pandas import DataFrame
+from pandas import DataFrame, read_parquet
 
 
 class ModifyOtherMethods:
@@ -25,15 +25,15 @@ class ModifyOtherMethods:
 
         self.rows = [
                 ['technique', "bug id",
-                    "num of functions that changed",
-                    "num of functions that changed no tests",
-                    "first index exist functions",
-                    "max index exist functions",
-                    "num of functions checked exist functions",
+                    "num of files that changed",
+                    "num of files that changed no tests",
+                    "first index exist files",
+                    "max index exist files",
+                    "num of files checked exist files",
                     "all indexes",
-                    "first index exist functions no tests",
-                    "max index exist functions no tests",
-                    "num of functions checked exist functions no tests",
+                    "first index exist files no tests",
+                    "max index exist files no tests",
+                    "num of files checked exist files no tests",
                     "all indexes no tests"
                 ]]
 
@@ -64,21 +64,68 @@ class ModifyOtherMethods:
                         counter += 1
                 bugs[bug_name] = sim
 
+        # saving files results
 
         final_dict['bugs'] = bugs
+        path_to_save = join("projects", self.project_folder,"topicModelingFiles","bug to file and similarity",f"bug_to_file_and_similarity_{self.method_folder_name}")
+
+        data2 = DataFrame.from_dict(final_dict)
+        data2.to_parquet(
+            path=path_to_save
+        )
+        # path_to_save = join(self.project_path, "Experiments", "Experiment_1", "data", "methods",self.technique)
+        # data2.to_parquet(
+        #     path=path_to_save
+        # )
+
+        with open(join("projects", self.project_folder,"topicModelingFiles","bug to file and similarity",f"bug_to_file_and_similarity_{self.method_folder_name}.txt"), 'w') as outfile:
+            json.dump(final_dict, outfile, indent=4)
+
+        #saving functions results
+        final_dict_funcs = {}
+
+        bugs_to_funcs = {}
+
+        with open(join(self.project_path, "analysis", "bug_to_commit_that_solved.txt")) as outfile:
+            bugs_to_hex = json.load(outfile)["bugs to commit"]
+
+        df = read_parquet(
+            path=join(self.analysis_path, "commitId to all functions")
+        )
+        commit_to_exist_functions = df.to_dict()["commit id"]
+
+        for bug in bugs:
+            bugs_to_funcs[bug] = []
+            try:
+                commit_hex = [b['hexsha'] for b in bugs_to_hex if b['bug id'] == bug][0]
+            except:
+                print(bug)
+            commit_id = [commit for commit in commit_to_exist_functions if commit_to_exist_functions[commit]['hexsha'] == commit_hex][0]
+
+            exist_files = commit_to_exist_functions[commit_id]['file to functions']
+            exist_files_filtered = {}
+            for f in exist_files:
+                if exist_files[f] is not None:
+                    exist_files_filtered[f.split('\\')[-1]] = exist_files[f].tolist()
+
+            counter = 0
+            for file in bugs[bug]:
+                file_name = file[0] + '.java'
+                sim = file[1]
+                try:
+                    for func in exist_files_filtered[file_name]:
+                        bugs_to_funcs[bug].append([func,sim, counter ])
+                        counter += 1
+                except:
+                    print()
+        final_dict_funcs['bugs'] = bugs_to_funcs
         path_to_save = join("projects", self.project_folder,"topicModeling","bug to funcion and similarity",f"bug_to_function_and_similarity_{self.method_folder_name}")
 
         data2 = DataFrame.from_dict(final_dict)
         data2.to_parquet(
             path=path_to_save
         )
-        path_to_save = join(self.project_path, "Experiments", "Experiment_1", "data", "methods",self.technique)
-        data2.to_parquet(
-            path=path_to_save
-        )
-
-        with open(join("projects", self.project_folder,"topicModeling","bug to funcion and similarity",f"bug_to_function_and_similarity_{self.method_folder_name}.txt"), 'w') as outfile:
-            json.dump(final_dict, outfile, indent=4)
+        print()
 
     # write final dict to a json file
 
@@ -96,11 +143,13 @@ class ModifyOtherMethods:
             #commit_to_exist_functions = json.load(f)['commit id']
             exist_bugs_and_changed_functions = {}
             for bug in all_bugs:
-                functions_that_changed = [func['function name'] for func in bug["function that changed"]]
+                functions_that_changed = [func.split('\\')[-1] for func in bug["files that changed"]]
 
-                functions_that_changed_no_tests = [func for func in functions_that_changed if not ('test' in func or 'Test' in func)]
+                functions_that_changed_no_tests = [func.split('\\')[-1] for func in bug["files that changed"] if not ('test' in func or 'Test' in func)]
 
-                exists_functions = [commit_to_exist_functions[commit]['all functions'].tolist() for commit in commit_to_exist_functions if commit_to_exist_functions[commit]['hexsha'] == bug['hexsha']][0]
+                commit_id = [commit for commit in commit_to_exist_functions if commit_to_exist_functions[commit]['hexsha'] == bug['hexsha']][0]
+
+                exists_functions = [func.split('\\')[-1] for func in list(commit_to_exist_functions[commit_id]['file to functions'].keys())]
 
                 exists_functions_no_tests = [func for func in exists_functions if not ('test' in func or 'Test' in func)]
 
@@ -109,22 +158,28 @@ class ModifyOtherMethods:
                                                                    'exists functions': exists_functions,
                                                                    'exists functions no tests': exists_functions_no_tests}
 
-        with open(join("projects", self.project_folder,"topicModeling","bug to funcion and similarity",f"bug_to_function_and_similarity_{self.method_folder_name}.txt")) as outfile:
+        with open(join("projects", self.project_folder,"topicModelingFiles","bug to file and similarity",f"bug_to_file_and_similarity_{self.method_folder_name}.txt")) as outfile:
             all_bugs = json.load(outfile)['bugs']
+            for bug in all_bugs:
+                for file_and_sim in all_bugs[bug]:
+                    file_and_sim[0] += '.java'
             exists_bugs = exist_bugs_and_changed_functions.keys()
+            bug_to_miss = {}
             for bug in tqdm.tqdm(all_bugs):
                 if bug not in exists_bugs:
                     continue
 
                 functions_that_changed = exist_bugs_and_changed_functions[bug]['function that changed']
                 exists_functions = exist_bugs_and_changed_functions[bug]['exists functions']
-                min_index, max_index, num_functions, all_indexes = \
+                min_index, max_index, num_functions, all_indexes, tmp = \
                     self.find_indexes_exist_functions(functions_that_changed, all_bugs[bug], exists_functions)
 
                 functions_that_changed_no_tests = exist_bugs_and_changed_functions[bug]['function that changed no tests']
                 exists_functions_no_tests = exist_bugs_and_changed_functions[bug]['exists functions no tests']
-                min_index_no_tests, max_index_no_tests, num_functions_no_tests, all_indexes_no_tests = \
+                min_index_no_tests, max_index_no_tests, num_functions_no_tests, all_indexes_no_tests, miss = \
                     self.find_indexes_exist_functions(functions_that_changed_no_tests, all_bugs[bug], exists_functions_no_tests)
+
+                bug_to_miss[bug] = miss
 
                 self.rows.append([self.technique,bug,len(functions_that_changed),len(functions_that_changed_no_tests),
                                   min_index,max_index,num_functions,all_indexes,
@@ -139,15 +194,19 @@ class ModifyOtherMethods:
 
         exist_funcs_with_similarity = []
 
+        missing_functions = []
+
         for func_exist in exists_functions:
             for func_and_similarity in funcs_and_similarities:
                 if func_exist == func_and_similarity[0]:
                     exist_funcs_with_similarity.append(func_and_similarity)
                     break
+
+
         exist_funcs_with_similarity.sort(key=lambda x: x[1], reverse=True)
 
         if len(changed_functions) == 0:
-            return -1,-1, len(exist_funcs_with_similarity),[]
+            return -1,-1, len(exist_funcs_with_similarity),[], None
 
         min_index = len(exist_funcs_with_similarity)
         all_indexes = []
@@ -164,8 +223,9 @@ class ModifyOtherMethods:
                 max_index = max(max_index, index)
                 min_index = min(min_index, index)
                 all_indexes.append(index)
+                missing_functions.append(func)
 
-        return min_index, max_index, len(exist_funcs_with_similarity), all_indexes
+        return min_index, max_index, len(exist_funcs_with_similarity), all_indexes, missing_functions
 
 
 

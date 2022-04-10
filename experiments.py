@@ -106,14 +106,14 @@ class Experiment1(Experiment):
 
         for row in tqdm(values_rows):
             key_to_rows[row[0]]['all'].append(row)
-            if row[label_to_index['num of functions that changed no tests']] != '0':
+            if row[label_to_index['num of files that changed no tests']] != '0':
                 key_to_rows[row[0]]['without_negative'].append(row)
 
 
-        max_index = label_to_index['max index exist functions no tests']
-        min_index = label_to_index['first index exist functions no tests']
+        max_index = label_to_index['max index exist files no tests']
+        min_index = label_to_index['first index exist files no tests']
         all_indexes = label_to_index['all indexes no tests']
-        num_functions_checked = label_to_index['num of functions checked exist functions no tests']
+        num_functions_checked = label_to_index['num of files checked exist files no tests']
 
         get_percentage_max = lambda value, row: value + (float(row[max_index]) / float(row[num_functions_checked]))
         get_percentage_mrr = lambda value, row: value + (1 / (float(row[min_index]) + 1))

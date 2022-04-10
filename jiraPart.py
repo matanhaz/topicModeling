@@ -79,5 +79,5 @@ class GatherJiraData:
 if __name__ == "__main__":
     jira_url = 'http://issues.apache.org/jira'
     jira_query_symbol = 'CODEC'
-    project_name = "cccc"
+    project_name = "Codec"
     GatherJiraData(jira_url, jira_query_symbol, project_name).gather()

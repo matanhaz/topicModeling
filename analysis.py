@@ -20,6 +20,7 @@ class analyzer:
 
     def run(self):
         self.function_to_all_messages()
+        self.file_to_all_messages()
         self.count_bugs()
         self.bug_to_commit_that_solved()
 
@@ -55,6 +56,31 @@ class analyzer:
                 })
 
             self.save_into_file("file to fails", file_to_fails, 'files')
+
+    def file_to_all_messages(self):
+        if not (exists(join(self.data_path,"funcToCommits.txt"))):
+            print("missing funcToCommits data to analyse")
+            return
+
+        file_to_commits_message = {}
+
+        with open(join(self.data_path,"fileToCommits.txt")) as outfile:
+            data = json.load(outfile)
+
+        files = data['files']
+
+        for file in files:
+
+            name = file['file name']
+
+            exist = file_to_commits_message.get(name)
+            if exist == None:
+                file_to_commits_message[name] = {'message': []}
+            for commit in file["commits that changed in"]:
+                file_to_commits_message[name]['message'].append(
+                    commit["commit message"])
+
+        self.save_into_file("file to commits message", file_to_commits_message, 'files')
 
 
     def function_to_all_messages(self):
@@ -164,11 +190,14 @@ class analyzer:
                     commits[commit['hash']] = {
                         'id':commit['commit_id'],
                         'commit_summary': commit['commit_summary'],
+                        'files': commit['modified_files'],
                         'functions': commit['functions']
                     }
                 else:
                     commits[commit['hash']]['functions'].extend(
                         commit['functions'])
+                    commits[commit['hash']]['files'].extend(
+                        commit['modified_files'])
             counter += 1
 
 
@@ -176,6 +205,8 @@ class analyzer:
         commits_reversed = list(commits.keys())
         commits_reversed.reverse()
         bug_id_to_changed_functions = {}
+        bug_id_to_changed_files = {}
+
         bugs_id_list_copy = bugs_id_list.copy()
         for commit_id in commits_reversed:
             if bugs_id_list_copy == []:
@@ -183,12 +214,13 @@ class analyzer:
             for id in bugs_id_list_copy:
                 if id[0] in commits[commit_id]['commit_summary'] and self.not_followed_by_a_number(id[0], commits[commit_id]['commit_summary']):
                     bug_id_to_changed_functions[id[0]] = commits[commit_id]['functions']
+                    bug_id_to_changed_files[id[0]] = commits[commit_id]['files']
+
                     bugs_id_list_copy.remove(id)
                     break
 
-
         for id in bugs_id_list:
-            version = id[2][0]
+            version = id[2][-1]
             for v in versions:
                 if versions[v]['filtered name'] == version and id[0] in bug_id_to_changed_functions.keys():
                     commit_hash = versions[v]['hash']
@@ -197,7 +229,8 @@ class analyzer:
                         'hexsha': commit_hash,
                         'description': id[1],
                         'commit number': commits[commit_hash]['id'],
-                        'function that changed': bug_id_to_changed_functions[id[0]]
+                        'function that changed': bug_id_to_changed_functions[id[0]],
+                        'files that changed': bug_id_to_changed_files[id[0]]
                     })
                     #bugs_id_list.remove(id)
 

@@ -137,11 +137,21 @@ def clean_list_of_strings(unfiltered):
 
 
 class TopicModeling:
-    def __init__(self, project_name):
+    def __init__(self, project_name, files):
         self.project_path = join("projects", project_name)
-        self.topicModeling_path = join(
-            self.project_path, "topicModeling")
+        self.files = files
         self.analysis_path = join(self.project_path, "analysis")
+
+        if files:
+            self.topicModeling_path = join(self.project_path, "topicModelingFiles")
+            self.bug_to_sim_name = "bug to file and similarity"
+            self.bug_to_sim_path = join(self.topicModeling_path, "bug to file and similarity")
+            self.path_to_commit_messages = join(self.analysis_path,"file to commits message.txt")
+        else:
+            self.topicModeling_path = join(self.project_path, "topicModeling")
+            self.bug_to_sim_name = "bug to funcion and similarity"
+            self.bug_to_sim_path = join(self.topicModeling_path, "bug to funcion and similarity")
+            self.path_to_commit_messages = join(self.analysis_path,"func to commits message.txt")
 
     def run(self):
 
@@ -149,24 +159,26 @@ class TopicModeling:
             print("missing data")
 
         else:
+            if self.files:
+                if not exists(join(self.project_path, "Experiments")):
+                    mkdir(join(self.project_path, "Experiments"))
+                    mkdir(join(self.project_path, "Experiments", "Experiment_1"))
+                    mkdir(join(self.project_path, "Experiments", "Experiment_1", "data"))
+                    mkdir(join(self.project_path, "Experiments", "Experiment_1", "data", "methods"))
 
-            if not exists(join(self.project_path, "Experiments")):
-                mkdir(join(self.project_path, "Experiments"))
-                mkdir(join(self.project_path, "Experiments", "Experiment_1"))
-                mkdir(join(self.project_path, "Experiments", "Experiment_1", "data"))
-                mkdir(join(self.project_path, "Experiments", "Experiment_1", "data", "methods"))
 
             if not (exists(self.topicModeling_path)):
                 mkdir(self.topicModeling_path)
 
-            if not(exists(join(self.topicModeling_path, "bug to funcion and similarity"))):
-                mkdir(join( self.topicModeling_path, "bug to funcion and similarity"))
+
+            if not(exists(self.bug_to_sim_path)):
+                mkdir(self.bug_to_sim_path)
 
             if not (exists(join(self.topicModeling_path, "topics"))):
                 mkdir(join(self.topicModeling_path, "topics"))
 
             if not (exists(join(self.topicModeling_path, "filtered_data.txt"))):
-                with open(join(self.analysis_path,"func to commits message.txt")) as outfile:
+                with open(self.path_to_commit_messages) as outfile:
                     data = json.load(outfile)
 
                 with open(join(self.analysis_path, "bugs.txt")) as outfile:
@@ -175,7 +187,10 @@ class TopicModeling:
                 all_bugs = all_bugs['bugs info']['bugs']
                 all_bug_to_messages = []
 
-                data = data["functions"]
+                if self.files:
+                    data = data["files"]
+                else:
+                    data = data["functions"]
                 all_func_to_commit_messages = []
                 func_to_avg = {}
                 word_to_counts = {}
@@ -191,7 +206,7 @@ class TopicModeling:
                     find_average_commit_length(filtered, func_to_avg, func)
                     
                     func_to_commit_messages = {
-                        "func_name": func,
+                        "name": func,
                         "commit_messages": " ".join(str(e) for e in filtered),
                     }
 
@@ -214,7 +229,7 @@ class TopicModeling:
                     all_bug_to_messages.append(bug_to_messages)
 
                 func_to_prepared_commit_messages = []
-                bug_to_prepared_messages = []
+               # bug_to_prepared_messages = []
 
                 for func in all_func_to_commit_messages:
                     messages = func["commit_messages"]
@@ -225,25 +240,25 @@ class TopicModeling:
                     text_data = prepare_text_for_lda(list_of_words_without_numbers)
 
                     count_words(text_data, word_to_counts)
-                    func_to_prepared_commit_messages.append({"func_name": func["func_name"], "messages": text_data})
+                    func_to_prepared_commit_messages.append({"name": func["name"], "messages": text_data})
 
                 func_to_prepared_commit_messages = remove_low_appearence_words(
                     func_to_prepared_commit_messages, word_to_counts
                 )
 
-                for bug in all_bug_to_messages:
-                    messages = bug["messages"]
-                    list_of_words = messages.split(sep=" ")
-                    list_of_words_without_numbers = remove_number(list_of_words)
-
-                    # prepared text for lda, removed stop words and small words
-                    text_data = prepare_text_for_lda(list_of_words_without_numbers)
-
-                    bug_to_prepared_messages.append({"name": bug["name"], "messages": text_data})
+                # for bug in all_bug_to_messages:
+                #     messages = bug["messages"]
+                #     list_of_words = messages.split(sep=" ")
+                #     list_of_words_without_numbers = remove_number(list_of_words)
+                #
+                #     # prepared text for lda, removed stop words and small words
+                #     text_data = prepare_text_for_lda(list_of_words_without_numbers)
+                #
+                #     bug_to_prepared_messages.append({"name": bug["name"], "messages": text_data})
 
                 self.save_into_file("word_to_counts", word_to_counts, "words")
                 self.save_into_file("filtered_data", func_to_prepared_commit_messages, "strings")
-                self.save_into_file("filtered_data_bugs", bug_to_prepared_messages, "strings")
+                # self.save_into_file("filtered_data_bugs", bug_to_prepared_messages, "strings")
                 self.save_into_file("function_to_avg_commit_len", func_to_avg, "function to avg")
                 
             else:
@@ -251,9 +266,9 @@ class TopicModeling:
                     func_to_prepared_commit_messages = json.load(outfile)[
                         "strings"]
 
-                with open(join(self.topicModeling_path, "filtered_data_bugs.txt")) as outfile:
-                    bug_to_prepared_messages = json.load(outfile)[
-                        "strings"]
+                # with open(join(self.topicModeling_path, "filtered_data_bugs.txt")) as outfile:
+                #     bug_to_prepared_messages = json.load(outfile)[
+                #         "strings"]
 
                 with open(
                     join(self.topicModeling_path, "word_to_counts.txt")
@@ -262,7 +277,7 @@ class TopicModeling:
 
             # gather the prepared messages
             prepared_commit_messages = list(dict["messages"] for dict in func_to_prepared_commit_messages)
-            prepared_commit_messages.extend(list(dict["messages"] for dict in bug_to_prepared_messages))
+            # prepared_commit_messages.extend(list(dict["messages"] for dict in bug_to_prepared_messages))
 
             dictionary = corpora.Dictionary(prepared_commit_messages)
             corpus = [dictionary.doc2bow(text)
@@ -278,15 +293,15 @@ class TopicModeling:
                 [
                     "num of topics",
                     "bug id",
-                    "num of functions that changed",
-                    "num of functions that changed no tests",
-                    "first index exist functions",
-                    "max index exist functions",
-                    "num of functions checked exist functions",
+                    "num of files that changed",
+                    "num of files that changed no tests",
+                    "first index exist files",
+                    "max index exist files",
+                    "num of files checked exist files",
                     "all indexes",
-                    "first index exist functions no tests",
-                    "max index exist functions no tests",
-                    "num of functions checked exist functions no tests",
+                    "first index exist files no tests",
+                    "max index exist files no tests",
+                    "num of files checked exist files no tests",
                     "all indexes no tests"
                 ]
             ]
@@ -305,8 +320,7 @@ class TopicModeling:
 
                 ldamodel.save(
                     join(
-                        self.project_path,
-                        "topicModeling",
+                        self.topicModeling_path,
                         "topics",
                         "model" + str(NUM_TOPICS) + ".gensim",
                     )
@@ -318,7 +332,8 @@ class TopicModeling:
                 print("finished %d topics" % (NUM_TOPICS))
 
             # after the data of each num_topics is gathered, create the csv table
-            self.create_table(num_topics_to_table)
+            if self.files:
+                self.create_table(num_topics_to_table)
 
     def bug_to_func_and_similarity(
         self, lda, dictionary, prepared_commit_messages, NUM_TOPICS
@@ -331,10 +346,9 @@ class TopicModeling:
 
         if not exists(
             join(
-                self.project_path,
-                "topicModeling",
-                "bug to funcion and similarity",
-                "bug to functions and similarity " +
+                self.topicModeling_path,
+                 self.bug_to_sim_name,
+                 self.bug_to_sim_name + " " +
                 str(NUM_TOPICS) + " topics",
             )
         ):
@@ -368,7 +382,7 @@ class TopicModeling:
                 for tup in topic_to_chances:
                     chances.append(tup[1])
                 func_filtered_and_document_topics.append(
-                    {"func name": func["func_name"], "chances": chances}
+                    {"name": func["name"], "chances": chances}
                 )
 
             i = len(bugs_filtered_and_document_topics)
@@ -381,7 +395,7 @@ class TopicModeling:
                         [bug["chances"]], [func["chances"]]
                     ).tolist()[0][0]
                     func_and_similarity.append(
-                        (func["func name"], str(round(cos, 3))))
+                        (func["name"], str(round(cos, 3))))
 
                 func_and_similarity.sort(key=lambda x: x[1], reverse=True)
                 func_and_similarity_with_index = []
@@ -400,8 +414,8 @@ class TopicModeling:
             print("finished " + str(NUM_TOPICS) + " topics")
             self.save_into_file_sim(
                 join(
-                    "bug to funcion and similarity",
-                    "bug to functions and similarity " +
+                     self.bug_to_sim_name,
+                     self.bug_to_sim_name + " " +
                     str(NUM_TOPICS)+ " topics" ,
                 ),
                 bug_to_func_and_similarity,
@@ -413,10 +427,9 @@ class TopicModeling:
 
         df = read_parquet(
             path=join(
-                self.project_path,
-                "topicModeling",
-                "bug to funcion and similarity",
-                "bug to functions and similarity " +
+                self.topicModeling_path,
+                 self.bug_to_sim_name,
+                 self.bug_to_sim_name +" " +
                 str(NUM_TOPICS) + " topics",
             )
         )
@@ -451,20 +464,24 @@ class TopicModeling:
             # index_len_all_funcs_no_tests = self.find_max_index_all_functions_no_tests(
             #     bug, bug_to_func_and_similarity
             # )
+
+            exist_files = commit_to_exist_functions[bug["commit number"]]['file to functions']
+            exist_files_filtered = {}
+            for f in exist_files:
+                if exist_files[f] is not None:
+                    exist_files_filtered[f] = exist_files[f]
+            # for file in exist_files:
+            #     exist_files[file] = exist_files[file].tolist()
             index_len_exist_funcs = self.find_max_index_exist_functions(
                 bug,
                 bug_to_func_and_similarity,
-                commit_to_exist_functions[bug["commit number"]][
-                    "all functions"
-                ].tolist(),
+                exist_files_filtered.keys(),
             )
             index_len_exist_funcs_no_tests = (
                 self.find_max_index_exist_functions_no_tests(
                     bug,
                     bug_to_func_and_similarity,
-                    commit_to_exist_functions[bug["commit number"]][
-                        "all functions"
-                    ].tolist(),
+                    exist_files_filtered.keys(),
                 )
             )
 
@@ -473,14 +490,14 @@ class TopicModeling:
                     NUM_TOPICS,  # how many topics we are using
                     bug["bug id"],  # issue id
                     len(
-                        bug["function that changed"]
+                        bug["files that changed"]
                     ),  # num of functions that changed in the commit
                     # num of functions that changed in the commit without tests
                     len(
                         list(
-                            func
-                            for func in bug["function that changed"]
-                            if ("test" or "Test") not in func["function name"]
+                            file
+                            for file in bug["files that changed"]
+                            if ("test" or "Test") not in file
                         )
                     ),
                     # str(index_len_all_funcs[0]),
@@ -560,10 +577,12 @@ class TopicModeling:
         exist_funcs_with_similarity = []
 
         for func_exist in exists_functions:
+            func_name = func_exist.split('\\')[-1]
             for func_and_similarity in func_and_similarity_of_bug:
-                if func_exist == func_and_similarity[0]:
-                    exist_funcs_with_similarity.append(func_and_similarity)
-                    #func_and_similarity_of_bug.remove(func_and_similarity)
+                func_sim_name = func_and_similarity[0].split('\\')[-1]
+                if func_name == func_sim_name:
+                    exist_funcs_with_similarity.append([func_sim_name,func_and_similarity[1],func_and_similarity[2]])
+                    #exist_funcs_with_similarity.append(func_and_similarity)
                     break
             else:
                 pass
@@ -571,10 +590,12 @@ class TopicModeling:
 
         min_index = len(exist_funcs_with_similarity)
         all_indexes = []
-        for func in bug["function that changed"]:
+       # for func in bug["function that changed"]:
+        for file in bug["files that changed"]:
+            file_name = file.split('\\')[-1]
             index = 0
             for exist_func_and_similarity in exist_funcs_with_similarity:
-                if func["function name"] == exist_func_and_similarity[0]:
+                if file_name == exist_func_and_similarity[0]:
                     max_index_smaller_list = max(max_index_smaller_list, index)
                     min_index = min(min_index, index)
                     all_indexes.append(index)
@@ -602,9 +623,11 @@ class TopicModeling:
         exist_funcs_with_similarity = []
 
         for func_exist in exists_functions:
+            func_name = func_exist.split('\\')[-1]
             for func_and_similarity in func_and_similarity_of_bug:
-                if func_exist == func_and_similarity[0]:
-                    exist_funcs_with_similarity.append(func_and_similarity)
+                func_sim_name = func_and_similarity[0].split('\\')[-1]
+                if func_name == func_sim_name:
+                    exist_funcs_with_similarity.append([func_sim_name,func_and_similarity[1],func_and_similarity[2]])
                     #func_and_similarity_of_bug.remove(func_and_similarity)
                     break
         exist_funcs_with_similarity.sort(key=lambda x: x[1], reverse=True)
@@ -612,12 +635,12 @@ class TopicModeling:
         exist_funcs_with_similarity_without_tests = list(
             func
             for func in exist_funcs_with_similarity
-            if ("test" or "Test") not in func[0]
+            if ("test" or "Test") not in func
         )
         functions_that_changed_no_tests = list(
-            func
-            for func in bug["function that changed"]
-            if ("test" or "Test") not in func["function name"]
+            file
+            for file in bug["files that changed"]
+            if ("test" or "Test") not in file
         )
 
         if len(functions_that_changed_no_tests) == 0:
@@ -625,10 +648,11 @@ class TopicModeling:
 
         min_index = len(exist_funcs_with_similarity_without_tests)
         all_indexes = []
-        for func in functions_that_changed_no_tests:
+        for file in functions_that_changed_no_tests:
+            file_name = file.split('\\')[-1]
             index = 0
             for exist_func_and_similarity in exist_funcs_with_similarity_without_tests:
-                if func["function name"] == exist_func_and_similarity[0]:
+                if file_name == exist_func_and_similarity[0]:
                     max_index_smaller_list_no_tests = max(
                         max_index_smaller_list_no_tests, index
                     )
@@ -655,7 +679,7 @@ class TopicModeling:
         data[dictionary_value] = new_data
 
         with open(
-            join(self.project_path, "topicModeling",
+            join(self.topicModeling_path,
                       file_name + ".txt"), "w"
         ) as outfile:
             json.dump(data, outfile, indent=4)
@@ -666,7 +690,7 @@ class TopicModeling:
 
         data2 = DataFrame.from_dict(data)
         data2.to_parquet(
-            path=join(self.project_path, "topicModeling", path)
+            path=join(self.topicModeling_path, path)
         )
         data2.to_parquet(
             path=join(self.project_path, "Experiments", "Experiment_1", "data", "methods", file_name)
@@ -706,6 +730,9 @@ class TopicModeling:
 
 if __name__ == "__main__":
     project_name = "Codec"
-    if len(sys.argv) == 2:
+    files = True
+    if len(sys.argv) == 3:
         project_name = str(sys.argv[1])
-    TopicModeling(project_name).run()
+        files = bool(int(sys.argv[2]))
+    TopicModeling(project_name,files).run()
+    TopicModeling(project_name,False).run()
