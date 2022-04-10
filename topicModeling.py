@@ -692,9 +692,9 @@ class TopicModeling:
         data2.to_parquet(
             path=join(self.topicModeling_path, path)
         )
-        data2.to_parquet(
-            path=join(self.project_path, "Experiments", "Experiment_1", "data", "methods", file_name)
-        )
+        # data2.to_parquet(
+        #     path=join(self.project_path, "Experiments", "Experiment_1", "data", "methods", file_name)
+        # )
 
 
 
