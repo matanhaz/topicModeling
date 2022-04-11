@@ -145,13 +145,13 @@ class ModifyOtherMethods:
             for bug in all_bugs:
                 functions_that_changed = [func.split('\\')[-1].split('/')[-1] for func in bug["files that changed"]]
 
-                functions_that_changed_no_tests = [func.split('\\')[-1].split('/')[-1] for func in bug["files that changed"] if not ('test' in func and 'Test' in func)]
+                functions_that_changed_no_tests = [func.split('\\')[-1].split('/')[-1] for func in bug["files that changed"] if ('test' not in func and 'Test' not in func)]
 
                 commit_id = [commit for commit in commit_to_exist_functions if commit_to_exist_functions[commit]['hexsha'] == bug['hexsha']][0]
 
                 exists_functions = [func.split('\\')[-1].split('/')[-1] for func in list(commit_to_exist_functions[commit_id]['file to functions'].keys())]
 
-                exists_functions_no_tests = [func for func in exists_functions if not ('test' in func and 'Test' in func)]
+                exists_functions_no_tests = [func for func in exists_functions if ('test' not in func and 'Test' not in func)]
 
                 exist_bugs_and_changed_functions[bug['bug id']] = {'function that changed':functions_that_changed,
                                                                    'function that changed no tests':functions_that_changed_no_tests,
