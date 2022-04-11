@@ -5,6 +5,8 @@ name: Combined
 on:
   workflow_dispatch:
   
+    
+  
     inputs:
         repo_name:
           description: 'name of repository'
@@ -57,6 +59,10 @@ jobs:
     needs: steps_1-3_gathering_data
     
     runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: false
+      matrix:
+       files: [0, 1]
     
     steps:
       - uses: actions/checkout@v2
@@ -91,7 +97,7 @@ jobs:
       - name: topic modeling
         run: |
               cd `git rev-parse --show-toplevel`
-              python topicModeling.py ${{github.event.inputs.repo_name}}
+              python topicModeling.py ${{github.event.inputs.repo_name}} ${{matrix.files}}
       - name: Upload data
         if: ${{ always() }}
         uses: actions/upload-artifact@v2
