@@ -347,9 +347,9 @@ class BarinelTesterTopicModeling(BarinelTester):
                     #         diagnosis_comp["exam_score"],
                     #     ]
                     # )
-            best_row = max(tmp_rows, key=lambda x:x[2])
-            best_row[1] = best_row[1].split('_')[1]
-            rows_combined_methods.append(best_row)
+        best_row = max(tmp_rows, key=lambda x:x[2])
+        best_row[1] = best_row[1].split('_')[1]
+        rows_combined_methods.append(best_row)
 
 class BarinelTesterMultiply(BarinelTester):
     def __init__(self, project_name, topics_range, local, ):
@@ -422,9 +422,9 @@ class BarinelTesterMultiply(BarinelTester):
                     #         diagnosis_both["exam_score"],
                     #     ]
                     # )
-            best_row = max(tmp_rows, key=lambda x:x[2])
-            best_row[1] = best_row[1].split('_')[1]
-            rows_combined_methods.append(best_row)
+        best_row = max(tmp_rows, key=lambda x:x[2])
+        best_row[1] = best_row[1].split('_')[1]
+        rows_combined_methods.append(best_row)
 
 
 
@@ -534,6 +534,7 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 if __name__ == "__main__":
     project_name = "Codec"
     local = True
+    #, 'BLUiR', 'AmaLgam',  'BLIA', 'Locus'
     technique = ["BugLocator", "BRTracer"]
     if len(sys.argv) == 4:
         project_name = sys.argv[1]
