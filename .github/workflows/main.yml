@@ -115,8 +115,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        techniques: [BugLocator,  BRTracer, BLUiR, AmaLgam,  BLIA, Locus]
-        #techniques: [BugLocator, BRTracer]
+        #techniques: [BugLocator,  BRTracer, BLUiR, AmaLgam,  BLIA, Locus]
+        techniques: [BugLocator, BRTracer]
         #group: [Commons]
         #folder_name: [BugLocator_lang]
     
