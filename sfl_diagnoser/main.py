@@ -536,10 +536,9 @@ if __name__ == "__main__":
     local = True
     #, 'BLUiR', 'AmaLgam',  'BLIA', 'Locus'
     technique = ["BugLocator", "BRTracer"]
-    if len(sys.argv) == 4:
+    if len(sys.argv) == 3:
         project_name = sys.argv[1]
-        technique = [sys.argv[2]]
-        if sys.argv[3] == 'git':
+        if sys.argv[2] == 'git':
             local = False
 
     errors = []
