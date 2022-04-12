@@ -115,8 +115,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        techniques: [BugLocator,  BRTracer, BLUiR, AmaLgam,  BLIA, Locus]
-        #techniques: [BugLocator, BRTracer]
+        #techniques: [BugLocator,  BRTracer, BLUiR, AmaLgam,  BLIA, Locus]
+        techniques: [BugLocator, BRTracer]
         #group: [Commons]
         #folder_name: [BugLocator_lang]
     
@@ -436,7 +436,7 @@ jobs:
       - name: barinel
         run: |
               cd `git rev-parse --show-toplevel`
-              python sfl_diagnoser/main.py ${{github.event.inputs.repo_name}} ${{matrix.techniques}} git
+              python sfl_diagnoser/main.py ${{github.event.inputs.repo_name}} git
               
       - name: Upload data
         if: ${{ always() }}
