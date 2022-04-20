@@ -534,8 +534,8 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 if __name__ == "__main__":
     project_name = "Codec"
     local = True
-    #, 'BLUiR', 'AmaLgam',  'BLIA', 'Locus'
-    technique = ["BugLocator", "BRTracer"]
+    #, 'BLUiR', 'AmaLgam'
+    technique = ["BugLocator", "BRTracer" ,  'BLIA', 'Locus']
     if len(sys.argv) == 3:
         project_name = sys.argv[1]
         if sys.argv[2] == 'git':

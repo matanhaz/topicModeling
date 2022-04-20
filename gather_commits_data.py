@@ -269,11 +269,11 @@ class GatherCommitsData:
                 self.existing_files[modified_file.new_path] = deepcopy(self.existing_files[modified_file.old_path])
                 self.existing_files.pop(modified_file.old_path)
 
-            elif modified_file.change_type.name == 'DELETE':
+            elif modified_file.change_type.name == 'DELETE' and modified_file.old_path in self.existing_files:
                 self.existing_files.pop(modified_file.old_path)
 
             else:
-                if modified_file.change_type.name == 'ADD':
+                if modified_file.change_type.name == 'ADD' or modified_file.new_path not in self.existing_files:
                     self.existing_files[modified_file.new_path] = []
 
                 add_functions, delete_functions = self.classify_functions_per_file(modified_file)
@@ -338,4 +338,4 @@ class GatherCommitsData:
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
-        GatherCommitsData("https://github.com/apache/commons-codec.git","Codec").gather()
+        GatherCommitsData("https://github.com/apache/commons-configuration.git","Configuration").gather()
