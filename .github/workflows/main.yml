@@ -116,7 +116,7 @@ jobs:
       fail-fast: false
       matrix:
         #techniques: [BugLocator,  BRTracer, BLUiR, AmaLgam,  BLIA, Locus]
-        techniques: [BugLocator, BRTracer]
+        techniques: [BugLocator, BRTracer, BLIA, Locus]
         #group: [Commons]
         #folder_name: [BugLocator_lang]
     
@@ -238,6 +238,8 @@ jobs:
             project=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
             group=$(echo $(jq ".$name.group" project_info.txt) | tr -d '\"')
             cd `git rev-parse --show-toplevel`/scripts
+            mkdir -p ../techniques/locus_properties
+            mkdir -p ../techniques/blia_properties
             python launcher_Tool.py -w ${{matrix.techniques}}_${{github.event.inputs.repo_name}}   -g $group -p $project -t ${{matrix.techniques}}
 #              python launcher_Tool.py -w ExpFirst   -g Apache -p CAMEL -t ${{ matrix.techniques }}
 
