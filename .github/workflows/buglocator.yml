@@ -5,6 +5,13 @@ name: otherMethods
 # Controls when the action will run. 
 on:
   workflow_dispatch:
+  
+    
+    inputs:
+        repo_name:
+          description: 'name of repository'
+          required: true
+          default: 'Codec'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
