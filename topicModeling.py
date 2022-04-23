@@ -99,8 +99,9 @@ def find_average_commit_length(all_commits_for_func, func_to_avg, func_name):
 
 def remove_low_appearence_words(strings, counts):
     words_to_remove = []
+    min_apperances = int(len(strings) / 100)+ 1
     for word in counts:
-        if int(counts[word]["count total"]) < 6:
+        if int(counts[word]["count total"]) < min_apperances:
             words_to_remove.append(word)
     for dict in strings:
         list = dict["messages"]
@@ -305,8 +306,8 @@ class TopicModeling:
                     "all indexes no tests"
                 ]
             ]
-
-            for NUM_TOPICS in range(100, 601, 50):
+            topics = list(range(15,21,1)) + list(range(200, 601, 100))
+            for NUM_TOPICS in topics:
                 ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=NUM_TOPICS, id2word=dictionary, passes=15)
                 # returns the table of bug to max index for NUM TOPICS
                 num_topics_to_table.extend(

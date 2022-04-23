@@ -545,11 +545,12 @@ if __name__ == "__main__":
 
     success = []
     failed = []
-
+    topics = list(range(15,21,1)) + list(range(200, 601, 100))
     all_methods = []
     sanity = BarinelTesterSanity(project_name,local)
-    topicModeling = BarinelTesterTopicModeling(project_name, range(100, 601, 50), local)
-    multiply = BarinelTesterMultiply(project_name, range(100, 601, 50), local)
+
+    topicModeling = BarinelTesterTopicModeling(project_name, topics, local)
+    multiply = BarinelTesterMultiply(project_name, topics, local)
     original = BarinelTesterOriginalMethod(project_name, local)
 
     all_methods.extend([sanity,original,topicModeling, multiply])

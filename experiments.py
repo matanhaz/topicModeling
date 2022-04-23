@@ -106,7 +106,7 @@ class Experiment1(Experiment):
 
         for row in tqdm(values_rows):
             key_to_rows[row[0]]['all'].append(row)
-            if row[label_to_index['num of files that changed no tests']] != '0':
+            if row[label_to_index['num of files that changed no tests']] != '0' and row[label_to_index['num of files checked exist files no tests']] != '0':
                 key_to_rows[row[0]]['without_negative'].append(row)
 
 
