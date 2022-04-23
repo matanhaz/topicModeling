@@ -105,9 +105,10 @@ class Experiment1(Experiment):
         key_to_rows = defaultdict(lambda:{'all':[],'without_negative':[]}, key_to_rows)
 
         for row in tqdm(values_rows):
-            key_to_rows[row[0]]['all'].append(row)
-            if row[label_to_index['num of files that changed no tests']] != '0' and row[label_to_index['num of files checked exist files no tests']] != '0':
-                key_to_rows[row[0]]['without_negative'].append(row)
+            if row[label_to_index['num of files checked exist files no tests']] != '0':
+                key_to_rows[row[0]]['all'].append(row)
+                if row[label_to_index['num of files that changed no tests']] != '0' :
+                    key_to_rows[row[0]]['without_negative'].append(row)
 
 
         max_index = label_to_index['max index exist files no tests']
