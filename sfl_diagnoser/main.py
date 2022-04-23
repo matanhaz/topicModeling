@@ -132,12 +132,15 @@ class BarinelTester:
         """treansfer matrixes to a new location"""
         counter = 1
         for m in all_matrixes_in_dir_filtered:
-            if isfile(join
-                                  (new_path_matrixes, m[2])):
-                rename(join
-                          (new_path_matrixes, m[0]), join
-                (new_path_matrixes, f"{m[2]}_{str(counter)}"))
-                counter += 1
+            if isfile(join(new_path_matrixes, m[2])):
+                try:
+                    unlink(join(new_path_matrixes, m[0]))
+                except Exception as e:
+                    print("Failed to delete %s. Reason: %s" % (join(new_path_matrixes, m[0]), e))
+
+                # rename(join(new_path_matrixes, m[0]),
+                #        join(new_path_matrixes, f"{m[2]}_{str(counter)}"))
+                # counter += 1
             else:
                 rename(join
                           (new_path_matrixes, m[0]), join
