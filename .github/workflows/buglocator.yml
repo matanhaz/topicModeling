@@ -5,6 +5,13 @@ name: otherMethods
 # Controls when the action will run. 
 on:
   workflow_dispatch:
+  
+    
+    inputs:
+        repo_name:
+          description: 'name of repository'
+          required: true
+          default: 'Codec'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -16,9 +23,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        #[BLIA, Locus]
-        techniques: [BugLocator,  BRTracer, BLUiR, AmaLgam]
-        #techniques: [BugLocator, BRTracer]
+        #[BLUiR, AmaLgam]
+        techniques: [BLIA]
+        #techniques: [BugLocator,  BRTracer,BLIA, Locus ]
         #group: [Commons]
         #folder_name: [BugLocator_lang]
     
@@ -140,6 +147,8 @@ jobs:
             project=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
             group=$(echo $(jq ".$name.group" project_info.txt) | tr -d '\"')
             cd `git rev-parse --show-toplevel`/scripts
+            mkdir -p ../techniques/locus_properties
+            mkdir -p ../techniques/blia_properties
             python launcher_Tool.py -w ${{matrix.techniques}}_${{github.event.inputs.repo_name}}   -g $group -p $project -t ${{matrix.techniques}}
 #              python launcher_Tool.py -w ExpFirst   -g Apache -p CAMEL -t ${{ matrix.techniques }}
 
