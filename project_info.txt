@@ -58,6 +58,41 @@
        	"jira url": "http://issues.apache.org/jira",
        	"project": "IO",
 	"group":"Commons"
-    }
-    
+    },
+    "Ely": {
+        "git url": "https://github.com/wildfly-security/wildfly-elytron.git",
+       	"jira url": "https://issues.redhat.com",
+       	"project": "ELY",
+	"group":"Wildfly"
+    },
+    "Wfarq": {
+        "git url": "https://github.com/wildfly/wildfly-arquillian.git",
+       	"jira url": "https://issues.redhat.com",
+       	"project": "WFARQ",
+	"group":"Wildfly"
+    },
+    "Amqp": {
+        "git url": "https://github.com/spring-projects/spring-amqp.git",
+       	"jira url": "https://jira.spring.io",
+       	"project": "AMQP",
+	"group":"Spring"
+    },
+    "Batch": {
+        "git url": "https://github.com/spring-projects/spring-batch.git",
+       	"jira url": "https://jira.spring.io",
+       	"project": "BATCH",
+	"group":"Spring"
+    },
+    "Datacmns": {
+        "git url": "https://github.com/spring-projects/spring-data-commons.git",
+       	"jira url": "https://jira.spring.io",
+       	"project": "DATACMNS",
+	"group":"Spring"
+    },
+    "Datagraph": {
+        "git url": "https://github.com/spring-projects/spring-data-neo4j.git",
+       	"jira url": "https://jira.spring.io",
+       	"project": "DATAGRAPH",
+	"group":"Spring"
+    }    
 }

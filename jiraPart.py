@@ -19,8 +19,8 @@ class GatherJiraData:
 
         block_size = self.block_size
         block_num = 0
-        sql_req = "project = " + self.jira_query_symbol + " and type = bug and (status = RESOLVED or status = closed) and resolution  = Fixed and fixVersion  != None and affectedVersion != None and affectedVersion != \"Nightly Build\""
-
+        sql_req = "project = " + self.jira_query_symbol + " and type = bug and (status = RESOLVED or status = closed)"
+        #and resolution  = Fixed
         while True:  # while true
             print(block_num)
             start_idx = block_num * block_size
@@ -41,6 +41,9 @@ class GatherJiraData:
         issues_dict = {'issues': []}
 
         for issue in issues:
+            if issue.fields.versions == None or issue.fields.versions == []  or issue.fields.fixVersions == None or issue.fields.fixVersions == [] or\
+                    "Nightly Build" == issue.fields.versions:
+                continue
             new_issue = {
                 'issue_id': issue.key, 'project': issue.fields.project.name, 'title': issue.fields.summary,
                 'type': issue.fields.issuetype.name, 'description': issue.fields.description,
@@ -77,7 +80,9 @@ class GatherJiraData:
 
 
 if __name__ == "__main__":
-    jira_url = 'http://issues.apache.org/jira'
-    jira_query_symbol = 'CODEC'
-    project_name = "Codec"
+    #jira_url = 'http://issues.apache.org/jira'
+    jira_url = "https://jira.spring.io"
+    jira_url = "https://issues.redhat.com"
+    jira_query_symbol = 'ELY'
+    project_name = "gh"
     GatherJiraData(jira_url, jira_query_symbol, project_name).gather()
