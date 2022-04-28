@@ -206,6 +206,7 @@ class analyzer:
         commits_reversed.reverse()
         bug_id_to_changed_functions = {}
         bug_id_to_changed_files = {}
+        bug_id_to_fix_hash = {}
 
         bugs_id_list_copy = bugs_id_list.copy()
         for commit_id in commits_reversed:
@@ -215,7 +216,7 @@ class analyzer:
                 if id[0] in commits[commit_id]['commit_summary'] and self.not_followed_by_a_number(id[0], commits[commit_id]['commit_summary']):
                     bug_id_to_changed_functions[id[0]] = commits[commit_id]['functions']
                     bug_id_to_changed_files[id[0]] = commits[commit_id]['files']
-
+                    bug_id_to_fix_hash[id[0]] = commit_id
                     bugs_id_list_copy.remove(id)
                     break
 
@@ -227,6 +228,7 @@ class analyzer:
                     bug_to_commit_that_solved.append({
                         'bug id': id[0],
                         'hexsha': commit_hash,
+                        'fix_hash': bug_id_to_fix_hash[id[0]],
                         'description': id[1],
                         'commit number': commits[commit_hash]['id'],
                         'function that changed': bug_id_to_changed_functions[id[0]],

@@ -334,7 +334,7 @@ class BarinelTesterTopicModeling(BarinelTester):
                     #         diagnosis_comp["exam_score"],
                     #     ]
                     # )
-                    tmp_rows.append(row)
+                    tmp_rows.append(row.copy())
                     # rows_combined_methods.append(
                     #     [
                     #         f"{topic}_sigmuid",
@@ -409,7 +409,7 @@ class BarinelTesterMultiply(BarinelTester):
                     #         diagnosis_both["exam_score"],
                     #     ]
                     # )
-                    tmp_rows.append(row)
+                    tmp_rows.append(row.copy())
                     # rows_combined_methods.append(
                     #     [
                     #          f"{topic}_multiply",
@@ -535,7 +535,7 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 
 
 if __name__ == "__main__":
-    project_name = "Io"
+    project_name = "Codec"
     local = True
     #, 'BLUiR', 'AmaLgam'
     technique = [ "BugLocator", "BRTracer" , 'Locus']
@@ -560,6 +560,7 @@ if __name__ == "__main__":
 
     for t in technique:
         all_methods.append(BarinelTesterOtherAlgorithm(project_name, t, local))
+
 
     path = join\
         (str(Path(__file__).parents[1]),'projects',project_name,"barinel","matrixes")
