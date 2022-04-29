@@ -175,7 +175,8 @@ class GatherCommitsData:
             'hash': commit.hash ,
             'commit_summary': commit.msg,
             'modified_files': modified_files,
-            'functions': list_of_modified_functions
+            'functions': list_of_modified_functions,
+            'date': str(commit.committer_date).split(' ')[0]
         }
         self.changes_to_commits.append(new_change)
 

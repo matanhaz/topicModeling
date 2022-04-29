@@ -46,7 +46,7 @@ class GatherJiraData:
                 continue
             new_issue = {
                 'issue_id': issue.key, 'project': issue.fields.project.name, 'title': issue.fields.summary,
-                'type': issue.fields.issuetype.name, 'description': issue.fields.description,
+                'type': issue.fields.issuetype.name, 'description': issue.fields.description,'resolved': issue.fields.resolutiondate.split('T')[0],
                 'versions': [i.name for i in issue.fields.versions],
                 'fixVersions': [i.name for i in issue.fields.fixVersions]}
 
@@ -80,9 +80,9 @@ class GatherJiraData:
 
 
 if __name__ == "__main__":
-    #jira_url = 'http://issues.apache.org/jira'
-    jira_url = "https://jira.spring.io"
-    jira_url = "https://issues.redhat.com"
-    jira_query_symbol = 'ELY'
-    project_name = "gh"
+    jira_url = 'http://issues.apache.org/jira'
+    #jira_url = "https://jira.spring.io"
+    #jira_url = "https://issues.redhat.com"
+    jira_query_symbol = 'CODEC'
+    project_name = "Codec"
     GatherJiraData(jira_url, jira_query_symbol, project_name).gather()

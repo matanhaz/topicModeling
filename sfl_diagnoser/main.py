@@ -548,7 +548,7 @@ if __name__ == "__main__":
 
     success = []
     failed = []
-    topics = list(range(15,21,1)) + list(range(200, 601, 100))
+    topics = list(range(20,401,20))
     all_methods = []
     sanity = BarinelTesterSanity(project_name,local)
 

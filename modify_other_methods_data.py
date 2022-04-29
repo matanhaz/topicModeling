@@ -196,12 +196,11 @@ class ModifyOtherMethods:
 
         missing_functions = []
 
-        for func_exist in exists_functions:
+        for func_exist in set(exists_functions):
             for func_and_similarity in funcs_and_similarities:
                 if func_exist == func_and_similarity[0]:
                     exist_funcs_with_similarity.append(func_and_similarity)
                     break
-
 
         exist_funcs_with_similarity.sort(key=lambda x: x[1], reverse=True)
 

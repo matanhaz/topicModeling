@@ -1,3 +1,4 @@
+from datetime import datetime
 
 import javalang
 from git import Repo
@@ -175,7 +176,7 @@ class analyzer:
         bugs = data['bugs info']['bugs']
         bugs_id_list = []
         for bug in bugs:
-            bugs_id_list.append((bug['issue_id'], bug['description'], bug['versions']))
+            bugs_id_list.append((bug['issue_id'], bug['description'], bug['versions'], datetime.strptime(bug['resolved'], '%Y-%m-%d')))
 
         counter = 0
         commits = {}
@@ -191,7 +192,8 @@ class analyzer:
                         'id':commit['commit_id'],
                         'commit_summary': commit['commit_summary'],
                         'files': commit['modified_files'],
-                        'functions': commit['functions']
+                        'functions': commit['functions'],
+                        'date': commit['date']
                     }
                 else:
                     commits[commit['hash']]['functions'].extend(
@@ -203,7 +205,7 @@ class analyzer:
 
 
         commits_reversed = list(commits.keys())
-        commits_reversed.reverse()
+        #commits_reversed.reverse()
         bug_id_to_changed_functions = {}
         bug_id_to_changed_files = {}
         bug_id_to_fix_hash = {}
@@ -213,7 +215,8 @@ class analyzer:
             if bugs_id_list_copy == []:
                 break
             for id in bugs_id_list_copy:
-                if id[0] in commits[commit_id]['commit_summary'] and self.not_followed_by_a_number(id[0], commits[commit_id]['commit_summary']):
+                if id[0] in commits[commit_id]['commit_summary'] and self.not_followed_by_a_number(id[0], commits[commit_id]['commit_summary'])\
+                        and datetime.strptime(commits[commit_id]['date'], '%Y-%m-%d')>=id[3]:
                     bug_id_to_changed_functions[id[0]] = commits[commit_id]['functions']
                     bug_id_to_changed_files[id[0]] = commits[commit_id]['files']
                     bug_id_to_fix_hash[id[0]] = commit_id
