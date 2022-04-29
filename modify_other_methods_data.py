@@ -100,6 +100,7 @@ class ModifyOtherMethods:
                 commit_hex = [b['hexsha'] for b in bugs_to_hex if b['bug id'] == bug][0]
             except:
                 print(bug)
+                continue
             commit_id = [commit for commit in commit_to_exist_functions if commit_to_exist_functions[commit]['hexsha'] == commit_hex][0]
 
             exist_files = commit_to_exist_functions[commit_id]['file to functions']
