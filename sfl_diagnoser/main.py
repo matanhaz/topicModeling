@@ -1,5 +1,7 @@
 import csv
 import json
+from collections import defaultdict
+from functools import reduce
 from os.path import join, exists, isdir, isfile, islink
 from os import mkdir, listdir, rename, unlink, remove, getcwd
 import shutil
@@ -42,6 +44,11 @@ class BarinelTester:
             self.project_path = join(str(Path(__file__).parents[1]),"projects",project_name)
         else:
             self.project_path = join(str(Path(getcwd())),"projects",project_name)
+
+        self.experiment1_path = join(self.project_path, 'Experiments', 'Experiment_1')
+        self.data_path = join(self.experiment1_path, 'data')
+        self.best_topics = []
+        self.find_best_topics()
 
         self.experiment2_path = join(self.project_path,'Experiments', 'Experiment_2')
         self.experiment3_path = join(self.project_path,'Experiments', 'Experiment_3')
@@ -199,6 +206,61 @@ class BarinelTester:
                             diagnosis["exam_score"],
                         ]
 
+    def label_to_index(self, labels_row):
+        indexes = {}
+        for index, label in enumerate(labels_row):
+            indexes[label] = index
+        return indexes
+
+    def find_best_topics(self, file_name='topicModeling_indexes.csv'):
+        with open(join(self.data_path, file_name)) as outfile:
+            rows = list(csv.reader(outfile))
+
+        labels_row, values_rows = rows[0], rows[1:]
+
+        label_to_index = self.label_to_index(labels_row)
+
+        key_to_rows = {}
+        key_to_rows = defaultdict(lambda:{'all':[],'without_negative':[]}, key_to_rows)
+
+        for row in values_rows:
+            if row[label_to_index['num of files checked exist files no tests']] != '0':
+                key_to_rows[row[0]]['all'].append(row)
+                if row[label_to_index['num of files that changed no tests']] != '0' :
+                    key_to_rows[row[0]]['without_negative'].append(row)
+
+
+        max_index = label_to_index['max index exist files no tests']
+        min_index = label_to_index['first index exist files no tests']
+        all_indexes = label_to_index['all indexes no tests']
+        num_functions_checked = label_to_index['num of files checked exist files no tests']
+
+        #get_percentage_max = lambda value, row: value + (float(row[max_index]) / float(row[num_functions_checked]))
+        get_percentage_mrr = lambda value, row: value + (1 / (float(row[min_index]) + 1))
+        #get_percentage_map = lambda value, row: value + (self._find_AP(row[all_indexes]))
+
+        percentages = {key: {
+                #'all': reduce(get_percentage_max, key_to_rows[key]['all'], 0)/len(key_to_rows[key]['all']),
+                #'without_negative': reduce(get_percentage_max, key_to_rows[key]['without_negative'], 0)/len(key_to_rows[key]['without_negative']),
+                #'MAP': reduce(get_percentage_map, key_to_rows[key]['without_negative'], 0)/len(key_to_rows[key]['without_negative']),
+                'MRR':reduce(get_percentage_mrr, key_to_rows[key]['without_negative'], 0)/len(key_to_rows[key]['without_negative'])
+                } for key in key_to_rows}
+
+        max_val = 0
+        best_topics = []
+        i=0
+        keys = list(percentages.keys())
+        values = list(percentages.values())
+        while i + 4 < len(keys):
+            new_val = sum([val['MRR'] for val in values[i:i+5]]) / 5
+            if new_val > max_val:
+                max_val = new_val
+                best_topics = keys[i:i+5]
+            i+=1
+        self.best_topics = best_topics
+            #self.best_topic = self.best_topic.split("_")[0]
+
+
 
 
 class BarinelTesterSanity(BarinelTester):
@@ -334,7 +396,9 @@ class BarinelTesterTopicModeling(BarinelTester):
                     #         diagnosis_comp["exam_score"],
                     #     ]
                     # )
-                    tmp_rows.append(row.copy())
+                    if str(topic) in self.best_topics:
+                        tmp_rows.append(row.copy())
+                        rows_combined_methods.append(row.copy())
                     # rows_combined_methods.append(
                     #     [
                     #         f"{topic}_sigmuid",
@@ -350,9 +414,9 @@ class BarinelTesterTopicModeling(BarinelTester):
                     #         diagnosis_comp["exam_score"],
                     #     ]
                     # )
-        best_row = max(tmp_rows, key=lambda x:x[2])
-        best_row[1] = best_row[1].split('_')[1]
-        rows_combined_methods.append(best_row)
+        # best_row = max(tmp_rows, key=lambda x:x[2])
+        # best_row[1] = best_row[1].split('_')[1]
+        # rows_combined_methods.append(best_row)
 
 class BarinelTesterMultiply(BarinelTester):
     def __init__(self, project_name, topics_range, local, ):
@@ -409,7 +473,9 @@ class BarinelTesterMultiply(BarinelTester):
                     #         diagnosis_both["exam_score"],
                     #     ]
                     # )
-                    tmp_rows.append(row.copy())
+                    if str(topic) in self.best_topics:
+                        tmp_rows.append(row.copy())
+                        rows_combined_methods.append(row.copy())
                     # rows_combined_methods.append(
                     #     [
                     #          f"{topic}_multiply",
@@ -425,9 +491,9 @@ class BarinelTesterMultiply(BarinelTester):
                     #         diagnosis_both["exam_score"],
                     #     ]
                     # )
-        best_row = max(tmp_rows, key=lambda x:x[2])
-        best_row[1] = best_row[1].split('_')[1]
-        rows_combined_methods.append(best_row)
+        # best_row = max(tmp_rows, key=lambda x:x[2])
+        # best_row[1] = best_row[1].split('_')[1]
+        # rows_combined_methods.append(best_row)
 
 
 
