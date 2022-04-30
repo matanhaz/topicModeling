@@ -306,7 +306,7 @@ class TopicModeling:
                     "all indexes no tests"
                 ]
             ]
-            topics = list(range(20,401,20))
+            topics = list(range(20,601,20))
             for NUM_TOPICS in topics:
                 ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=NUM_TOPICS, id2word=dictionary, passes=15)
                 # returns the table of bug to max index for NUM TOPICS

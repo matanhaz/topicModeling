@@ -12,7 +12,7 @@ from tqdm import tqdm
 from abc import ABC, abstractmethod
 import numpy as np
 
-NUM_TOPICS = 20
+NUM_TOPICS = 30
 
 
 class Experiment(ABC):
@@ -39,7 +39,7 @@ class Experiment(ABC):
             mkdir(self.results_path)
             mkdir(join(self.results_path,"sanity"))
             #mkdir(join(self.results_path,"normal"))
-        plt.figure(figsize=(15, 6))
+        plt.figure(figsize=(22, 10))
 
         if sanity:
             similarities = x.copy()
@@ -54,7 +54,7 @@ class Experiment(ABC):
         plt.xlabel(x_label)
         plt.ylabel(y_label)
         plt.title(title)
-        plt.xticks(x)
+        plt.xticks(x, rotation=90)
         #plt.grid(True)
         if y_label in self.percentage_metrics:
             plt.ylim(0,100)
