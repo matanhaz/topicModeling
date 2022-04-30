@@ -12,6 +12,8 @@ from tqdm import tqdm
 from abc import ABC, abstractmethod
 import numpy as np
 
+NUM_TOPICS = 20
+
 
 class Experiment(ABC):
     def __init__(self, project_name, experiment_name):
@@ -79,7 +81,7 @@ class Experiment1(Experiment):
         self.x_mrr = []
         self.y_mrr = []
         self.relevant_bugs = set()
-        self.best_topic = ""
+        self.best_topics = []
 
     def __call__(self):
        # map = self.MAP()
@@ -128,8 +130,20 @@ class Experiment1(Experiment):
                 } for key in key_to_rows}
 
         if "topic" in file_name:
-            self.best_topic = [topic for topic in percentages.keys() if percentages[topic]["without_negative"] == min([val['without_negative'] for val in percentages.values()])][0]
-            self.best_topic = self.best_topic.split("_")[0]
+            max_val = 0
+            best_topics = []
+            i=0
+            keys = list(percentages.keys())
+            values = list(percentages.values())
+            while i + 4 < len(keys):
+                new_val = sum([val['MRR'] for val in values[i:i+5]]) / 5
+                if new_val > max_val:
+                    max_val = new_val
+                    best_topics = keys[i:i+5]
+                i+=1
+            self.best_topics = best_topics
+            # self.best_topic = [topic for topic in percentages.keys() if percentages[topic]["without_negative"] == min([val['without_negative'] for val in percentages.values()])][0]
+            # self.best_topic = self.best_topic.split("_")[0]
         self.x.extend(percentages.keys())
         self.y.extend([p['without_negative'] for p in percentages.values()])
 
@@ -233,7 +247,7 @@ class Experiment1(Experiment):
 
 
 class Experiment2(Experiment):
-    def __init__(self, project_name, is_sanity, best_topic):
+    def __init__(self, project_name, is_sanity, best_topics):
         super().__init__(project_name, 'Experiment_2')
         self.x = {}
         self.x = defaultdict(lambda:[], self.x)
@@ -241,7 +255,7 @@ class Experiment2(Experiment):
         self.y = defaultdict(lambda:[], self.y)
         self.is_sanity = is_sanity
         self.tested_metrics = ["precision", "recall", "wasted" , "f-score","expense","t-score", "cost", "exam-score"]
-        self.best_topic = best_topic
+        self.best_topics = best_topics
 
     def __call__(self):
         if self.is_sanity:
@@ -431,21 +445,22 @@ class Experiment2(Experiment):
         file_name = file_name.split('.')[0]
         labels_row, values_rows = rows[0], rows[1:]
         label_to_index = self.label_to_index(labels_row)
-        num_of_rows = len(values_rows) / 11
+        num_of_rows = len(values_rows) / NUM_TOPICS
 
         key_to_rows = {}
         #key_to_rows = defaultdict(lambda:{'original':0 ,'comp':0, 'tests':0, 'both':0}, key_to_rows)
-        key_to_rows = defaultdict(lambda:{file_name:0}, key_to_rows)
-        for i in tqdm(range(0,len(values_rows),11)):
+        key_to_rows = defaultdict(lambda:{file_name + f"_{topic}":0 for topic in self.best_topics}, key_to_rows)
+        for i in tqdm(range(0,len(values_rows),NUM_TOPICS)):
             #
             # maxx = max([values_rows[j][4] for j in range(i,i+11)])
-            for j in range(i,i+11):
+            for j in range(i,i+NUM_TOPICS):
                 row = values_rows[j]
-                if self.best_topic in row[int(label_to_index['technique'])]:
+                topic = row[label_to_index['technique']].split('_')[0]
+                if topic in self.best_topics :
                     for metric in self.tested_metrics:
-                        key_to_rows[metric][file_name] += (float(row[label_to_index[metric]]) / num_of_rows)
+                        key_to_rows[metric][file_name + f"_{topic}"] += (float(row[label_to_index[metric]]) / num_of_rows)
 
-                    break
+                 #   break
 
         for key in key_to_rows:
             for test in key_to_rows[key]:
@@ -646,5 +661,5 @@ if __name__ == '__main__':
     exp1 = Experiment1(project)
     exp1()
     Experiment2(project,True,0)()
-    Experiment2(project,False, exp1.best_topic)()
+    Experiment2(project,False, exp1.best_topics)()
     # Experiment3(project,False)()
