@@ -45,9 +45,12 @@ class ModifyOtherMethods:
         bug_files = []
         for dir in dirs:
             path = join("projects", self.project_folder, self.method_folder_name, self.group_label, self.project_label, dir, "recommended")
-            for bug_file in listdir(path):
-                bug_id = bug_file.split('.')[0]
-                bug_files.append((f"{self.project_label}-{bug_id}", join(path,bug_file)))
+            if exists(path):
+                for bug_file in listdir(path):
+                    bug_id = bug_file.split('.')[0]
+                    bug_files.append((f"{self.project_label}-{bug_id}", join(path,bug_file)))
+            else:
+                print("not found: "+ path)
 
         final_dict = {}
         bugs = {}
