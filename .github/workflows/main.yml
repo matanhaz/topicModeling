@@ -62,7 +62,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-       files: [0, 1]
+       files: [0, 1, 2]
     
     steps:
       - uses: actions/checkout@v2
