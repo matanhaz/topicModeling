@@ -138,17 +138,22 @@ def clean_list_of_strings(unfiltered):
 
 
 class TopicModeling:
-    def __init__(self, project_name, files):
+    def __init__(self, project_name, functions):
         self.project_path = join("projects", project_name)
-        self.files = files
+        self.functions = functions
         self.analysis_path = join(self.project_path, "analysis")
 
-        if files:
+        if not functions:
+            self.topics = list(range(20,401,20))
             self.topicModeling_path = join(self.project_path, "topicModelingFiles")
             self.bug_to_sim_name = "bug to file and similarity"
             self.bug_to_sim_path = join(self.topicModeling_path, "bug to file and similarity")
             self.path_to_commit_messages = join(self.analysis_path,"file to commits message.txt")
         else:
+            if functions == 1:
+                self.topics = list(range(20,201,20))
+            else:
+                self.topics = list(range(220,401,20))
             self.topicModeling_path = join(self.project_path, "topicModeling")
             self.bug_to_sim_name = "bug to functions and similarity"
             self.bug_to_sim_path = join(self.topicModeling_path, "bug to functions and similarity")
@@ -160,7 +165,7 @@ class TopicModeling:
             print("missing data")
 
         else:
-            if self.files:
+            if not self.functions:
                 if not exists(join(self.project_path, "Experiments")):
                     mkdir(join(self.project_path, "Experiments"))
                     mkdir(join(self.project_path, "Experiments", "Experiment_1"))
@@ -188,10 +193,10 @@ class TopicModeling:
                 all_bugs = all_bugs['bugs info']['bugs']
                 all_bug_to_messages = []
 
-                if self.files:
-                    data = data["files"]
-                else:
+                if self.functions:
                     data = data["functions"]
+                else:
+                    data = data["files"]
                 all_func_to_commit_messages = []
                 func_to_avg = {}
                 word_to_counts = {}
@@ -306,8 +311,7 @@ class TopicModeling:
                     "all indexes no tests"
                 ]
             ]
-            topics = list(range(20,601,20))
-            for NUM_TOPICS in topics:
+            for NUM_TOPICS in self.topics:
                 ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=NUM_TOPICS, id2word=dictionary, passes=15)
                 # returns the table of bug to max index for NUM TOPICS
                 num_topics_to_table.extend(
@@ -333,7 +337,7 @@ class TopicModeling:
                 print("finished %d topics" % (NUM_TOPICS))
 
             # after the data of each num_topics is gathered, create the csv table
-            if self.files:
+            if not self.functions:
                 self.create_table(num_topics_to_table)
 
     def bug_to_func_and_similarity(
@@ -731,8 +735,8 @@ class TopicModeling:
 
 if __name__ == "__main__":
     project_name = "Codec"
-    files = True
+    functions = 0
     if len(sys.argv) == 3:
         project_name = str(sys.argv[1])
-        files = bool(int(sys.argv[2]))
-    TopicModeling(project_name,files).run()
+        functions = int(int(sys.argv[2]))
+    TopicModeling(project_name,functions).run()
