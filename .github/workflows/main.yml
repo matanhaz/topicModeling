@@ -378,7 +378,7 @@ jobs:
           path: ./matrixes_before_change
         
 
-  step_8_barinel:
+  step_8_9_barinel_and_Experiment:
     needs: [step_5_other_methods,step_4_topic_modeling, steps_1-3_gathering_data, step_6_modify_other_methods_data, step_7_download_matrixes]
     
     runs-on: ubuntu-18.04
@@ -444,6 +444,15 @@ jobs:
           name: step_8_9_artifact
           # A file, directory or wildcard pattern that describes what to upload
           path: ./projects
+          
+      - name: Upload results only
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          # Artifact name
+          name: results_only
+          # A file, directory or wildcard pattern that describes what to upload
+          path: ./projects/${{github.event.inputs.repo_name}}/Experiments
           
 #   step_9_Experiments:
 #     needs: [step_8_barinel]
