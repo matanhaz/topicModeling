@@ -272,8 +272,6 @@ jobs:
                         original = join(dir_path, "recommended",file)
                         target = join(dir_new_path, file)
                         shutil.copyfile(original, target)
-
-		
       shell: python
 
     - name: Upload data
