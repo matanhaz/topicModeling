@@ -83,16 +83,22 @@ class Experiment1(Experiment):
         self.relevant_bugs = set()
         self.best_topics = []
 
+        self.combined_rows = [['method','project',  'MAP', 'MRR', 'TOP-K']]
+
     def __call__(self):
        # map = self.MAP()
         for file in listdir(self.data_path):
-            if not isdir(join(self.data_path, file)):
+            if not isdir(join(self.data_path, file)) :
                 self.run(file)
 
 
         self.save_plot(self.x,self.y, 'num topics / method', 'average max index of all functions in results', 'Experiment_1_results_topK', f'Experiment 1 - {self.project_name}')
         self.save_plot(self.x_map,self.y_map, 'num topics / method', 'MAP', 'Experiment_1_results_MAP', f'Experiment 1 - {self.project_name}')
         self.save_plot(self.x_mrr,self.y_mrr, 'num topics / method', 'MRR', 'Experiment_1_results_MRR', f'Experiment 1 - {self.project_name}')
+
+        with open(join(self.project_path, "Experiments", "Experiment_1", "data", "data_all_methods_combined.csv"), "w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerows(self.combined_rows)
 
 
     def run(self, file_name='topicModeling_indexes.csv'):
@@ -128,6 +134,12 @@ class Experiment1(Experiment):
                 'MAP': reduce(get_percentage_map, key_to_rows[key]['without_negative'], 0)/len(key_to_rows[key]['without_negative']),
                 'MRR':reduce(get_percentage_mrr, key_to_rows[key]['without_negative'], 0)/len(key_to_rows[key]['without_negative'])
                 } for key in key_to_rows}
+
+        for method in percentages:
+            method_name = method
+            if "topic" in file_name:
+                method_name += "_Topics"
+            self.combined_rows.append([method_name, self.project_name, percentages[method]['MAP'], percentages[method]['MRR'], percentages[method]['without_negative']])
 
         if "topic" in file_name:
             max_val = 0
