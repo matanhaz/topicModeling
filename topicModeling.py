@@ -144,7 +144,7 @@ class TopicModeling:
         self.analysis_path = join(self.project_path, "analysis")
 
         if not functions:
-            self.topics = list(range(20,401,20))
+            self.topics = list(range(20,601,20))
             self.topicModeling_path = join(self.project_path, "topicModelingFiles")
             self.bug_to_sim_name = "bug to file and similarity"
             self.bug_to_sim_path = join(self.topicModeling_path, "bug to file and similarity")
