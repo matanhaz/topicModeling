@@ -264,14 +264,14 @@ jobs:
 
             a= listdir(path)
             for dir in a:
-              dir_path = join(path, dir)
-              if isdir(dir_path) and "recommended" in listdir(dir_path):
-                dir_new_path = join(new_path, dir, "recommended")
-                makedirs(dir_new_path)
-                for file in listdir(join(dir_path, "recommended")):
-                  original = join(dir_path, "recommended",file)
-                  target = join(dir_new_path, file)
-                  shutil.copyfile(original, target)
+                dir_path = join(path, dir)
+                if isdir(dir_path) and "recommended" in listdir(dir_path):
+                    dir_new_path = join(new_path, dir, "recommended")
+                    makedirs(dir_new_path)
+                    for file in listdir(join(dir_path, "recommended")):
+                        original = join(dir_path, "recommended",file)
+                        target = join(dir_new_path, file)
+                        shutil.copyfile(original, target)
 
 		
       shell: python
