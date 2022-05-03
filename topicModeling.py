@@ -152,8 +152,10 @@ class TopicModeling:
         else:
             if functions == 1:
                 self.topics = list(range(20,201,20))
-            else:
+            elif functions == 2:
                 self.topics = list(range(220,401,20))
+            else:
+                self.topics = list(range(420,601,20))
             self.topicModeling_path = join(self.project_path, "topicModeling")
             self.bug_to_sim_name = "bug to functions and similarity"
             self.bug_to_sim_path = join(self.topicModeling_path, "bug to functions and similarity")
