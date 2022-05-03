@@ -248,6 +248,43 @@ jobs:
       run: |
             cd `git rev-parse --show-toplevel`/scripts
             python launcher_XLSResultsAll.py -w ${{matrix.techniques}}_${{github.event.inputs.repo_name}}
+            
+    - name: Script
+      run: |
+            from os import listdir, makedirs
+            from os.path import join, isdir
+            import shutil
+
+            folder_name = list(listdir(join('.','expresults')))[0]
+            group = list(listdir(join('.','expresults', folder_name)))[0]
+            project = list(listdir(join('.','expresults', folder_name, group)))[0]
+            path = join('.','expresults',folder_name,group, project)
+            new_path = join('.','expresults2',folder_name,group, project)
+            makedirs(new_path)
+
+            a= listdir(path)
+            for dir in a:
+              dir_path = join(path, dir)
+              if isdir(dir_path) and "recommended" in listdir(dir_path):
+                dir_new_path = join(new_path, dir, "recommended")
+                makedirs(dir_new_path)
+                for file in listdir(join(dir_path, "recommended")):
+                  original = join(dir_path, "recommended",file)
+                  target = join(dir_new_path, file)
+                  shutil.copyfile(original, target)
+
+		
+      shell: python
+
+    - name: Upload data
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v2
+      with:
+        # Artifact name
+        name: other_methods_all_data
+        # A file, directory or wildcard pattern that describes what to upload
+        path: ./expresults
+        
     - name: Upload data
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
@@ -255,7 +292,7 @@ jobs:
         # Artifact name
         name: step_5_artifact
         # A file, directory or wildcard pattern that describes what to upload
-        path: ./expresults
+        path: ./expresults2
   
   
   step_6_modify_other_methods_data:
