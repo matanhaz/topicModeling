@@ -26,6 +26,7 @@ with open(os.path.join(projects_dir_path, "data_all_projects_localization.csv"),
     writer.writerows(all_rows)
 
 all_rows = []
+first_project = True
 
 for project in projects:
     if os.path.isdir(os.path.join(projects_dir_path,project)):

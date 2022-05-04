@@ -50,6 +50,8 @@ class BarinelTester:
         self.best_topics = []
         self.find_best_topics()
 
+        self.best_topics = ['400' ,'420' ,'440' ,'460' ,'480' ,'500' ,'520' ,'540' ,'560' ,'580' ,'600']
+
         self.experiment2_path = join(self.project_path,'Experiments', 'Experiment_2')
         self.experiment3_path = join(self.project_path,'Experiments', 'Experiment_3')
         self.mapping = {}
