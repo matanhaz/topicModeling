@@ -1,8 +1,6 @@
 works:
-codec, io, lang
+codec, io, lang, csv, collections
 
 dont work:
-csv - stuck at other methods
 configuration - something with nonetype at the end of data dathering
 compress - big data in bench4bl cant upload
-collections - stuck at other methods
