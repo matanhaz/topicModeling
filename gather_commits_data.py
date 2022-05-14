@@ -187,23 +187,24 @@ class GatherCommitsData:
     def gather_func_to_commits(self, commit, modified_functions, modified_files):
         for method in modified_functions:
             method_name = method['function name']
+            file_name = method['file name']
             if method_name in self.func_name_to_params_and_commits.keys():
                 self.func_name_to_params_and_commits[method_name]['commits that changed in'].append({
                     'commit index': self.commit_index,
-                    'commit message': commit.msg})
+                    'commit message': commit.msg + f" {method_name} {file_name}"})
             else:
                 self.func_name_to_params_and_commits[method_name] = {
                     'params': method['function params'],
-                    'commits that changed in': [{'commit index': self.commit_index, 'commit message':commit.msg}] }
+                    'commits that changed in': [{'commit index': self.commit_index, 'commit message':commit.msg + f" {method_name} {file_name}"}] }
 
         for file in modified_files:
             if file in self.file_name_to_commits.keys():
                 self.file_name_to_commits[file]['commits that changed in'].append({
                     'commit index': self.commit_index,
-                    'commit message': commit.msg})
+                    'commit message': commit.msg + f" {file}"})
             else:
                 self.file_name_to_commits[file] = {
-                    'commits that changed in': [{'commit index': self.commit_index, 'commit message':commit.msg}] }
+                    'commits that changed in': [{'commit index': self.commit_index, 'commit message':commit.msg + f" {file}"}] }
 
     def gather_all_functions(self, commit, modified_files):
         add_functions, delete_functions = self.classify_functions(modified_files)
@@ -298,7 +299,8 @@ class GatherCommitsData:
                     if method.name == new_method.name:
                         list_of_modified_functions.append(
                         {'function name': self.clear_name(method.name),
-                        'function params': method.parameters})
+                        'function params': method.parameters,
+                        'file name' : modified_file.filename})
                         break
 
 

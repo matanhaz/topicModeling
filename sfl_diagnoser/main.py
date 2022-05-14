@@ -624,11 +624,10 @@ if __name__ == "__main__":
     multiply = BarinelTesterMultiply(project_name, topics, local)
     original = BarinelTesterOriginalMethod(project_name, local)
 
-    all_methods.extend([sanity,original,topicModeling, multiply])
+    all_methods.extend([topicModeling, sanity,original, multiply])
 
     for t in technique:
         all_methods.append(BarinelTesterOtherAlgorithm(project_name, t, local))
-
 
     path = join\
         (str(Path(__file__).parents[1]),'projects',project_name,"barinel","matrixes")

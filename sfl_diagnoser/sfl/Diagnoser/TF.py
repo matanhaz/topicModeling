@@ -36,7 +36,8 @@ class TF(object):
             # if e==0 : h1*h2*h3..., if e==1: 1-h1*h2*h3...
             return e + ((-2.0 * e + 1.0) * reduce(operator.mul,
                                                    list(map(h_dict[test_id].get, self.get_active_components()[test_id])), 1.0))
-        return reduce(operator.mul, list(map(lambda x: test_prob(*x), self.get_activity())), 1.0)
+        x = reduce(operator.mul, list(map(lambda x: test_prob(*x), self.get_activity())), 1.0)
+        return x
 
     def probabilty_TF(self, h):
         dict_test = dict(zip(self.get_diagnosis(), h))

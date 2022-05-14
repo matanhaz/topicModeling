@@ -6,7 +6,7 @@ import functools
 from.TF import TF
 from functools import reduce
 import math
-
+from decimal import Decimal
 
 class TFCompSimilarity(TF):
     def __init__(self, matrix, error, diagnosis, CompSimilarity, TestsSimilarity, ExperimentType, OriginalScorePercentage):
@@ -48,15 +48,15 @@ class TFCompSimilarity(TF):
             return original
 
 
-        original_calc =  reduce(operator.mul, list(map(lambda x: test_prob(*x), self.get_activity())), 1.0)
+        original_calc =  Decimal(reduce(operator.mul, list(map(lambda x: test_prob(*x), self.get_activity())), 1.0))
         parabolic_func = lambda original, similarity:  0.15*original**2 +0.15*original + 0.35*similarity**2 + 0.35*similarity
         sigmuid_func = lambda x: 1-math.e**(-((x/0.6)**4))
 
 
         norm1 = lambda x: (4*x) - 2 # norm values from [0,1] to [-2 , 2]
-        sigmuid_func2 = lambda x: (math.e**(x) - math.e**(-x))/(math.e**(x) + math.e**(-x))
+        sigmuid_func2 = lambda x: (Decimal(math.e)**(x) - Decimal(math.e)**(-x))/(Decimal(math.e)**(x) + Decimal(math.e)**(-x))
         norm2 = lambda x: (x+1)/2 # norm values from [-1,1] to [0 , 1]
-        linear_func = lambda sim,original: (1 - self.OriginalScorePercentage) * sim + self.OriginalScorePercentage * original
+        linear_func = lambda sim,original: Decimal((1.0 - self.OriginalScorePercentage) * sim) + Decimal(self.OriginalScorePercentage) * original
         avg_similarity = 0
 
 
@@ -70,7 +70,12 @@ class TFCompSimilarity(TF):
             for i in range(len(self.diagnosis)):
                 avg_similarity += (self.CompSimilarity[i] / len(self.diagnosis))
             #original_calc = linear_func(avg_similarity, original_calc)
-            original_calc = norm2(sigmuid_func2(norm1(linear_func(avg_similarity, original_calc))))
+            #original_calc = norm2(sigmuid_func2(norm1(linear_func(avg_similarity, original_calc))))
+            original_calc = linear_func(avg_similarity, original_calc)
+            original_calc = norm1(original_calc)
+            original_calc = sigmuid_func2(original_calc)
+            original_calc = norm2(original_calc)
+            original_calc = float(original_calc)
 
         # if self.ExperimentType == 'CompSimilarity': # new method with sigmoid
         #     for i in range(len(self.diagnosis)):

@@ -58,14 +58,15 @@ class ModifyOtherMethods:
             counter = 0
             with open(file[1]) as f:
                 bug_name = file[0]
-                sim = []
+                similarities = []
                 for line in f.readlines():
                     parsed_line = line.split("\t")
                     function_name = parsed_line[2].split('.')[-2]
                     if 'test' not in function_name and 'Test' not in function_name:
-                        sim.append([function_name, parsed_line[1], str(counter)])
+                        sim =  parsed_line[1] if float(parsed_line[1]) <= 1.0 else '1'
+                        similarities.append([function_name, sim, str(counter)])
                         counter += 1
-                bugs[bug_name] = sim
+                bugs[bug_name] = similarities
 
         # saving files results
 
@@ -115,7 +116,7 @@ class ModifyOtherMethods:
             counter = 0
             for file in bugs[bug]:
                 file_name = file[0] + '.java'
-                sim = file[1]
+                sim = file[1] if float(file[1]) <1 else '1'
                 try:
                     for func in exist_files_filtered[file_name]:
                         bugs_to_funcs[bug].append([func,sim, counter ])
