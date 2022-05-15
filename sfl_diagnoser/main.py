@@ -532,7 +532,7 @@ class BarinelTesterOriginalMethod(BarinelTester):
         # getting basic values
 
         def diagnose_real(matrix_name, exp_type, topic,OriginalScorePercentage):
-            ei = read_json_planning_file(matrix_name, exp_type,'topic modeling', num_topics=topic, Project_name=self.project_name, OriginalScorePercentage=OriginalScorePercentage)
+            ei = read_json_planning_file(matrix_name, exp_type,'topic modeling', num_topics=topic, Project_name=self.project_name, OriginalScorePercentage=OriginalScorePercentage, type_of_exp = self.type_of_exp )
             ei.diagnose()
 
             diagnosis = Diagnosis_Results(ei.diagnoses, ei.initial_tests, ei.error, ei.pool, ei.get_id_bugs()).metrics
@@ -629,7 +629,7 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 if __name__ == "__main__":
     project_name = "Codec"
     local = True
-    type_of_exp = 'old'
+    type_of_exp = 'new'
     #, 'BLUiR', 'AmaLgam'
     technique = [ "BugLocator", "BRTracer" , 'Locus']
     if len(sys.argv) == 4:

@@ -673,7 +673,7 @@ if __name__ == '__main__':
         project = str(sys.argv[1])
     exp1 = Experiment1(project)
     exp1()
-    Experiment2(project,True,0)()
+    Experiment2(project,True,0, 'old')()
     Experiment2(project,False, exp1.best_topics, 'old')()
     Experiment2(project,False, exp1.best_topics, 'new')()
 

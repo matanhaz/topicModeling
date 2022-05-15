@@ -167,6 +167,9 @@ class TopicModeling:
             print("missing data")
 
         else:
+            if not exists(join(self.project_path, "topicModelingFilesToFunctions")):
+                mkdir(join(self.project_path, "topicModelingFilesToFunctions"))
+                mkdir(join(self.project_path, "topicModelingFilesToFunctions", "bug to functions and similarity"))
             if not self.functions:
                 if not exists(join(self.project_path, "Experiments")):
                     mkdir(join(self.project_path, "Experiments"))
@@ -174,8 +177,7 @@ class TopicModeling:
                     mkdir(join(self.project_path, "Experiments", "Experiment_1", "data"))
                     mkdir(join(self.project_path, "Experiments", "Experiment_1", "data", "methods"))
 
-                    mkdir(join(self.project_path, "topicModelingFilesToFunctions"))
-                    mkdir(join(self.project_path, "topicModelingFilesToFunctions", "bug to functions and similarity"))
+
 
             if not (exists(self.topicModeling_path)):
                 mkdir(self.topicModeling_path)
@@ -756,7 +758,7 @@ class TopicModeling:
                 except:
                     print()
         final_dict_funcs['bugs'] = bugs_to_funcs
-        path_to_save = join(self.project_path,"topicModelingFilesToFunctions","bug to functions and similarity",f"bug to function and similarity {NUM_TOPICS} topics")
+        path_to_save = join(self.project_path,"topicModelingFilesToFunctions","bug to functions and similarity",f"bug to functions and similarity {NUM_TOPICS} topics")
 
         data2 = DataFrame.from_dict(final_dict_funcs)
         data2.to_parquet(
