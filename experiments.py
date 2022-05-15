@@ -259,8 +259,9 @@ class Experiment1(Experiment):
 
 
 class Experiment2(Experiment):
-    def __init__(self, project_name, is_sanity, best_topics):
-        super().__init__(project_name, 'Experiment_2')
+    def __init__(self, project_name, is_sanity, best_topics, type_of_exp):
+        exp = 'Experiment_2' if type_of_exp == 'old' else 'Experiment_4'
+        super().__init__(project_name, exp)
         self.x = {}
         self.x = defaultdict(lambda:[], self.x)
         self.y = {}
@@ -673,5 +674,7 @@ if __name__ == '__main__':
     exp1 = Experiment1(project)
     exp1()
     Experiment2(project,True,0)()
-    Experiment2(project,False, exp1.best_topics)()
+    Experiment2(project,False, exp1.best_topics, 'old')()
+    Experiment2(project,False, exp1.best_topics, 'new')()
+
     # Experiment3(project,False)()
