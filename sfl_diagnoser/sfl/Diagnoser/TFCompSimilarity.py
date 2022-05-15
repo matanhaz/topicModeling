@@ -63,7 +63,9 @@ class TFCompSimilarity(TF):
         if self.ExperimentType == 'BothSimilarities': # old method with mul each sim
             #original_calc *= avg_similarity
             for i in range(len(self.diagnosis)):
-                original_calc *= self.CompSimilarity[i]
+                original_calc *= Decimal(self.CompSimilarity[i])
+
+            original_calc = float(original_calc)
 
 
         if self.ExperimentType == 'CompSimilarity': # new method with sigmoid

@@ -25,8 +25,9 @@ rows_combined_methods.append(["project", "technique","precision", "recall", "was
 
 
 class BarinelTester:
-    def __init__(self, project_name, test_type, local):
+    def __init__(self, project_name, test_type, local, type_of_exp):
         self.project_name = project_name
+        self.type_of_exp = type_of_exp
         self.epsilon = 0.01
         self.rows = []
         self.rows.append(["project", "technique","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
@@ -54,6 +55,9 @@ class BarinelTester:
 
         self.experiment2_path = join(self.project_path,'Experiments', 'Experiment_2')
         self.experiment3_path = join(self.project_path,'Experiments', 'Experiment_3')
+        self.experiment4_path = join(self.project_path,'Experiments', 'Experiment_4')
+        self.experiment5_path = join(self.project_path,'Experiments', 'Experiment_5')
+
         self.mapping = {}
         self.prepare_dir()
         self.prepare_matrixes()
@@ -156,24 +160,44 @@ class BarinelTester:
                 (new_path_matrixes, m[2]))
 
     def write_rows(self):
-        if not exists(self.experiment2_path):
-            mkdir(self.experiment2_path)
-            mkdir(join(self.experiment2_path, "data"))
+        if self.type_of_exp == 'old':
+            if not exists(self.experiment2_path):
+                mkdir(self.experiment2_path)
+                mkdir(join(self.experiment2_path, "data"))
 
-        if not exists(self.experiment3_path):
-            mkdir(self.experiment3_path)
-            mkdir(join(self.experiment3_path, "data"))
+            if not exists(self.experiment3_path):
+                mkdir(self.experiment3_path)
+                mkdir(join(self.experiment3_path, "data"))
 
 
-        path_to_save_into = join(self.experiment2_path, "data", f"{self.test_type}.csv")
-        with open(path_to_save_into, "w", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerows(self.rows)
+            path_to_save_into = join(self.experiment2_path, "data", f"{self.test_type}.csv")
+            with open(path_to_save_into, "w", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerows(self.rows)
 
-        path_to_save_into = join(self.experiment3_path, "data", f"{self.test_type}.csv")
-        with open(path_to_save_into, "w", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerows(self.rows_all_divisions)
+            path_to_save_into = join(self.experiment3_path, "data", f"{self.test_type}.csv")
+            with open(path_to_save_into, "w", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerows(self.rows_all_divisions)
+        else:
+            if not exists(self.experiment4_path):
+                mkdir(self.experiment4_path)
+                mkdir(join(self.experiment4_path, "data"))
+
+            if not exists(self.experiment5_path):
+                mkdir(self.experiment5_path)
+                mkdir(join(self.experiment5_path, "data"))
+
+
+            path_to_save_into = join(self.experiment4_path, "data", f"{self.test_type}.csv")
+            with open(path_to_save_into, "w", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerows(self.rows)
+
+            path_to_save_into = join(self.experiment5_path, "data", f"{self.test_type}.csv")
+            with open(path_to_save_into, "w", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerows(self.rows_all_divisions)
 
     def _fill_row(self, diagnosis, matrix_name, percentage, is_sanity, *args):
         if is_sanity:
@@ -266,8 +290,8 @@ class BarinelTester:
 
 
 class BarinelTesterSanity(BarinelTester):
-    def __init__(self, project_name, local):
-        super().__init__(project_name, "Sanity",local)
+    def __init__(self, project_name, local, type_of_exp):
+        super().__init__(project_name, "Sanity",local, type_of_exp)
         self.high_similarity = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
         self.low_similarity = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
         self.rows = []
@@ -345,15 +369,15 @@ class BarinelTesterSanity(BarinelTester):
 
 
 class BarinelTesterTopicModeling(BarinelTester):
-    def __init__(self, project_name, topics_range, local):
-        super().__init__(project_name, "TopicModeling", local)
+    def __init__(self, project_name, topics_range, local, type_of_exp):
+        super().__init__(project_name, "TopicModeling", local, type_of_exp)
         self.topics = topics_range
 
     def diagnose(self, matrix_name):
         # getting basic values
 
         def diagnose_real(matrix_name, exp_type, topic,OriginalScorePercentage):
-            ei = read_json_planning_file(matrix_name, exp_type,'topic modeling', num_topics=topic, Project_name=self.project_name, OriginalScorePercentage=OriginalScorePercentage)
+            ei = read_json_planning_file(matrix_name, exp_type,'topic modeling', num_topics=topic, Project_name=self.project_name, OriginalScorePercentage=OriginalScorePercentage, type_of_exp = self.type_of_exp)
             ei.diagnose()
 
             diagnosis = Diagnosis_Results(ei.diagnoses, ei.initial_tests, ei.error, ei.pool, ei.get_id_bugs()).metrics
@@ -421,8 +445,8 @@ class BarinelTesterTopicModeling(BarinelTester):
         # rows_combined_methods.append(best_row)
 
 class BarinelTesterMultiply(BarinelTester):
-    def __init__(self, project_name, topics_range, local, ):
-        super().__init__(project_name, "Multiply", local)
+    def __init__(self, project_name, topics_range, local, type_of_exp ):
+        super().__init__(project_name, "Multiply", local, type_of_exp)
         self.topics = topics_range
 
 
@@ -430,7 +454,7 @@ class BarinelTesterMultiply(BarinelTester):
         # getting basic values
 
         def diagnose_real(matrix_name, exp_type, topic,OriginalScorePercentage):
-            ei = read_json_planning_file(matrix_name, exp_type,'topic modeling', num_topics=topic, Project_name=self.project_name, OriginalScorePercentage=OriginalScorePercentage)
+            ei = read_json_planning_file(matrix_name, exp_type,'topic modeling', num_topics=topic, Project_name=self.project_name, OriginalScorePercentage=OriginalScorePercentage, type_of_exp = self.type_of_exp)
             ei.diagnose()
 
             diagnosis = Diagnosis_Results(ei.diagnoses, ei.initial_tests, ei.error, ei.pool, ei.get_id_bugs()).metrics
@@ -500,8 +524,8 @@ class BarinelTesterMultiply(BarinelTester):
 
 
 class BarinelTesterOriginalMethod(BarinelTester):
-    def __init__(self, project_name, local):
-        super().__init__(project_name, "Original", local)
+    def __init__(self, project_name, local, type_of_exp):
+        super().__init__(project_name, "Original", local, type_of_exp)
 
 
     def diagnose(self, matrix_name):
@@ -551,8 +575,8 @@ class BarinelTesterOriginalMethod(BarinelTester):
 
 
 class BarinelTesterOtherAlgorithm(BarinelTester):
-    def __init__(self, project_name, technique, local):
-        super().__init__(project_name, technique, local)  # represnt what comes out from the github results of other teqniques
+    def __init__(self, project_name, technique, local, type_of_exp):
+        super().__init__(project_name, technique, local, type_of_exp)  # represnt what comes out from the github results of other teqniques
         self.technique = technique
 
     def diagnose(self, matrix_name):
@@ -605,12 +629,14 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 if __name__ == "__main__":
     project_name = "Codec"
     local = True
+    type_of_exp = 'old'
     #, 'BLUiR', 'AmaLgam'
     technique = [ "BugLocator", "BRTracer" , 'Locus']
-    if len(sys.argv) == 3:
+    if len(sys.argv) == 4:
         project_name = sys.argv[1]
         if sys.argv[2] == 'git':
             local = False
+        type_of_exp = sys.argv[3]
 
     errors = []
 
@@ -618,16 +644,16 @@ if __name__ == "__main__":
     failed = []
     topics = list(range(20,601,20))
     all_methods = []
-    sanity = BarinelTesterSanity(project_name,local)
+    sanity = BarinelTesterSanity(project_name,local, type_of_exp)
 
-    topicModeling = BarinelTesterTopicModeling(project_name, topics, local)
-    multiply = BarinelTesterMultiply(project_name, topics, local)
-    original = BarinelTesterOriginalMethod(project_name, local)
+    topicModeling = BarinelTesterTopicModeling(project_name, topics, local, type_of_exp)
+    multiply = BarinelTesterMultiply(project_name, topics, local, type_of_exp)
+    original = BarinelTesterOriginalMethod(project_name, local, type_of_exp)
 
     all_methods.extend([topicModeling, sanity,original, multiply])
 
     for t in technique:
-        all_methods.append(BarinelTesterOtherAlgorithm(project_name, t, local))
+        all_methods.append(BarinelTesterOtherAlgorithm(project_name, t, local, type_of_exp))
 
     path = join\
         (str(Path(__file__).parents[1]),'projects',project_name,"barinel","matrixes")
@@ -657,11 +683,14 @@ if __name__ == "__main__":
     else:
         project_path = join(str(Path(getcwd())),"projects",project_name)
 
-    experiment2_path = join(project_path,'Experiments', 'Experiment_2')
+    if type_of_exp == 'old':
+        experiment_path = join(project_path,'Experiments', 'Experiment_2')
+    else:
+        experiment_path = join(project_path,'Experiments', 'Experiment_4')
 
 
 
-    path_to_save_into = join(experiment2_path, "data", f"data_all_methods_combined.csv")
+    path_to_save_into = join(experiment_path, "data", f"data_all_methods_combined.csv")
     with open(path_to_save_into, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerows(rows_combined_methods)

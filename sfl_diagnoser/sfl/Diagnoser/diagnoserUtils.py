@@ -273,12 +273,13 @@ def __create_similarity_vector_tests(instance, good_sim, bad_sim):
 
 PROJECTS_DIR_PATH = os.path.join(str(Path(__file__).parents[3]),'projects')
 
-def _read_json_planning_file_topic_modeling(file_path,experiment_type,num_topics,Project_name, OriginalScorePercentage):
+def _read_json_planning_file_topic_modeling(file_path,experiment_type,num_topics,Project_name, OriginalScorePercentage, type_of_exp):
     with open(file_path, "r") as f:
         instance = json.loads(f.read())
-
-    path =os.path.join(PROJECTS_DIR_PATH,Project_name,'topicModeling','bug to functions and similarity',f'bug to functions and similarity {str(num_topics)} topics' )
-
+    if type_of_exp == 'old':
+        path =os.path.join(PROJECTS_DIR_PATH,Project_name,'topicModeling','bug to functions and similarity',f'bug to functions and similarity {str(num_topics)} topics' )
+    else:
+        path =os.path.join(PROJECTS_DIR_PATH,Project_name,'topicModelingFilesToFunctions','bug to functions and similarity',f'bug to functions and similarity {str(num_topics)} topics' )
     if experiment_type in ("CompSimilarity", "TestsSimilarity", "BothSimilarities"):
         instance["CompSimilarity"] = __get_real_comp_similarity(instance,file_path,Project_name,path)
         instance["TestsSimilarity"] = __get_real_test_similarity(instance,file_path,Project_name,path)

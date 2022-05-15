@@ -119,14 +119,14 @@ class ModifyOtherMethods:
                 sim = file[1] if float(file[1]) <1 else '1'
                 try:
                     for func in exist_files_filtered[file_name]:
-                        bugs_to_funcs[bug].append([func,sim, counter ])
+                        bugs_to_funcs[bug].append([func,sim, str(counter) ])
                         counter += 1
                 except:
                     print()
         final_dict_funcs['bugs'] = bugs_to_funcs
         path_to_save = join("projects", self.project_folder,"topicModeling","bug to functions and similarity",f"bug_to_function_and_similarity_{self.method_folder_name}")
 
-        data2 = DataFrame.from_dict(final_dict)
+        data2 = DataFrame.from_dict(final_dict_funcs)
         data2.to_parquet(
             path=path_to_save
         )

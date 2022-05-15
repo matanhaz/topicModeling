@@ -174,6 +174,8 @@ class TopicModeling:
                     mkdir(join(self.project_path, "Experiments", "Experiment_1", "data"))
                     mkdir(join(self.project_path, "Experiments", "Experiment_1", "data", "methods"))
 
+                    mkdir(join(self.project_path, "topicModelingFilesToFunctions"))
+                    mkdir(join(self.project_path, "topicModelingFilesToFunctions", "bug to functions and similarity"))
 
             if not (exists(self.topicModeling_path)):
                 mkdir(self.topicModeling_path)
@@ -450,6 +452,9 @@ class TopicModeling:
         # with open(join()(self.project_path ,"analysis","commitId to all functions.txt")) as outfile:
         #     commit_to_exist_functions = json.load(outfile)['commit id']
 
+        if not self.functions:
+            self.extract_functions_similarity_from_files(NUM_TOPICS, bug_to_func_and_similarity)
+
         return self.fill_table(
             NUM_TOPICS, bugs, bug_to_func_and_similarity, commit_to_exist_functions
         )
@@ -708,31 +713,55 @@ class TopicModeling:
 
 
 
-        # with open(join()(self.project_path , "topicModeling", file_name + ".txt"), 'w') as outfile:
-        #     json.dump(data, outfile, indent=4)
+    def extract_functions_similarity_from_files(self, NUM_TOPICS, bug_to_func_and_similarity):
+        final_dict_funcs = {}
+        bugs_to_funcs = {}
 
-    # def visualize(self, NUM_TOPICS):
-    #
-    #     dictionary = gensim.corpora.Dictionary.load(
-    #         join(self.project_path, "topicModeling",
-    #                   "dictionary.gensim")
-    #     )
-    #     corpus = pickle.load(
-    #         open(join(self.project_path,
-    #                        "topicModeling", "corpus.pkl"), "rb")
-    #     )
-    #     lda = gensim.models.ldamodel.LdaModel.load(
-    #         join(
-    #             self.project_path,
-    #             "topicModeling",
-    #             "topics",
-    #             "model" + str(NUM_TOPICS) + ".gensim",
-    #         )
-    #     )
-    #     lda_display = pyLDAvis.gensim_models.prepare(
-    #         lda, corpus, dictionary, sort_topics=False
-    #     )
-    #     pyLDAvis.display(lda_display)
+        with open(join(self.project_path, "analysis", "bug_to_commit_that_solved.txt")) as outfile:
+            bugs_to_hex = json.load(outfile)["bugs to commit"]
+
+        bugs = [bug['bug id'] for bug in bugs_to_hex]
+
+        df = read_parquet(
+            path=join(self.analysis_path, "commitId to all functions")
+        )
+        commit_to_exist_functions = df.to_dict()["commit id"]
+
+        for bug in bugs:
+            bugs_to_funcs[bug] = []
+            try:
+                commit_hex = [b['hexsha'] for b in bugs_to_hex if b['bug id'] == bug][0]
+            except:
+                print(bug)
+                continue
+            commit_id = [commit for commit in commit_to_exist_functions if commit_to_exist_functions[commit]['hexsha'] == commit_hex][0]
+
+            exist_files = commit_to_exist_functions[commit_id]['file to functions']
+            exist_files_filtered = {}
+            for f in exist_files:
+                if exist_files[f] is not None:
+                    exist_files_filtered[f.split('\\')[-1].split('/')[-1]] = exist_files[f].tolist()
+
+            file_to_sim= list(bug_to_func_and_similarity[bug])
+
+            counter = 0
+            for file in file_to_sim:
+                f = list(file)
+                file_name = f[0].split('\\')[-1].split('/')[-1]
+                sim = f[1]
+                try:
+                    for func in exist_files_filtered[file_name]:
+                        bugs_to_funcs[bug].append([func,sim, str(counter) ])
+                        counter += 1
+                except:
+                    print()
+        final_dict_funcs['bugs'] = bugs_to_funcs
+        path_to_save = join(self.project_path,"topicModelingFilesToFunctions","bug to functions and similarity",f"bug to function and similarity {NUM_TOPICS} topics")
+
+        data2 = DataFrame.from_dict(final_dict_funcs)
+        data2.to_parquet(
+            path=path_to_save
+        )
 
 
 if __name__ == "__main__":
