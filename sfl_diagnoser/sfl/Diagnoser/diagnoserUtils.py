@@ -281,7 +281,7 @@ def _read_json_planning_file_topic_modeling(file_path,experiment_type,num_topics
     else:
         path =os.path.join(PROJECTS_DIR_PATH,Project_name,'topicModelingFilesToFunctions','bug to functions and similarity',f'bug to functions and similarity {str(num_topics)} topics' )
     if experiment_type in ("CompSimilarity", "TestsSimilarity", "BothSimilarities"):
-        instance["CompSimilarity"] = __get_real_comp_similarity(instance,file_path,Project_name,path)
+        instance["CompSimilarity"] = __get_real_comp_similarity(instance,file_path,Project_name,path, type_of_exp)
         instance["TestsSimilarity"] = __get_real_test_similarity(instance,file_path,Project_name,path)
         instance["ExperimentType"] = experiment_type
 
@@ -294,13 +294,13 @@ def _read_json_planning_file_other_method(file_path,experiment_type,Project_name
     path =os.path.join(PROJECTS_DIR_PATH,Project_name,'topicModeling','bug to functions and similarity',f'bug_to_function_and_similarity_{technique_and_project}' )
 
     if experiment_type in ("CompSimilarity", "TestsSimilarity", "BothSimilarities"):
-        instance["CompSimilarity"] = __get_real_comp_similarity(instance,file_path,Project_name,path)
+        instance["CompSimilarity"] = __get_real_comp_similarity(instance,file_path,Project_name,path, "new")
         instance["TestsSimilarity"] = __get_real_test_similarity(instance,file_path,Project_name,path)
         instance["ExperimentType"] = experiment_type
 
     return read_json_planning_instance(instance, experiment_type, OriginalScorePercentage)
 
-def __get_real_comp_similarity(instance,matrix_path,Project_name,similarities_path):
+def __get_real_comp_similarity(instance,matrix_path,Project_name,similarities_path, type_of_exp):
     
     with open(os.path.join(PROJECTS_DIR_PATH,Project_name,'analysis','bug_to_commit_that_solved.txt')) as f:
         data = json.loads(f.read())["bugs to commit"]  # array of dicts
@@ -336,7 +336,7 @@ def __get_real_comp_similarity(instance,matrix_path,Project_name,similarities_pa
         func_name = (comp[1].replace("$", ".").split(".")[-1].split("(")[0])
         file_name = comp[1].replace("$", ".").split(".")[-2]# keep name only
         for l in bug_to_sim:
-            if func_name == l[0].lower() and file_name == l[3].lower():
+            if func_name == l[0].lower() and (type_of_exp == 'old' or file_name == l[3].lower()):
                 similarities.append(l[1])
                 break
         else:

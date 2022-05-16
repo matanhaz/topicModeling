@@ -119,7 +119,7 @@ class ModifyOtherMethods:
                 sim = file[1] if float(file[1]) <1 else '1'
                 try:
                     for func in exist_files_filtered[file_name]:
-                        bugs_to_funcs[bug].append([func,sim, str(counter) ])
+                        bugs_to_funcs[bug].append([func,sim, str(counter), file[0] ])
                         counter += 1
                 except:
                     print()
