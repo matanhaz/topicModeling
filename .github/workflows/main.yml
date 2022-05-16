@@ -473,7 +473,6 @@ jobs:
         run: |
               cd `git rev-parse --show-toplevel`
               python sfl_diagnoser/main.py ${{github.event.inputs.repo_name}} git ${{matrix.type}}
-              python experiments.py ${{github.event.inputs.repo_name}}
               
       - name: Upload data
         if: ${{ always() }}
