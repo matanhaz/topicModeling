@@ -732,7 +732,7 @@ class TopicModeling:
         for bug in bugs:
             bugs_to_funcs[bug] = []
             try:
-                commit_hex = [b['hexsha'] for b in bugs_to_hex if b['bug id'] == bug][0]
+                commit_hex = [b['fix_hash'] for b in bugs_to_hex if b['bug id'] == bug][0]
             except:
                 print(bug)
                 continue
@@ -753,7 +753,7 @@ class TopicModeling:
                 sim = f[1]
                 try:
                     for func in exist_files_filtered[file_name]:
-                        bugs_to_funcs[bug].append([func,sim, str(counter) ])
+                        bugs_to_funcs[bug].append([func,sim, str(counter), file_name.split('.')[0] ])
                         counter += 1
                 except:
                     print()

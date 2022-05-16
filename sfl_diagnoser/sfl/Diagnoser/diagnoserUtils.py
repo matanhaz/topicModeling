@@ -333,9 +333,10 @@ def __get_real_comp_similarity(instance,matrix_path,Project_name,similarities_pa
     bugs = instance["bugs"]
 
     for comp in instance["components_names"]:
-        func_name = (comp[1].replace("$", ".").split(".")[-1].split("(")[0])  # keep name only
+        func_name = (comp[1].replace("$", ".").split(".")[-1].split("(")[0])
+        file_name = comp[1].replace("$", ".").split(".")[-2]# keep name only
         for l in bug_to_sim:
-            if func_name == l[0].lower():
+            if func_name == l[0].lower() and file_name == l[3].lower():
                 similarities.append(l[1])
                 break
         else:
