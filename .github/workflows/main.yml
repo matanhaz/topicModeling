@@ -173,6 +173,8 @@ jobs:
               unzip archives/$project.zip -d data
               cd data
               cd project
+              mkdir gitrepo
+              cd gitrepo
               git clone url .
               
     - name: Install Indri
