@@ -19,8 +19,8 @@ def main():
     with open("project_info.txt", 'r') as outfile:
         data = json.load(outfile)
 
-    git_url = data[selected_project]['git url']
-    jira_url = data[selected_project]['jira url']
+    git_url = data[selected_project]['git_url']
+    jira_url = data[selected_project]['jira_url']
     project = data[selected_project]['project']
 
     if not exists("projects"):
