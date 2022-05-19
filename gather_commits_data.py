@@ -267,7 +267,7 @@ class GatherCommitsData:
             if '.java' not in modified_file.filename:
                 continue
 
-            if modified_file.change_type.name == 'RENAME':
+            if modified_file.change_type.name == 'RENAME' and modified_file.old_path in self.existing_files:
                 self.existing_files[modified_file.new_path] = deepcopy(self.existing_files[modified_file.old_path])
                 self.existing_files.pop(modified_file.old_path)
 
