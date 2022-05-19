@@ -1,97 +1,97 @@
 {
     "Lang": {
-        "git url": "https://github.com/apache/commons-lang.git",
-        "jira url": "http://issues.apache.org/jira",
+        "git_url": "https://github.com/apache/commons-lang.git",
+        "jira_url": "http://issues.apache.org/jira",
         "project": "LANG",
 	"group":"Commons"
     },
     "Math": {
-        "git url": "https://github.com/apache/commons-math.git",
-       	"jira url": "http://issues.apache.org/jira",
+        "git_url": "https://github.com/apache/commons-math.git",
+       	"jira_url": "http://issues.apache.org/jira",
        	"project": "MATH",
 	"group":"Commons"
     },
     "Weaver": {
-        "git url": "https://github.com/apache/commons-weaver.git",
-       	"jira url": "http://issues.apache.org/jira",
+        "git_url": "https://github.com/apache/commons-weaver.git",
+       	"jira_url": "http://issues.apache.org/jira",
        	"project": "WEAVER",
 	"group":"Commons"
     },
      "Hive": {
-        "git url": "https://github.com/apache/hive.git",
-       	"jira url": "http://issues.apache.org/jira",
+        "git_url": "https://github.com/apache/hive.git",
+       	"jira_url": "http://issues.apache.org/jira",
        	"project": "HIVE",
 	"group":"Apache"
     },
     "Compress": {
-        "git url": "https://github.com/apache/commons-compress.git",
-       	"jira url": "http://issues.apache.org/jira",
+        "git_url": "https://github.com/apache/commons-compress.git",
+       	"jira_url": "http://issues.apache.org/jira",
        	"project": "COMPRESS",
 	"group":"Commons"
     },
     "Codec": {
-        "git url": "https://github.com/apache/commons-codec.git",
-       	"jira url": "http://issues.apache.org/jira",
+        "git_url": "https://github.com/apache/commons-codec.git",
+       	"jira_url": "http://issues.apache.org/jira",
        	"project": "CODEC",
 	"group":"Commons"
     },
     "Collections": {
-        "git url": "https://github.com/apache/commons-collections.git",
-       	"jira url": "http://issues.apache.org/jira",
+        "git_url": "https://github.com/apache/commons-collections.git",
+       	"jira_url": "http://issues.apache.org/jira",
        	"project": "COLLECTIONS",
 	"group":"Commons"
     },
     "Csv": {
-        "git url": "https://github.com/apache/commons-csv.git",
-       	"jira url": "http://issues.apache.org/jira",
+        "git_url": "https://github.com/apache/commons-csv.git",
+       	"jira_url": "http://issues.apache.org/jira",
        	"project": "CSV",
 	"group":"Commons"
     },
     "Configuration": {
-        "git url": "https://github.com/apache/commons-configuration.git",
-       	"jira url": "http://issues.apache.org/jira",
+        "git_url": "https://github.com/apache/commons-configuration.git",
+       	"jira_url": "http://issues.apache.org/jira",
        	"project": "CONFIGURATION",
 	"group":"Commons"
     },
     "Io": {
-        "git url": "https://github.com/apache/commons-io.git",
-       	"jira url": "http://issues.apache.org/jira",
+        "git_url": "https://github.com/apache/commons-io.git",
+       	"jira_url": "http://issues.apache.org/jira",
        	"project": "IO",
 	"group":"Commons"
     },
     "Ely": {
-        "git url": "https://github.com/wildfly-security/wildfly-elytron.git",
-       	"jira url": "https://issues.redhat.com",
+        "git_url": "https://github.com/wildfly-security/wildfly-elytron.git",
+       	"jira_url": "https://issues.redhat.com",
        	"project": "ELY",
 	"group":"Wildfly"
     },
     "Wfarq": {
-        "git url": "https://github.com/wildfly/wildfly-arquillian.git",
-       	"jira url": "https://issues.redhat.com",
+        "git_url": "https://github.com/wildfly/wildfly-arquillian.git",
+       	"jira_url": "https://issues.redhat.com",
        	"project": "WFARQ",
 	"group":"Wildfly"
     },
     "Amqp": {
-        "git url": "https://github.com/spring-projects/spring-amqp.git",
-       	"jira url": "https://jira.spring.io",
+        "git_url": "https://github.com/spring-projects/spring-amqp.git",
+       	"jira_url": "https://jira.spring.io",
        	"project": "AMQP",
 	"group":"Spring"
     },
     "Batch": {
-        "git url": "https://github.com/spring-projects/spring-batch.git",
-       	"jira url": "https://jira.spring.io",
+        "git_url": "https://github.com/spring-projects/spring-batch.git",
+       	"jira_url": "https://jira.spring.io",
        	"project": "BATCH",
 	"group":"Spring"
     },
     "Datacmns": {
-        "git url": "https://github.com/spring-projects/spring-data-commons.git",
-       	"jira url": "https://jira.spring.io",
+        "git_url": "https://github.com/spring-projects/spring-data-commons.git",
+       	"jira_url": "https://jira.spring.io",
        	"project": "DATACMNS",
 	"group":"Spring"
     },
     "Datagraph": {
-        "git url": "https://github.com/spring-projects/spring-data-neo4j.git",
-       	"jira url": "https://jira.spring.io",
+        "git_url": "https://github.com/spring-projects/spring-data-neo4j.git",
+       	"jira_url": "https://jira.spring.io",
        	"project": "DATAGRAPH",
 	"group":"Spring"
     }    
