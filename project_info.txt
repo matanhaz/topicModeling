@@ -94,5 +94,17 @@
        	"jira_url": "https://jira.spring.io",
        	"project": "DATAGRAPH",
 	"group":"Spring"
+    },
+    "Maven": {
+        "git_url": "https://github.com/apache/maven.git",
+       	"jira_url": "http://issues.apache.org/jira",
+       	"project": "MAVEN",
+	"group":"Apache"
+    },
+    "Wicket": {
+        "git_url": "https://github.com/apache/wicket.git",
+       	"jira_url": "http://issues.apache.org/jira",
+       	"project": "WICKET",
+	"group":"Apache"
     }    
 }
