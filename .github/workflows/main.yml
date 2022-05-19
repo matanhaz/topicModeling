@@ -168,8 +168,12 @@ jobs:
               sudo apt install unzip
               mkdir data
               name=${{github.event.inputs.repo_name}}
-              project=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
+              project=$(echo $(jq ".$name.git_url" project_info.txt) | tr -d '\"')
+              url=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
               unzip archives/$project.zip -d data
+              cd data
+              cd project
+              git clone url .
               
     - name: Install Indri
       run: |
