@@ -390,7 +390,27 @@ jobs:
               cd `git rev-parse --show-toplevel`
               sudo apt install unzip
               unzip matrixes/${{github.event.inputs.repo_name}}.zip -d matrixes/${{github.event.inputs.repo_name}}
+
+
               
+#      - name: Script
+ #       run: |
+  #            import os
+   #           active_bugs = False
+    #          path = os.path.join('.','matrixes',"${{github.event.inputs.repo_name}}")
+     #         a= os.listdir(path)
+      #        print(a)
+       #       for file in a:
+        #          if 'bug-mining' in file:
+         #             p = os.path.join(path,file)
+          #            old = os.path.join(p,'framework', 'projects',"${{github.event.inputs.repo_name}}",f"matrix_{file.split('_')[1]}_full.json")
+           #           new = os.path.join('.',"matrixes_before_change",f"{file.split('_')[1]}.json")
+            #          if os.path.exists(old):
+             #             os.rename(old,new)
+              #        if not active_bugs:
+               #           active_bugs = True
+                #          os.rename(os.path.join(p,'framework', 'projects',"${{github.event.inputs.repo_name}}","active-bugs.csv"),os.path.join('.',"matrixes_before_change","active-bugs.csv"))
+       # shell: python
               
       - name: Script
         run: |
@@ -400,10 +420,10 @@ jobs:
               a= os.listdir(path)
               print(a)
               for file in a:
-                  if 'bug-mining' in file:
+                  if 'tracer_info' in file:
                       p = os.path.join(path,file)
-                      old = os.path.join(p,'framework', 'projects',"${{github.event.inputs.repo_name}}",f"matrix_{file.split('_')[1]}_full.json")
-                      new = os.path.join('.',"matrixes_before_change",f"{file.split('_')[1]}.json")
+                      old = os.path.join(p,f"matrix_{file.split('_')[2]}_full.json")
+                      new = os.path.join('.',"matrixes_before_change",f"{file.split('_')[2]}.json")
                       if os.path.exists(old):
                           os.rename(old,new)
                       if not active_bugs:
