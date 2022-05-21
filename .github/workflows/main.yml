@@ -18,7 +18,7 @@ jobs:
   steps_1-3_gathering_data:
     # The type of runner that the job will run on
     runs-on: ubuntu-18.04
- 
+
     steps:
       - uses: actions/checkout@v2
 
