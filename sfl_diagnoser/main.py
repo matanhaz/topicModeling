@@ -651,17 +651,10 @@ if __name__ == "__main__":
         topics = list(range(20,601,20))
         multiply = BarinelTesterMultiply(project_name, topics, local, type_of_exp)
         original = BarinelTesterOriginalMethod(project_name, local, type_of_exp)
-        all_methods = [original, multiply]
+        topicModeling = BarinelTesterTopicModeling(project_name, topics, local, type_of_exp)
+        all_methods = [original, multiply, topicModeling]
         for t in technique:
             all_methods.append(BarinelTesterOtherAlgorithm(project_name, t, local, type_of_exp))
-    elif methods == 2:
-        topics = list(range(20,301,20))
-        topicModeling = BarinelTesterTopicModeling(project_name, topics, local, type_of_exp)
-        all_methods = [topicModeling]
-    else:
-        topics = list(range(320,601,20))
-        topicModeling = BarinelTesterTopicModeling(project_name, topics, local, type_of_exp)
-        all_methods = [topicModeling]
 
 
     path = join\
