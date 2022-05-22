@@ -449,7 +449,7 @@ jobs:
       fail-fast: false
       matrix:
        type: [old, new]
-
+       methods: [0, 1, 2, 3]
     steps:
       - uses: actions/checkout@v2
 
@@ -500,7 +500,7 @@ jobs:
       - name: barinel
         run: |
               cd `git rev-parse --show-toplevel`
-              python sfl_diagnoser/main.py ${{github.event.inputs.repo_name}} git ${{matrix.type}}
+              python sfl_diagnoser/main.py ${{github.event.inputs.repo_name}} git ${{matrix.type}} ${{matrix.methods}}
               
       - name: Upload data
         if: ${{ always() }}
