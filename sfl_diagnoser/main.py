@@ -630,30 +630,39 @@ if __name__ == "__main__":
     project_name = "Codec"
     local = True
     type_of_exp = 'new'
+    methods = 0
     #, 'BLUiR', 'AmaLgam'
     technique = [ "BugLocator", "BRTracer" , 'Locus']
-    if len(sys.argv) == 4:
+    if len(sys.argv) == 5:
         project_name = sys.argv[1]
         if sys.argv[2] == 'git':
             local = False
         type_of_exp = sys.argv[3]
+        methods = sys.argv[4]
 
     errors = []
-
     success = []
     failed = []
-    topics = list(range(20,601,20))
     all_methods = []
-    sanity = BarinelTesterSanity(project_name,local, type_of_exp)
+    if methods == 0:
+        sanity = BarinelTesterSanity(project_name,local, type_of_exp)
+        all_methods = [sanity]
+    elif methods == 1:
+        topics = list(range(20,601,20))
+        multiply = BarinelTesterMultiply(project_name, topics, local, type_of_exp)
+        original = BarinelTesterOriginalMethod(project_name, local, type_of_exp)
+        all_methods = [original, multiply]
+        for t in technique:
+            all_methods.append(BarinelTesterOtherAlgorithm(project_name, t, local, type_of_exp))
+    elif methods == 2:
+        topics = list(range(20,301,20))
+        topicModeling = BarinelTesterTopicModeling(project_name, topics, local, type_of_exp)
+        all_methods = [topicModeling]
+    else:
+        topics = list(range(320,601,20))
+        topicModeling = BarinelTesterTopicModeling(project_name, topics, local, type_of_exp)
+        all_methods = [topicModeling]
 
-    topicModeling = BarinelTesterTopicModeling(project_name, topics, local, type_of_exp)
-    multiply = BarinelTesterMultiply(project_name, topics, local, type_of_exp)
-    original = BarinelTesterOriginalMethod(project_name, local, type_of_exp)
-
-    all_methods.extend([topicModeling, sanity,original, multiply])
-
-    for t in technique:
-        all_methods.append(BarinelTesterOtherAlgorithm(project_name, t, local, type_of_exp))
 
     path = join\
         (str(Path(__file__).parents[1]),'projects',project_name,"barinel","matrixes")
