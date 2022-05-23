@@ -279,7 +279,9 @@ class Experiment2(Experiment):
 
     def combine_tables(self):
         first = True
+        first_sanity = True
         all_rows = []
+        all_rows_sanity = []
         for file in listdir(self.data_path):
             if 'Sanity' not in file:
                 with open(join(self.data_path, file)) as outfile:
@@ -289,6 +291,14 @@ class Experiment2(Experiment):
                         all_rows.extend(labels_row)
                         first = False
                     all_rows.extend(values_rows)
+            else:
+                with open(join(self.data_path, file)) as outfile:
+                    rows = list(csv.reader(outfile))
+                    labels_row, values_rows = rows[0], rows[1:]
+                    if first_sanity:
+                        all_rows_sanity.extend(labels_row)
+                        first = False
+                    all_rows_sanity.extend(values_rows)
 
 
 
@@ -297,11 +307,16 @@ class Experiment2(Experiment):
             writer = csv.writer(f)
             writer.writerows(all_rows)
 
+        path_to_save_into = join(self.data_path, f"Sanity_combined.csv")
+        with open(path_to_save_into, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerows(all_rows_sanity)
+
 
 
     def run_sanity(self):
         for file in listdir(self.data_path):
-            if 'Sanity' in file:
+            if 'Sanity_combined' in file:
                 self._run_sanity(file)
             else:
                 pass
@@ -558,7 +573,7 @@ class Experiment3(Experiment):
 
     def run_sanity(self):
         for file in listdir(self.data_path):
-            if 'Sanity' in file:
+            if 'Sanity_combined' in file:
                 self._run_sanity(file)
             else:
                 pass

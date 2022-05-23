@@ -290,8 +290,8 @@ class BarinelTester:
 
 
 class BarinelTesterSanity(BarinelTester):
-    def __init__(self, project_name, local, type_of_exp, high_similarity):
-        super().__init__(project_name, "Sanity",local, type_of_exp)
+    def __init__(self, project_name, local, type_of_exp, high_similarity, exp_name):
+        super().__init__(project_name, exp_name,local, type_of_exp)
         self.high_similarity = high_similarity
         self.low_similarity = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
         self.rows = []
@@ -644,17 +644,17 @@ if __name__ == "__main__":
     success = []
     failed = []
     all_methods = []
-    if methods == 'sanity1':
+    if methods == 'Sanity1':
         sim = [0, 0.1, 0.2, 0.3]
-        sanity = BarinelTesterSanity(project_name,local, type_of_exp, sim)
+        sanity = BarinelTesterSanity(project_name,local, type_of_exp, sim,methods)
         all_methods = [sanity]
-    elif methods == 'sanity2':
+    elif methods == 'Sanity2':
         sim = [ 0.4, 0.5, 0.6, 0.7]
-        sanity = BarinelTesterSanity(project_name,local, type_of_exp, sim)
+        sanity = BarinelTesterSanity(project_name,local, type_of_exp, sim, methods)
         all_methods = [sanity]
-    elif methods == 'sanity3':
+    elif methods == 'Sanity3':
         sim = [0.8, 0.9, 1]
-        sanity = BarinelTesterSanity(project_name,local, type_of_exp, sim)
+        sanity = BarinelTesterSanity(project_name,local, type_of_exp, sim, methods)
         all_methods = [sanity]
 
     elif methods == 'multiply':
