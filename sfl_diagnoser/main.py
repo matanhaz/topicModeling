@@ -644,10 +644,10 @@ if __name__ == "__main__":
     success = []
     failed = []
     all_methods = []
-    if methods == 0:
+    if methods == 'sanity':
         sanity = BarinelTesterSanity(project_name,local, type_of_exp)
         all_methods = [sanity]
-    elif methods == 1:
+    elif methods == 'real':
         topics = list(range(20,601,20))
         multiply = BarinelTesterMultiply(project_name, topics, local, type_of_exp)
         original = BarinelTesterOriginalMethod(project_name, local, type_of_exp)
