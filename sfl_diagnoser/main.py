@@ -290,9 +290,9 @@ class BarinelTester:
 
 
 class BarinelTesterSanity(BarinelTester):
-    def __init__(self, project_name, local, type_of_exp):
+    def __init__(self, project_name, local, type_of_exp, high_similarity):
         super().__init__(project_name, "Sanity",local, type_of_exp)
-        self.high_similarity = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+        self.high_similarity = high_similarity
         self.low_similarity = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
         self.rows = []
         self.rows_all_divisions = []
@@ -644,15 +644,29 @@ if __name__ == "__main__":
     success = []
     failed = []
     all_methods = []
-    if methods == 'sanity':
-        sanity = BarinelTesterSanity(project_name,local, type_of_exp)
+    if methods == 'sanity1':
+        sim = [0, 0.1, 0.2, 0.3]
+        sanity = BarinelTesterSanity(project_name,local, type_of_exp, sim)
         all_methods = [sanity]
-    elif methods == 'real':
+    elif methods == 'sanity2':
+        sim = [ 0.4, 0.5, 0.6, 0.7]
+        sanity = BarinelTesterSanity(project_name,local, type_of_exp, sim)
+        all_methods = [sanity]
+    elif methods == 'sanity3':
+        sim = [0.8, 0.9, 1]
+        sanity = BarinelTesterSanity(project_name,local, type_of_exp, sim)
+        all_methods = [sanity]
+
+    elif methods == 'multiply':
         topics = list(range(20,601,20))
         multiply = BarinelTesterMultiply(project_name, topics, local, type_of_exp)
+        all_methods = [multiply]
+
+    elif methods == 'topic':
+        topics = list(range(20,601,20))
         original = BarinelTesterOriginalMethod(project_name, local, type_of_exp)
         topicModeling = BarinelTesterTopicModeling(project_name, topics, local, type_of_exp)
-        all_methods = [original, multiply, topicModeling]
+        all_methods = [original, topicModeling]
         for t in technique:
             all_methods.append(BarinelTesterOtherAlgorithm(project_name, t, local, type_of_exp))
 
@@ -680,22 +694,22 @@ if __name__ == "__main__":
 
 
 
-    if local:
-        project_path = join(str(Path(__file__).parents[1]),"projects",project_name)
-    else:
-        project_path = join(str(Path(getcwd())),"projects",project_name)
-
-    if type_of_exp == 'old':
-        experiment_path = join(project_path,'Experiments', 'Experiment_2')
-    else:
-        experiment_path = join(project_path,'Experiments', 'Experiment_4')
-
-
-
-    path_to_save_into = join(experiment_path, "data", f"data_all_methods_combined.csv")
-    with open(path_to_save_into, "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerows(rows_combined_methods)
+    # if local:
+    #     project_path = join(str(Path(__file__).parents[1]),"projects",project_name)
+    # else:
+    #     project_path = join(str(Path(getcwd())),"projects",project_name)
+    #
+    # if type_of_exp == 'old':
+    #     experiment_path = join(project_path,'Experiments', 'Experiment_2')
+    # else:
+    #     experiment_path = join(project_path,'Experiments', 'Experiment_4')
+    #
+    #
+    #
+    # path_to_save_into = join(experiment_path, "data", f"data_all_methods_combined.csv")
+    # with open(path_to_save_into, "w", newline="") as f:
+    #     writer = csv.writer(f)
+    #     writer.writerows(rows_combined_methods)
 
     print(f"success:{success},\n failed: {failed}")
 

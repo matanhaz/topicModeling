@@ -262,6 +262,7 @@ class Experiment2(Experiment):
     def __init__(self, project_name, is_sanity, best_topics, type_of_exp):
         exp = 'Experiment_2' if type_of_exp == 'old' else 'Experiment_4'
         super().__init__(project_name, exp)
+        self.combine_tables()
         self.x = {}
         self.x = defaultdict(lambda:[], self.x)
         self.y = {}
@@ -275,6 +276,26 @@ class Experiment2(Experiment):
             self.run_sanity()
         else:
             self.run()
+
+    def combine_tables(self):
+        first = True
+        all_rows = []
+        for file in listdir(self.data_path):
+            if 'Sanity' not in file:
+                with open(join(self.data_path, file)) as outfile:
+                    rows = list(csv.reader(outfile))
+                    labels_row, values_rows = rows[0], rows[1:]
+                    if first:
+                        all_rows.extend(labels_row)
+                        first = False
+                    all_rows.extend(values_rows)
+
+
+
+        path_to_save_into = join(self.data_path, f"data_all_methods_combined.csv")
+        with open(path_to_save_into, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerows(all_rows)
 
 
 
@@ -671,6 +692,7 @@ if __name__ == '__main__':
     project = 'Codec'
     if len(sys.argv) == 2:
         project = str(sys.argv[1])
+
     exp1 = Experiment1(project)
     exp1()
     Experiment2(project,True,0, 'old')()
