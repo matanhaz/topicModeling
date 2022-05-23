@@ -449,7 +449,7 @@ jobs:
       fail-fast: false
       matrix:
        type: [old, new]
-       methods: [sanity, real]
+       methods: [sanity1, sanity2, sanity3, multiply, topic]
     steps:
       - uses: actions/checkout@v2
 
