@@ -288,7 +288,7 @@ class Experiment2(Experiment):
                     rows = list(csv.reader(outfile))
                     labels_row, values_rows = rows[0], rows[1:]
                     if first:
-                        all_rows.extend(labels_row)
+                        all_rows.append(labels_row)
                         first = False
                     all_rows.extend(values_rows)
             else:
@@ -296,8 +296,8 @@ class Experiment2(Experiment):
                     rows = list(csv.reader(outfile))
                     labels_row, values_rows = rows[0], rows[1:]
                     if first_sanity:
-                        all_rows_sanity.extend(labels_row)
-                        first = False
+                        all_rows_sanity.append(labels_row)
+                        first_sanity = False
                     all_rows_sanity.extend(values_rows)
 
 
@@ -704,7 +704,7 @@ class Experiment3(Experiment):
 
 import sys
 if __name__ == '__main__':
-    project = 'Codec'
+    project = 'Io'
     if len(sys.argv) == 2:
         project = str(sys.argv[1])
 
