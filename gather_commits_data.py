@@ -78,32 +78,35 @@ class GatherCommitsData:
         commits = repo.traverse_commits()
 
         for commit in commits:
-            if not commit.in_main_branch:
+            try:
+                if not commit.in_main_branch:
+                    self.commit_index += 1
+                    continue
+
+                if cur_index < last_index and commit.committer_date > commits_of_tags[cur_index][1].committer_date:
+                    while cur_index < last_index and commit.committer_date > commits_of_tags[cur_index][1].committer_date:
+                        tag_to_hexsha[commits_of_tags[cur_index][0]] = {'hash' :commit.hash, 'filtered name': commits_of_tags[cur_index][2]}
+                        cur_index += 1
+
+                # data0, data1 ....
+                modified_functions = self.extract_modified_functions(commit.modified_files)
+                modified_files = [file.new_path for file in commit.modified_files if file.change_type.name == 'MODIFY' and '.java' in file.filename]
+                self.gather_commit_changes(commit, modified_functions, modified_files)
+
+                # func to commits
+                self.gather_func_to_commits(commit, modified_functions, modified_files)
+
+                # commit id to all functions
+                self.gather_all_functions(commit, commit.modified_files)
+
+
+                self.commit_to_file_and_functions(commit.modified_files)
+
                 self.commit_index += 1
+
+            except e:
+                print("blat")
                 continue
-
-            if cur_index < last_index and commit.committer_date > commits_of_tags[cur_index][1].committer_date:
-                while cur_index < last_index and commit.committer_date > commits_of_tags[cur_index][1].committer_date:
-                    tag_to_hexsha[commits_of_tags[cur_index][0]] = {'hash' :commit.hash, 'filtered name': commits_of_tags[cur_index][2]}
-                    cur_index += 1
-
-            # data0, data1 ....
-            modified_functions = self.extract_modified_functions(commit.modified_files)
-            modified_files = [file.new_path for file in commit.modified_files if file.change_type.name == 'MODIFY' and '.java' in file.filename]
-            self.gather_commit_changes(commit, modified_functions, modified_files)
-
-            # func to commits
-            self.gather_func_to_commits(commit, modified_functions, modified_files)
-
-            # commit id to all functions
-            self.gather_all_functions(commit, commit.modified_files)
-
-
-            self.commit_to_file_and_functions(commit.modified_files)
-
-            self.commit_index += 1
-
-
 
         file_number = self.get_file_number()
 
@@ -153,6 +156,9 @@ class GatherCommitsData:
 
 
         self.save_functions_per_commit('commitId to all functions', self.commit_id_to_functions, 'commit id')
+
+
+
 
     def create_dirs(self):
         if not (exists(self.project_path)):
@@ -341,4 +347,4 @@ class GatherCommitsData:
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
-        GatherCommitsData("https://github.com/apache/commons-codec.git","Codec").gather()
+        GatherCommitsData("https://github.com/apache/commons-math.git","Math").gather()
