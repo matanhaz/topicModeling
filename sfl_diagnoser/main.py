@@ -133,7 +133,7 @@ class BarinelTester:
 
             for bug in data:
                 if bug["bug id"].split("-")[1] == m[1]:
-                    m.append(bug["hexsha"])
+                    m.append(bug["fix_hash"])
                     all_matrixes_in_dir_filtered.append(m)
                     self.mapping[m[2]] = m[1]
                     break
@@ -627,10 +627,10 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 
 
 if __name__ == "__main__":
-    project_name = "Codec"
+    project_name = "Io"
     local = True
-    type_of_exp = 'new'
-    methods = 0
+    type_of_exp = 'old'
+    methods = 'local'
     #, 'BLUiR', 'AmaLgam'
     technique = [ "BugLocator", "BRTracer" , 'Locus']
     if len(sys.argv) == 5:
@@ -670,6 +670,22 @@ if __name__ == "__main__":
         for t in technique:
             all_methods.append(BarinelTesterOtherAlgorithm(project_name, t, local, type_of_exp))
 
+    elif methods == 'local':
+        sim = [0, 0.1, 0.2, 0.3]
+        sanity1 = BarinelTesterSanity(project_name,local, type_of_exp, sim,methods)
+        sim = [ 0.4, 0.5, 0.6, 0.7]
+        sanity2 = BarinelTesterSanity(project_name,local, type_of_exp, sim, methods)
+        sim = [0.8, 0.9, 1]
+        sanity3 = BarinelTesterSanity(project_name,local, type_of_exp, sim, methods)
+        topics = list(range(20,601,20))
+        multiply = BarinelTesterMultiply(project_name, topics, local, type_of_exp)
+        original = BarinelTesterOriginalMethod(project_name, local, type_of_exp)
+        topicModeling = BarinelTesterTopicModeling(project_name, topics, local, type_of_exp)
+        all_methods = [original, topicModeling, multiply, sanity1, sanity2, sanity3]
+        all_methods = [original, topicModeling, multiply]
+        for t in technique:
+            all_methods.append(BarinelTesterOtherAlgorithm(project_name, t, local, type_of_exp))
+        #all_methods = [multiply]
 
     path = join\
         (str(Path(__file__).parents[1]),'projects',project_name,"barinel","matrixes")

@@ -306,7 +306,7 @@ def __get_real_comp_similarity(instance,matrix_path,Project_name,similarities_pa
         data = json.loads(f.read())["bugs to commit"]  # array of dicts
 
     matrix_path = os.path.split(matrix_path)[-1]
-    bug_id = list(x["bug id"] for x in data if x["hexsha"] == matrix_path)[0]
+    bug_id = list(x["bug id"] for x in data if x["fix_hash"] == matrix_path)[0]
 
     df = pandas.read_parquet(path=similarities_path)
     
@@ -331,6 +331,8 @@ def __get_real_comp_similarity(instance,matrix_path,Project_name,similarities_pa
 
     similarities = []
     bugs = instance["bugs"]
+    if bugs == []:
+        raise Exception("no buggy components in matrix")
 
     for comp in instance["components_names"]:
         func_name = (comp[1].replace("$", ".").split(".")[-1].split("(")[0])
@@ -349,7 +351,7 @@ def __get_real_test_similarity(instance,matrix_path,Project_name,similarities_pa
         data = json.loads(f.read())["bugs to commit"]  # array of dicts
 
     matrix_path = os.path.split(matrix_path)[-1]
-    bug_id = list(x["bug id"] for x in data if x["hexsha"] == matrix_path)[0]
+    bug_id = list(x["bug id"] for x in data if x["fix_hash"] == matrix_path)[0]
 
     df = pandas.read_parquet(path=similarities_path)
     bug_to_sim =df.to_dict()['bugs'][bug_id].tolist()

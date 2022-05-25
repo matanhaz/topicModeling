@@ -43,3 +43,23 @@ for project in projects:
 with open(os.path.join(projects_dir_path, "data_all_projects_diagnosis.csv"), 'w', newline='') as file:
     writer = csv.writer(file)
     writer.writerows(all_rows)
+
+
+all_rows = []
+first_project = True
+
+for project in projects:
+    if os.path.isdir(os.path.join(projects_dir_path,project)):
+        path = os.path.join(projects_dir_path, project, 'Experiments', 'Experiment_4', 'data', file_name)
+        with open(path) as outfile:
+            rows = list(csv.reader(outfile))
+        if first_project:
+            first_project = False
+        else:
+            rows = rows[1:]
+
+        all_rows.extend(rows)
+
+with open(os.path.join(projects_dir_path, "data_all_projects_diagnosis_files_sim.csv"), 'w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerows(all_rows)
