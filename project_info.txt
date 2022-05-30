@@ -17,6 +17,12 @@
        	"project": "WEAVER",
 	"group":"Commons"
     },
+    "Crypto": {
+        "git_url": "https://github.com/apache/commons-crypto.git",
+       	"jira_url": "http://issues.apache.org/jira",
+       	"project": "CRYPTO",
+	"group":"Commons"
+    },
      "Hive": {
         "git_url": "https://github.com/apache/hive.git",
        	"jira_url": "http://issues.apache.org/jira",
