@@ -65,6 +65,12 @@
        	"project": "IO",
 	"group":"Commons"
     },
+    "Cli": {
+        "git_url": "https://github.com/apache/commons-cli.git",
+       	"jira_url": "http://issues.apache.org/jira",
+       	"project": "CLI",
+	"group":"Commons"
+    },
     "Ely": {
         "git_url": "https://github.com/wildfly-security/wildfly-elytron.git",
        	"jira_url": "https://issues.redhat.com",
