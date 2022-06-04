@@ -314,7 +314,8 @@ class TopicModeling:
                     "first index exist files no tests",
                     "max index exist files no tests",
                     "num of files checked exist files no tests",
-                    "all indexes no tests"
+                    "all indexes no tests",
+                    'average similarity'
                 ]
             ]
             for NUM_TOPICS in self.topics:
@@ -525,7 +526,8 @@ class TopicModeling:
                     str(index_len_exist_funcs_no_tests[0]),
                     str(index_len_exist_funcs_no_tests[1]),
                     str(index_len_exist_funcs_no_tests[2]),
-                    str(index_len_exist_funcs_no_tests[3])
+                    str(index_len_exist_funcs_no_tests[3]),
+                    str(index_len_exist_funcs_no_tests[4])
                 ]
             )
 
@@ -658,10 +660,11 @@ class TopicModeling:
         )
 
         if len(functions_that_changed_no_tests) == 0:
-            return -1,-1, len(exist_funcs_with_similarity_without_tests),[]
+            return -1,-1, len(exist_funcs_with_similarity_without_tests),[],0
 
         min_index = len(exist_funcs_with_similarity_without_tests)
         all_indexes = []
+        average_similarity = 0.0
         for file in functions_that_changed_no_tests:
             file_name = file.split('\\')[-1].split('/')[-1]
             index = 0
@@ -672,6 +675,7 @@ class TopicModeling:
                     )
                     min_index = min(min_index, index)
                     all_indexes.append(index)
+                    average_similarity += exist_func_and_similarity[1]
                     break
                 index += 1
             else:
@@ -679,8 +683,9 @@ class TopicModeling:
                 min_index = min(min_index, index)
                 all_indexes.append(index)
 
+        average_similarity /= len(functions_that_changed_no_tests)
         return min_index, max_index_smaller_list_no_tests, \
-               len(exist_funcs_with_similarity_without_tests), all_indexes
+               len(exist_funcs_with_similarity_without_tests), all_indexes, average_similarity
 
     def create_table(self, rows):
 

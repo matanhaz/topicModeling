@@ -34,7 +34,8 @@ class ModifyOtherMethods:
                     "first index exist files no tests",
                     "max index exist files no tests",
                     "num of files checked exist files no tests",
-                    "all indexes no tests"
+                    "all indexes no tests",
+                    'average similarity'
                 ]]
 
     def change_file_presentation(self):
@@ -176,19 +177,19 @@ class ModifyOtherMethods:
 
                 functions_that_changed = exist_bugs_and_changed_functions[bug]['function that changed']
                 exists_functions = exist_bugs_and_changed_functions[bug]['exists functions']
-                min_index, max_index, num_functions, all_indexes, tmp = \
+                min_index, max_index, num_functions, all_indexes, tmp, average_sim = \
                     self.find_indexes_exist_functions(functions_that_changed, all_bugs[bug], exists_functions)
 
                 functions_that_changed_no_tests = exist_bugs_and_changed_functions[bug]['function that changed no tests']
                 exists_functions_no_tests = exist_bugs_and_changed_functions[bug]['exists functions no tests']
-                min_index_no_tests, max_index_no_tests, num_functions_no_tests, all_indexes_no_tests, miss = \
+                min_index_no_tests, max_index_no_tests, num_functions_no_tests, all_indexes_no_tests, miss, average_sim_no_test = \
                     self.find_indexes_exist_functions(functions_that_changed_no_tests, all_bugs[bug], exists_functions_no_tests)
 
                 bug_to_miss[bug] = miss
 
                 self.rows.append([self.technique,bug,len(functions_that_changed),len(functions_that_changed_no_tests),
                                   min_index,max_index,num_functions,all_indexes,
-                                 min_index_no_tests,max_index_no_tests,num_functions_no_tests,all_indexes_no_tests])
+                                 min_index_no_tests,max_index_no_tests,num_functions_no_tests,all_indexes_no_tests,average_sim_no_test ])
 
             with open(join(self.project_path, "Experiments", "Experiment_1", "data", f"{self.method_folder_name}_indexes.csv"), 'w', newline='') as file:
                 writer = csv.writer(file)
@@ -210,10 +211,11 @@ class ModifyOtherMethods:
         exist_funcs_with_similarity.sort(key=lambda x: x[1], reverse=True)
 
         if len(changed_functions) == 0:
-            return -1,-1, len(exist_funcs_with_similarity),[], None
+            return -1,-1, len(exist_funcs_with_similarity),[], None, 0
 
         min_index = len(exist_funcs_with_similarity)
         all_indexes = []
+        average_similarity = 0.0
         for func in changed_functions:
             index = 0
             for exist_func_and_similarity in exist_funcs_with_similarity:
@@ -221,6 +223,7 @@ class ModifyOtherMethods:
                     max_index = max(max_index, index)
                     min_index = min(min_index, index)
                     all_indexes.append(index)
+                    average_similarity += exist_func_and_similarity[1]
                     break
                 index += 1
             else:
@@ -229,7 +232,8 @@ class ModifyOtherMethods:
                 all_indexes.append(index)
                 missing_functions.append(func)
 
-        return min_index, max_index, len(exist_funcs_with_similarity), all_indexes, missing_functions
+        average_similarity /= len(changed_functions)
+        return min_index, max_index, len(exist_funcs_with_similarity), all_indexes, missing_functions, average_similarity
 
 
 
