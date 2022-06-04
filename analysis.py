@@ -176,7 +176,7 @@ class analyzer:
         bugs = data['bugs info']['bugs']
         bugs_id_list = []
         for bug in bugs:
-            bugs_id_list.append((bug['issue_id'], bug['description'], bug['versions'], datetime.strptime(bug['resolved'], '%Y-%m-%d')))
+            bugs_id_list.append((bug['issue_id'], bug['description'], bug['versions'], datetime.strptime(bug['resolved'], '%Y-%m-%d'), bug['fixVersions']))
 
         counter = 0
         commits = {}
@@ -224,7 +224,10 @@ class analyzer:
                     break
 
         for id in bugs_id_list:
-            version = id[2][-1]
+            if id[4] != []:
+                version = id[4][-1]
+            else:
+                version = id[2][-1]
             for v in versions:
                 if versions[v]['filtered name'] == version and id[0] in bug_id_to_changed_functions.keys():
                     commit_hash = versions[v]['hash']
