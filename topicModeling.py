@@ -675,7 +675,7 @@ class TopicModeling:
                     )
                     min_index = min(min_index, index)
                     all_indexes.append(index)
-                    average_similarity += exist_func_and_similarity[1]
+                    average_similarity += float(exist_func_and_similarity[1])
                     break
                 index += 1
             else:
