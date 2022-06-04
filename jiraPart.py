@@ -41,8 +41,9 @@ class GatherJiraData:
         issues_dict = {'issues': []}
 
         for issue in issues:
-            if issue.fields.versions == None or issue.fields.versions == []  or issue.fields.fixVersions == None or issue.fields.fixVersions == [] or\
-                    "Nightly Build" == issue.fields.versions:
+            if (issue.fields.versions == None or issue.fields.versions == []  or  "Nightly Build" == issue.fields.versions) \
+                    and (issue.fields.fixVersions == None or issue.fields.fixVersions == []):
+
                 continue
             new_issue = {
                 'issue_id': issue.key, 'project': issue.fields.project.name, 'title': issue.fields.summary,

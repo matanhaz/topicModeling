@@ -233,7 +233,8 @@ class analyzer:
                         'hexsha': commit_hash,
                         'fix_hash': bug_id_to_fix_hash[id[0]],
                         'description': id[1],
-                        'commit number': commits[commit_hash]['id'],
+                        'commit number version hash': commits[commit_hash]['id'],
+                        'commit number': commits[bug_id_to_fix_hash[id[0]]]['id'],
                         'function that changed': bug_id_to_changed_functions[id[0]],
                         'files that changed': bug_id_to_changed_files[id[0]]
                     })

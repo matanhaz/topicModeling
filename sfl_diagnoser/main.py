@@ -627,7 +627,7 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 
 
 if __name__ == "__main__":
-    project_name = "Io"
+    project_name = "Compress"
     local = True
     type_of_exp = 'old'
     methods = 'local'
@@ -682,14 +682,12 @@ if __name__ == "__main__":
         original = BarinelTesterOriginalMethod(project_name, local, type_of_exp)
         topicModeling = BarinelTesterTopicModeling(project_name, topics, local, type_of_exp)
         all_methods = [original, topicModeling, multiply, sanity1, sanity2, sanity3]
-        all_methods = [original, topicModeling, multiply]
         for t in technique:
             all_methods.append(BarinelTesterOtherAlgorithm(project_name, t, local, type_of_exp))
-        #all_methods = [multiply]
 
     path = join\
         (str(Path(__file__).parents[1]),'projects',project_name,"barinel","matrixes")
-
+    print('start')
     for matrix in listdir(path):
         try:
             for method in all_methods:
