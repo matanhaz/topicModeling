@@ -735,6 +735,6 @@ if __name__ == '__main__':
     exp1()
     Experiment2(project,True,0, 'old')()
     Experiment2(project,False, exp1.best_topics, 'old')()
-    Experiment2(project,False, exp1.best_topics, 'new')()
+  #  Experiment2(project,False, exp1.best_topics, 'new')()
 
     # Experiment3(project,False)()
