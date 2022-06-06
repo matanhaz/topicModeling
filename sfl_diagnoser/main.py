@@ -193,7 +193,6 @@ class BarinelTester:
                                                  counter_empty_bug_list - counter_empty - counter_duplicated_matrixes - counter_no_mapping
         self.matrixes_details['precision 0 in original'] = 0
 
-
     def write_rows(self):
         if self.type_of_exp == 'old':
 
@@ -592,7 +591,7 @@ class BarinelTesterOriginalMethod(BarinelTester):
         # original_recall = diagnoses["recall"]
         # original_wasted = diagnoses["wasted"]
         # original_fscore = diagnoses["fscore"]
-        if str(diagnoses["precision"]) == '0':
+        if diagnoses["precision"] == 0.0:
             self.matrixes_details['precision 0 in original'] += 1
         row = self._fill_row(diagnoses, matrix_name, 1, False, "original")
         self.rows.append(row)
