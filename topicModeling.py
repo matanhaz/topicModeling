@@ -420,7 +420,7 @@ class TopicModeling:
                 bug_to_func_and_similarity[
                     bug["bug id"]
                 ] = func_and_similarity_with_index
-                print(i)
+              #  print(i)
                 i -= 1
 
             print("finished " + str(NUM_TOPICS) + " topics")
