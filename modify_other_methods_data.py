@@ -74,17 +74,17 @@ class ModifyOtherMethods:
         final_dict['bugs'] = bugs
         path_to_save = join("projects", self.project_folder,"topicModelingFiles","bug to file and similarity",f"bug_to_file_and_similarity_{self.method_folder_name}")
 
-        # data2 = DataFrame.from_dict(final_dict)
-        # data2.to_parquet(
-        #     path=path_to_save
-        # )
+        data2 = DataFrame.from_dict(final_dict)
+        data2.to_parquet(
+            path=path_to_save
+        )
         # path_to_save = join(self.project_path, "Experiments", "Experiment_1", "data", "methods",self.technique)
         # data2.to_parquet(
         #     path=path_to_save
         # )
 
-        # with open(join("projects", self.project_folder,"topicModelingFiles","bug to file and similarity",f"bug_to_file_and_similarity_{self.method_folder_name}.txt"), 'w') as outfile:
-        #     json.dump(final_dict, outfile, indent=4)
+        with open(join("projects", self.project_folder,"topicModelingFiles","bug to file and similarity",f"bug_to_file_and_similarity_{self.method_folder_name}.txt"), 'w') as outfile:
+            json.dump(final_dict, outfile, indent=4)
 
         #saving functions results
         final_dict_funcs = {}
