@@ -1,6 +1,6 @@
 import json
 from os.path import join, exists, isdir
-from os import mkdir, listdir
+from os import mkdir, listdir, remove
 
 import csv
 from collections import defaultdict
@@ -25,6 +25,10 @@ class Experiment(ABC):
         self.results_path = join(self.experiment_path, 'results')
         self.percentage_metrics = ["expense","t-score","exam-score"]
 
+        if exists(join(self.data_path, f"data_all_methods_combined.csv")):
+            remove(join(self.data_path, f"data_all_methods_combined.csv"))
+        if exists(join(self.data_path, f"Sanity_combined.csv")):
+            remove(join(self.data_path, f"Sanity_combined.csv"))
 
     def label_to_index(self, labels_row):
         indexes = {}
@@ -39,7 +43,7 @@ class Experiment(ABC):
             mkdir(self.results_path)
             mkdir(join(self.results_path,"sanity"))
             #mkdir(join(self.results_path,"normal"))
-        plt.figure(figsize=(22, 10))
+        plt.figure(figsize=(25, 13))
 
         if sanity:
             similarities = x.copy()
@@ -54,7 +58,7 @@ class Experiment(ABC):
         plt.xlabel(x_label)
         plt.ylabel(y_label)
         plt.title(title)
-        plt.xticks(x, rotation=90)
+        plt.xticks(x, rotation=15)
         #plt.grid(True)
         if y_label in self.percentage_metrics:
             plt.ylim(0,100)
@@ -74,16 +78,14 @@ class Experiment(ABC):
 class Experiment1(Experiment):
     def __init__(self, project_name):
         super().__init__(project_name, 'Experiment_1')
-        self.x = []
-        self.y = []
-        self.x_map = []
-        self.y_map = []
-        self.x_mrr = []
-        self.y_mrr = []
-        self.relevant_bugs = set()
-        self.best_topics = []
 
-        self.combined_rows = [['method','project',  'MAP', 'MRR', 'TOP-K']]
+        self.x = {'TOP-K': [], 'MAP': [], 'MRR': [], 'average similarity': []}
+        self.y = {'TOP-K': [], 'MAP': [], 'MRR': [], 'average similarity': []}
+
+        self.relevant_bugs = set()
+        self.best_topics = {}
+
+        self.combined_rows = [['method','project',  'MAP', 'MRR', 'TOP-K', 'average similarity']]
 
     def __call__(self):
        # map = self.MAP()
@@ -92,9 +94,10 @@ class Experiment1(Experiment):
                 self.run(file)
 
 
-        self.save_plot(self.x,self.y, 'num topics / method', 'average max index of all functions in results', 'Experiment_1_results_topK', f'Experiment 1 - {self.project_name}')
-        self.save_plot(self.x_map,self.y_map, 'num topics / method', 'MAP', 'Experiment_1_results_MAP', f'Experiment 1 - {self.project_name}')
-        self.save_plot(self.x_mrr,self.y_mrr, 'num topics / method', 'MRR', 'Experiment_1_results_MRR', f'Experiment 1 - {self.project_name}')
+        self.save_plot(self.x['TOP-K'],self.y['TOP-K'], 'num topics / method', 'average max index of all functions in results', 'Experiment_1_results_topK', f'Experiment 1 - {self.project_name}')
+        self.save_plot(self.x['MAP'],self.y['MAP'], 'num topics / method', 'MAP', 'Experiment_1_results_MAP', f'Experiment 1 - {self.project_name}')
+        self.save_plot(self.x['MRR'],self.y['MRR'], 'num topics / method', 'MRR', 'Experiment_1_results_MRR', f'Experiment 1 - {self.project_name}')
+        self.save_plot(self.x['average similarity'],self.y['average similarity'], 'num topics / method', 'average similarity', 'Experiment_1_results_average_similarity', f'Experiment 1 - {self.project_name}')
 
         with open(join(self.project_path, "Experiments", "Experiment_1", "data", "data_all_methods_combined.csv"), "w", newline="") as file:
             writer = csv.writer(file)
@@ -123,44 +126,53 @@ class Experiment1(Experiment):
         min_index = label_to_index['first index exist files no tests']
         all_indexes = label_to_index['all indexes no tests']
         num_functions_checked = label_to_index['num of files checked exist files no tests']
+        average_sim = label_to_index['average similarity']
 
         get_percentage_max = lambda value, row: value + (float(row[max_index]) / float(row[num_functions_checked]))
         get_percentage_mrr = lambda value, row: value + (1 / (float(row[min_index]) + 1))
         get_percentage_map = lambda value, row: value + (self._find_AP(row[all_indexes]))
+        get_average_sim = lambda value, row: value + (float(row[average_sim]))
 
         percentages = {key: {
                 'all': reduce(get_percentage_max, key_to_rows[key]['all'], 0)/len(key_to_rows[key]['all']),
                 'without_negative': reduce(get_percentage_max, key_to_rows[key]['without_negative'], 0)/len(key_to_rows[key]['without_negative']),
                 'MAP': reduce(get_percentage_map, key_to_rows[key]['without_negative'], 0)/len(key_to_rows[key]['without_negative']),
-                'MRR':reduce(get_percentage_mrr, key_to_rows[key]['without_negative'], 0)/len(key_to_rows[key]['without_negative'])
+                'MRR':reduce(get_percentage_mrr, key_to_rows[key]['without_negative'], 0)/len(key_to_rows[key]['without_negative']),
+                'average similarity': reduce(get_average_sim, key_to_rows[key]['without_negative'], 0)/len(key_to_rows[key]['without_negative'])
                 } for key in key_to_rows}
 
         for method in percentages:
             method_name = method
             if "topic" in file_name:
                 method_name += "_Topics"
-            self.combined_rows.append([method_name, self.project_name, percentages[method]['MAP'], percentages[method]['MRR'], percentages[method]['without_negative']])
+            self.combined_rows.append([method_name, self.project_name, percentages[method]['MAP'], percentages[method]['MRR'],
+                                       percentages[method]['without_negative'], percentages[method]['average similarity']])
 
         if "topic" in file_name:
-            max_val = 0
-            best_topics = []
-            i=0
-            keys = list(percentages.keys())
-            values = list(percentages.values())
-            while i + 4 < len(keys):
-                new_val = sum([val['MRR'] for val in values[i:i+5]]) / 5
-                if new_val > max_val:
-                    max_val = new_val
-                    best_topics = keys[i:i+5]
-                i+=1
-            self.best_topics = best_topics
+            self.find_best_topics(percentages, 'MRR')
+            self.find_best_topics(percentages, 'average similarity')
             # self.best_topic = [topic for topic in percentages.keys() if percentages[topic]["without_negative"] == min([val['without_negative'] for val in percentages.values()])][0]
             # self.best_topic = self.best_topic.split("_")[0]
-        self.x.extend(percentages.keys())
-        self.y.extend([p['without_negative'] for p in percentages.values()])
+        self.x['TOP-K'].extend(percentages.keys())
+        self.y['TOP-K'].extend([p['without_negative'] for p in percentages.values()])
 
-        self.x_map.extend(percentages.keys()), self.y_map.extend([p['MAP'] for p in percentages.values()])
-        self.x_mrr.extend(percentages.keys()), self.y_mrr.extend([p['MRR'] for p in percentages.values()])
+        self.x['MAP'].extend(percentages.keys()), self.y['MAP'].extend([p['MAP'] for p in percentages.values()])
+        self.x['MRR'].extend(percentages.keys()), self.y['MRR'].extend([p['MRR'] for p in percentages.values()])
+        self.x['average similarity'].extend(percentages.keys()), self.y['average similarity'].extend([p['average similarity'] for p in percentages.values()])
+
+    def find_best_topics(self, percentages, metric):
+        max_val = 0
+        best_topics = []
+        i=0
+        keys = list(percentages.keys())
+        values = list(percentages.values())
+        while i + 4 < len(keys):
+            new_val = sum([val[metric] for val in values[i:i+5]]) / 5
+            if new_val > max_val:
+                max_val = new_val
+                best_topics = keys[i:i+5]
+            i+=1
+        self.best_topics[metric] = best_topics
 
     def get_relevant_bugs(self):
         first = True
@@ -267,6 +279,8 @@ class Experiment2(Experiment):
         self.x = defaultdict(lambda:[], self.x)
         self.y = {}
         self.y = defaultdict(lambda:[], self.y)
+
+
         self.is_sanity = is_sanity
         self.tested_metrics = ["precision", "recall", "wasted" , "f-score","expense","t-score", "cost", "exam-score"]
         self.best_topics = best_topics
@@ -496,25 +510,34 @@ class Experiment2(Experiment):
         label_to_index = self.label_to_index(labels_row)
         num_of_rows = len(values_rows) / NUM_TOPICS
 
-        key_to_rows = {}
-        #key_to_rows = defaultdict(lambda:{'original':0 ,'comp':0, 'tests':0, 'both':0}, key_to_rows)
-        key_to_rows = defaultdict(lambda:{file_name + f"_{topic}":0 for topic in self.best_topics}, key_to_rows)
+        key_to_rows_MRR = {}
+        key_to_rows_sim = {}
+        key_to_rows_MRR = defaultdict(lambda:{f"{topic}_topics_MRR":0 for topic in self.best_topics['MRR']}, key_to_rows_MRR)
+        key_to_rows_sim = defaultdict(lambda:{f"{topic}_topics_avg_sim":0 for topic in self.best_topics['average similarity']}, key_to_rows_sim)
+
         for i in tqdm(range(0,len(values_rows),NUM_TOPICS)):
             #
             # maxx = max([values_rows[j][4] for j in range(i,i+11)])
             for j in range(i,i+NUM_TOPICS):
                 row = values_rows[j]
                 topic = row[label_to_index['technique']].split('_')[0]
-                if topic in self.best_topics :
+                if topic in self.best_topics['MRR'] :
                     for metric in self.tested_metrics:
-                        key_to_rows[metric][file_name + f"_{topic}"] += (float(row[label_to_index[metric]]) / num_of_rows)
+                        key_to_rows_MRR[metric][f"{topic}_topics_MRR"] += (float(row[label_to_index[metric]]) / num_of_rows)
+                if topic in self.best_topics['average similarity'] :
+                    for metric in self.tested_metrics:
+                        key_to_rows_sim[metric][f"{topic}_topics_avg_sim"] += (float(row[label_to_index[metric]]) / num_of_rows)
 
                  #   break
 
-        for key in key_to_rows:
-            for test in key_to_rows[key]:
+        for key in key_to_rows_MRR:
+            for test in key_to_rows_MRR[key]:
                 self.x[key].append(test)
-                self.y[key].append(key_to_rows[key][test])
+                self.y[key].append(key_to_rows_MRR[key][test])
+
+            for test in key_to_rows_sim[key]:
+                self.x[key].append(test)
+                self.y[key].append(key_to_rows_sim[key][test])
 
 
 
@@ -704,7 +727,7 @@ class Experiment3(Experiment):
 
 import sys
 if __name__ == '__main__':
-    project = 'Io'
+    project = 'Codec'
     if len(sys.argv) == 2:
         project = str(sys.argv[1])
 

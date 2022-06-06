@@ -59,6 +59,7 @@ class BarinelTester:
         self.experiment5_path = join(self.project_path,'Experiments', 'Experiment_5')
 
         self.mapping = {}
+        self.matrixes_details = {}
         self.prepare_dir()
         self.prepare_matrixes()
 
@@ -76,15 +77,13 @@ class BarinelTester:
         with open(join(self.project_path, "analysis", "bug_to_commit_that_solved.txt")) as f:
             data = json.loads(f.read())["bugs to commit"]  # array of dicts, each represent a bug that i discovered
 
-       # bugz = [] # debug bug id
-       # for bb in data:
-       #     bugz.append(bb["bug id"].split("-")[1])
-       # print(bugz)
 
         old_path_matrixes = join\
             (self.project_path, "barinel", "matrixes_before_change")
         new_path_matrixes = join\
             (self.project_path, "barinel", "matrixes")
+
+
 
         """move avtive-bugs.csv"""
         if not exists(join(self.project_path, "barinel",'active-bugs.csv' )):
@@ -104,6 +103,8 @@ class BarinelTester:
             except Exception as e:
                 print("Failed to delete %s. Reason: %s" % (file_path, e))
 
+        self.matrixes_details['number of generated matrixes'] = len(listdir(old_path_matrixes))
+
         """copy files"""
         for file in listdir(old_path_matrixes):
             shutil.copy(
@@ -120,12 +121,18 @@ class BarinelTester:
                       (new_path_matrixes, file), join
             (new_path_matrixes, new_name))
 
+
+
         """read csv"""
         df = pd.read_csv(join(self.project_path, "barinel",'active-bugs.csv')).to_dict()
         all_matrixes_in_dir = []
         for i in range(len(df["bug.id"])):
             if str(df["bug.id"][i]) in listdir(new_path_matrixes):
                 all_matrixes_in_dir.append([str(df["bug.id"][i]), str(df["report.id"][i].split("-")[1])])  # (bug file index, bug actual id in jira)
+
+        self.matrixes_details['lines in active bugs'] = len(df["bug.id"])
+
+        counter_no_mapping = 0
 
         """add to each matrix his hexsha"""
         all_matrixes_in_dir_filtered = []
@@ -138,14 +145,18 @@ class BarinelTester:
                     self.mapping[m[2]] = m[1]
                     break
             else:
+                counter_no_mapping += 1
                 remove(join(new_path_matrixes, m[0]))
+
+        self.matrixes_details['no existing mapping in active bugs'] = counter_no_mapping
 
 
 
         """treansfer matrixes to a new location"""
-        counter = 1
+        counter_duplicated_matrixes = 0
         for m in all_matrixes_in_dir_filtered:
             if isfile(join(new_path_matrixes, m[2])):
+                counter_duplicated_matrixes += 1
                 try:
                     unlink(join(new_path_matrixes, m[0]))
                 except Exception as e:
@@ -159,8 +170,45 @@ class BarinelTester:
                           (new_path_matrixes, m[0]), join
                 (new_path_matrixes, m[2]))
 
+        self.matrixes_details['duplicated matrixes'] = counter_duplicated_matrixes
+
+        """remove empty matrixes & empty bugs list"""
+        counter_empty, counter_empty_bug_list = 0, 0
+        for file in listdir(new_path_matrixes):
+            with open(join(new_path_matrixes,file), "r") as f:
+                instance = json.loads(f.read())
+            for key in instance:
+                if instance[key] != []:
+                    break
+            else:
+                counter_empty += 1
+                remove(join(new_path_matrixes, file))
+                continue
+            if instance['bugs'] == []:
+                counter_empty_bug_list += 1
+                remove(join(new_path_matrixes, file))
+        self.matrixes_details['empty matrixes'] = counter_empty
+        self.matrixes_details['empty bugs list'] = counter_empty_bug_list
+        self.matrixes_details['good matrixes'] = self.matrixes_details['number of generated matrixes'] -\
+                                                 counter_empty_bug_list - counter_empty - counter_duplicated_matrixes - counter_no_mapping
+        self.matrixes_details['precision 0 in original'] = 0
+
+
     def write_rows(self):
         if self.type_of_exp == 'old':
+
+            if self.test_type == 'Original':
+                rows_matrixes_details = [[],[]]
+                for key in self.matrixes_details:
+                    rows_matrixes_details[0].append(key)
+                    rows_matrixes_details[1].append(self.matrixes_details[key])
+
+                path_to_save_into = join(self.project_path, "barinel",'matrixes_details.csv')
+                with open(path_to_save_into, "w", newline="") as f:
+                    writer = csv.writer(f)
+                    writer.writerows(rows_matrixes_details)
+
+
             if not exists(self.experiment2_path):
                 mkdir(self.experiment2_path)
                 mkdir(join(self.experiment2_path, "data"))
@@ -544,7 +592,8 @@ class BarinelTesterOriginalMethod(BarinelTester):
         # original_recall = diagnoses["recall"]
         # original_wasted = diagnoses["wasted"]
         # original_fscore = diagnoses["fscore"]
-
+        if str(diagnoses["precision"]) == '0':
+            self.matrixes_details['precision 0 in original'] += 1
         row = self._fill_row(diagnoses, matrix_name, 1, False, "original")
         self.rows.append(row)
         rows_combined_methods.append(row)
@@ -627,7 +676,7 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 
 
 if __name__ == "__main__":
-    project_name = "Compress"
+    project_name = "Codec"
     local = True
     type_of_exp = 'old'
     methods = 'local'

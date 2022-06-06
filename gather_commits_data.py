@@ -347,4 +347,4 @@ class GatherCommitsData:
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
-        GatherCommitsData("https://github.com/apache/commons-math.git","Math").gather()
+        GatherCommitsData("https://github.com/apache/commons-configuration.git","Configuration").gather()
