@@ -197,7 +197,7 @@ class BarinelTester:
         if self.type_of_exp == 'old':
 
             if self.test_type == 'Original':
-                rows_matrixes_details = [[],[]]
+                rows_matrixes_details = [['project'],[self.project_name]]
                 for key in self.matrixes_details:
                     rows_matrixes_details[0].append(key)
                     rows_matrixes_details[1].append(self.matrixes_details[key])
