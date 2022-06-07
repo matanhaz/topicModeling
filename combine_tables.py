@@ -9,6 +9,7 @@ path1 = os.path.join('Experiments', 'Experiment_1', 'data', file_name)
 path2 = os.path.join('Experiments', 'Experiment_2', 'data', file_name)
 path3 = os.path.join('Experiments', 'Experiment_4', 'data', file_name)
 path4 = os.path.join('barinel', 'matrixes_details.csv')
+path5 = os.path.join('Experiments','Experiment_2', 'data', 'average_results.csv')
 
 
 def combine(path, file_name):
@@ -32,6 +33,7 @@ def combine(path, file_name):
 
 combine(path1, "data_all_projects_localization.csv")
 combine(path2, "data_all_projects_diagnosis.csv")
-combine(path3, "data_all_projects_diagnosis_files_sim.csv")
+#combine(path3, "data_all_projects_diagnosis_files_sim.csv")
 combine(path4, "data_all_projects_matrixes_details.csv")
+combine(path5, "data_all_projects_MRR_or_avg_sim.csv")
 

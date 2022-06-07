@@ -675,10 +675,10 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 
 
 if __name__ == "__main__":
-    project_name = "Codec"
+    project_name = "Csv"
     local = True
-    type_of_exp = 'old'
-    methods = 'local'
+    type_of_exp = 'new'
+    methods = 'Sanity3'
     #, 'BLUiR', 'AmaLgam'
     technique = [ "BugLocator", "BRTracer" , 'Locus']
     if len(sys.argv) == 5:
@@ -745,7 +745,7 @@ if __name__ == "__main__":
         except Exception as e:
             failed.append((matrix, e))
             #print(matrix)
-            #raise e
+           # raise e
             #errors.append(e)
 
 

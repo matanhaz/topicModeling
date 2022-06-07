@@ -29,6 +29,8 @@ class Experiment(ABC):
             remove(join(self.data_path, f"data_all_methods_combined.csv"))
         if exists(join(self.data_path, f"Sanity_combined.csv")):
             remove(join(self.data_path, f"Sanity_combined.csv"))
+        if exists(join(self.data_path, f"average_results.csv")):
+            remove(join(self.data_path, f"average_results.csv"))
 
     def label_to_index(self, labels_row):
         indexes = {}
@@ -515,6 +517,9 @@ class Experiment2(Experiment):
         key_to_rows_MRR = defaultdict(lambda:{f"{topic}_topics_MRR":0 for topic in self.best_topics['MRR']}, key_to_rows_MRR)
         key_to_rows_sim = defaultdict(lambda:{f"{topic}_topics_avg_sim":0 for topic in self.best_topics['average similarity']}, key_to_rows_sim)
 
+        average_metrics_values = {'using MRR':{metric:0 for metric in self.tested_metrics},
+                                  'using avg sim':{metric:0 for metric in self.tested_metrics}}
+
         for i in tqdm(range(0,len(values_rows),NUM_TOPICS)):
             #
             # maxx = max([values_rows[j][4] for j in range(i,i+11)])
@@ -524,10 +529,12 @@ class Experiment2(Experiment):
                 if topic in self.best_topics['MRR'] :
                     for metric in self.tested_metrics:
                         key_to_rows_MRR[metric][f"{topic}_topics_MRR"] += (float(row[label_to_index[metric]]) / num_of_rows)
+                        average_metrics_values['using MRR'][metric] += (float(row[label_to_index[metric]]) / (num_of_rows * len(self.best_topics['MRR'])))
+
                 if topic in self.best_topics['average similarity'] :
                     for metric in self.tested_metrics:
                         key_to_rows_sim[metric][f"{topic}_topics_avg_sim"] += (float(row[label_to_index[metric]]) / num_of_rows)
-
+                        average_metrics_values['using avg sim'][metric] += (float(row[label_to_index[metric]]) / (num_of_rows * len(self.best_topics['average similarity'])))
                  #   break
 
         for key in key_to_rows_MRR:
@@ -539,7 +546,13 @@ class Experiment2(Experiment):
                 self.x[key].append(test)
                 self.y[key].append(key_to_rows_sim[key][test])
 
-
+        rows_average = [['project', 'technique'] + [metric for metric in self.tested_metrics]]
+        rows_average.append([self.project_name,'using MRR'] + [average_metrics_values['using MRR'][metric] for metric in self.tested_metrics])
+        rows_average.append([self.project_name,'using avg sim'] + [average_metrics_values['using avg sim'][metric] for metric in self.tested_metrics])
+        path_to_save_into = join(self.data_path, f"average_results.csv")
+        with open(path_to_save_into, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerows(rows_average)
 
 class Experiment3(Experiment):
     def __init__(self, project_name, is_sanity):
@@ -727,7 +740,7 @@ class Experiment3(Experiment):
 
 import sys
 if __name__ == '__main__':
-    project = 'Codec'
+    project = 'Io'
     if len(sys.argv) == 2:
         project = str(sys.argv[1])
 
