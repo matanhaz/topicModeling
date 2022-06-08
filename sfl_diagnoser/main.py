@@ -341,6 +341,7 @@ class BarinelTesterSanity(BarinelTester):
         super().__init__(project_name, exp_name,local, type_of_exp)
         self.high_similarity = high_similarity
         self.low_similarity = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+        self.percentages = [0.2]
         self.rows = []
         self.rows_all_divisions = []
         self.rows.append(
@@ -675,10 +676,10 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 
 
 if __name__ == "__main__":
-    project_name = "Csv"
+    project_name = "Compress"
     local = True
-    type_of_exp = 'new'
-    methods = 'Sanity3'
+    type_of_exp = 'old'
+    methods = 'Sanity1'
     #, 'BLUiR', 'AmaLgam'
     technique = [ "BugLocator", "BRTracer" , 'Locus']
     if len(sys.argv) == 5:

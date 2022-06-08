@@ -740,7 +740,7 @@ class Experiment3(Experiment):
 
 import sys
 if __name__ == '__main__':
-    project = 'Io'
+    project = 'Lang'
     if len(sys.argv) == 2:
         project = str(sys.argv[1])
 
