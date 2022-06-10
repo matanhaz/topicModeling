@@ -71,6 +71,12 @@
        	"project": "CLI",
 	"group":"Commons"
     },
+    "Net": {
+        "git_url": "https://github.com/apache/commons-net.git",
+       	"jira_url": "http://issues.apache.org/jira",
+       	"project": "NET",
+	"group":"Commons"
+    },
     "Ely": {
         "git_url": "https://github.com/wildfly-security/wildfly-elytron.git",
        	"jira_url": "https://issues.redhat.com",
