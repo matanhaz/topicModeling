@@ -679,7 +679,7 @@ if __name__ == "__main__":
     project_name = "Compress"
     local = True
     type_of_exp = 'old'
-    methods = 'Sanity1'
+    methods = 'topic'
     #, 'BLUiR', 'AmaLgam'
     technique = [ "BugLocator", "BRTracer" , 'Locus']
     if len(sys.argv) == 5:
@@ -706,18 +706,23 @@ if __name__ == "__main__":
         sanity = BarinelTesterSanity(project_name,local, type_of_exp, sim, methods)
         all_methods = [sanity]
 
-    elif methods == 'multiply':
-        topics = list(range(20,601,20))
-        multiply = BarinelTesterMultiply(project_name, topics, local, type_of_exp)
-        all_methods = [multiply]
+    # elif methods == 'multiply':
+    #     topics = list(range(20,601,20))
+    #     multiply = BarinelTesterMultiply(project_name, topics, local, type_of_exp)
+    #     all_methods = [multiply]
 
     elif methods == 'topic':
         topics = list(range(20,601,20))
-        original = BarinelTesterOriginalMethod(project_name, local, type_of_exp)
         topicModeling = BarinelTesterTopicModeling(project_name, topics, local, type_of_exp)
-        all_methods = [original, topicModeling]
+        all_methods = [topicModeling]
+
+
+    elif methods == 'others':
+        original = BarinelTesterOriginalMethod(project_name, local, type_of_exp)
+        all_methods = [original]
         for t in technique:
             all_methods.append(BarinelTesterOtherAlgorithm(project_name, t, local, type_of_exp))
+
 
     elif methods == 'local':
         sim = [0, 0.1, 0.2, 0.3]
@@ -737,10 +742,12 @@ if __name__ == "__main__":
     path = join\
         (str(Path(__file__).parents[1]),'projects',project_name,"barinel","matrixes")
     print('start')
+    count = len(listdir(path))
     for matrix in listdir(path):
         try:
             for method in all_methods:
                 method.diagnose(join(path, matrix.split("_")[0]))
+                print('finished 1 method')
 
             success.append(matrix)
         except Exception as e:
@@ -749,8 +756,8 @@ if __name__ == "__main__":
            # raise e
             #errors.append(e)
 
-
-        print(f"finished a matrix: {matrix}")
+        count -= 1
+        print(f"finished matrix: {matrix}, {count} more to go")
 
     for method in all_methods:
         method.write_rows()

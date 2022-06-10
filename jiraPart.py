@@ -84,6 +84,6 @@ if __name__ == "__main__":
     jira_url = 'http://issues.apache.org/jira'
     #jira_url = "https://jira.spring.io"
     #jira_url = "https://issues.redhat.com"
-    jira_query_symbol = 'CODEC'
-    project_name = "Codec"
+    jira_query_symbol = 'CSV'
+    project_name = "Csv"
     GatherJiraData(jira_url, jira_query_symbol, project_name).gather()

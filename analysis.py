@@ -216,12 +216,13 @@ class analyzer:
                 break
             for id in bugs_id_list_copy:
                 if id[0] in commits[commit_id]['commit_summary'] and self.not_followed_by_a_number(id[0], commits[commit_id]['commit_summary'])\
-                        and datetime.strptime(commits[commit_id]['date'], '%Y-%m-%d')>=id[3]:
+                        and datetime.strptime(commits[commit_id]['date'], '%Y-%m-%d')>=id[3] and id [0] not in bug_id_to_fix_hash:
+                    desc = commits[commit_id]['commit_summary']
                     bug_id_to_changed_functions[id[0]] = commits[commit_id]['functions']
                     bug_id_to_changed_files[id[0]] = commits[commit_id]['files']
                     bug_id_to_fix_hash[id[0]] = commit_id
-                    bugs_id_list_copy.remove(id)
-                    break
+                  #  bugs_id_list_copy.remove(id)
+                  #  break
 
         for id in bugs_id_list:
             if id[4] != []:
@@ -405,4 +406,4 @@ class analyzer:
 
 
 if __name__ == "__main__":
-    analyzer("Codec").run()
+    analyzer("Csv").run()
