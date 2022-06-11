@@ -77,6 +77,12 @@
        	"project": "NET",
 	"group":"Commons"
     },
+    "Imaging": {
+        "git_url": "https://github.com/apache/commons-imaging.git",
+       	"jira_url": "http://issues.apache.org/jira",
+       	"project": "IMAGING",
+	"group":"Commons"
+    },
     "Ely": {
         "git_url": "https://github.com/wildfly-security/wildfly-elytron.git",
        	"jira_url": "https://issues.redhat.com",
