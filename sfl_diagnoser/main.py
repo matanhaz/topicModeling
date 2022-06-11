@@ -60,6 +60,8 @@ class BarinelTester:
 
         self.mapping = {}
         self.matrixes_details = {}
+        self.bad_matrixes_indexes = {}
+
         self.prepare_dir()
         self.prepare_matrixes()
 
@@ -136,6 +138,7 @@ class BarinelTester:
 
         """add to each matrix his hexsha"""
         all_matrixes_in_dir_filtered = []
+        self.bad_matrixes_indexes['bad mapping matrixes'] = []
         for m in all_matrixes_in_dir:
 
             for bug in data:
@@ -147,6 +150,7 @@ class BarinelTester:
             else:
                 counter_no_mapping += 1
                 remove(join(new_path_matrixes, m[0]))
+                self.bad_matrixes_indexes['bad mapping matrixes'].append(m[0])
 
         self.matrixes_details['no existing mapping in active bugs'] = counter_no_mapping
 
@@ -154,11 +158,13 @@ class BarinelTester:
 
         """treansfer matrixes to a new location"""
         counter_duplicated_matrixes = 0
+        self.bad_matrixes_indexes['duplicated matrixes'] = []
         for m in all_matrixes_in_dir_filtered:
             if isfile(join(new_path_matrixes, m[2])):
                 counter_duplicated_matrixes += 1
                 try:
                     unlink(join(new_path_matrixes, m[0]))
+                    self.bad_matrixes_indexes['duplicated matrixes'].append(m[0])
                 except Exception as e:
                     print("Failed to delete %s. Reason: %s" % (join(new_path_matrixes, m[0]), e))
 
@@ -174,7 +180,9 @@ class BarinelTester:
 
         """remove empty matrixes & empty bugs list"""
         counter_empty, counter_empty_bug_list = 0, 0
+        self.bad_matrixes_indexes['empty matrixes | empty bug list'] = []
         for file in listdir(new_path_matrixes):
+            index = [m[0] for m in all_matrixes_in_dir_filtered if m[2] == file][0]
             with open(join(new_path_matrixes,file), "r") as f:
                 instance = json.loads(f.read())
             for key in instance:
@@ -183,10 +191,13 @@ class BarinelTester:
             else:
                 counter_empty += 1
                 remove(join(new_path_matrixes, file))
+
+                self.bad_matrixes_indexes['empty matrixes | empty bug list'].append(index)
                 continue
             if instance['bugs'] == []:
                 counter_empty_bug_list += 1
                 remove(join(new_path_matrixes, file))
+                self.bad_matrixes_indexes['empty matrixes | empty bug list'].append(index)
         self.matrixes_details['empty matrixes'] = counter_empty
         self.matrixes_details['empty bugs list'] = counter_empty_bug_list
         self.matrixes_details['good matrixes'] = self.matrixes_details['number of generated matrixes'] -\
@@ -206,6 +217,11 @@ class BarinelTester:
                 with open(path_to_save_into, "w", newline="") as f:
                     writer = csv.writer(f)
                     writer.writerows(rows_matrixes_details)
+
+                path_to_save_into = join(self.project_path, "barinel",'bad matrixes indexes.txt')
+                with open(path_to_save_into, "w", newline="") as f:
+                    json.dump(self.bad_matrixes_indexes, f, indent=4)
+
 
 
             if not exists(self.experiment2_path):
@@ -679,7 +695,7 @@ if __name__ == "__main__":
     project_name = "Compress"
     local = True
     type_of_exp = 'old'
-    methods = 'topic'
+    methods = 'others'
     #, 'BLUiR', 'AmaLgam'
     technique = [ "BugLocator", "BRTracer" , 'Locus']
     if len(sys.argv) == 5:
