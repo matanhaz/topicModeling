@@ -163,18 +163,31 @@ class Experiment1(Experiment):
         self.x['average similarity'].extend(percentages.keys()), self.y['average similarity'].extend([p['average similarity'] for p in percentages.values()])
 
     def find_best_topics(self, percentages, metric):
-        max_val = 0
+        # max_val = 0
+        # best_topics = []
+        # i=0
+        # keys = list(percentages.keys())
+        # values = list(percentages.values())
+        # while i + 4 < len(keys):
+        #     new_val = sum([val[metric] for val in values[i:i+5]]) / 5
+        #     if new_val > max_val:
+        #         max_val = new_val
+        #         best_topics = keys[i:i+5]
+        #     i+=1
+        # self.best_topics[metric] = best_topics
+
         best_topics = []
-        i=0
-        keys = list(percentages.keys())
-        values = list(percentages.values())
-        while i + 4 < len(keys):
-            new_val = sum([val[metric] for val in values[i:i+5]]) / 5
-            if new_val > max_val:
-                max_val = new_val
-                best_topics = keys[i:i+5]
-            i+=1
-        self.best_topics[metric] = best_topics
+        for topic in percentages:
+            if len(best_topics) < 5:
+                best_topics.append((topic, percentages[topic][metric]))
+            else:
+                min_topic = min(best_topics, key=lambda x:x[1])
+                if percentages[topic][metric] > min_topic[1]:
+                    best_topics.remove((min_topic[0], min_topic[1]))
+                    best_topics.append((topic, percentages[topic][metric]))
+
+        best_topics.sort(key=lambda x:x[1],reverse=True)
+        self.best_topics[metric] = {topics[0]:topics[1] for topics in best_topics}
 
     def get_relevant_bugs(self):
         first = True
@@ -282,6 +295,8 @@ class Experiment2(Experiment):
         self.y = {}
         self.y = defaultdict(lambda:[], self.y)
 
+        self.topics = list(range(20,601,20))
+
 
         self.is_sanity = is_sanity
         self.tested_metrics = ["precision", "recall", "wasted" , "f-score","expense","t-score", "cost", "exam-score"]
@@ -328,7 +343,28 @@ class Experiment2(Experiment):
             writer = csv.writer(f)
             writer.writerows(all_rows_sanity)
 
+    def find_best_topics(self, key_to_rows):
+        # key_to_rows => metric to a dict of topic to average
+        # for now i will use only precision
 
+        best_topics = []
+        topic_to_average = key_to_rows['precision']
+        for topic in topic_to_average:
+            if len(best_topics) < 5:
+                best_topics.append((topic, topic_to_average[topic]))
+            else:
+                min_topic = min(best_topics, key=lambda x:x[1])
+                if topic_to_average[topic] > min_topic[1]:
+                    best_topics.remove((min_topic[0], min_topic[1]))
+                    best_topics.append((topic, topic_to_average[topic]))
+
+        for metric in self.best_topics:
+            for topic in self.best_topics[metric]:
+                self.best_topics[metric][topic] = topic_to_average[topic]
+            
+
+        best_topics.sort(key=lambda x:x[1],reverse=True)
+        self.best_topics['regular'] = {topics[0]:topics[1] for topics in best_topics}
 
     def run_sanity(self):
         for file in listdir(self.data_path):
@@ -379,26 +415,6 @@ class Experiment2(Experiment):
                     for metric in self.tested_metrics:
                         key_to_rows[metric][all_similarities_values[j]][all_similarities_values[k]] += (float(row[label_to_index[metric]]) / num_of_rows)
 
-                    # key_to_rows['precision'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[5])/ num_of_rows)
-                    #
-                    #
-                    # key_to_rows['recall'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[6])/ num_of_rows)
-                    #
-                    #
-                    # key_to_rows['wasted'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[7])/ num_of_rows)
-                    #
-                    # f_score = (float(row[5]) * float(row[6]) * 2) / (float(row[5]) + float(row[6])) if (float(row[5]) + float(row[6])) != 0 else 0
-                    #
-                    # key_to_rows['f-score'][all_similarities_values[j]][all_similarities_values[k]] += (f_score/ num_of_rows)
-                    # key_to_rows['precision'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[label_to_index['precision-sigmoid']])/ num_of_rows)
-                    #
-                    # key_to_rows['recall'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[label_to_index['recall-sigmoid']])/ num_of_rows)
-                    #
-                    # key_to_rows['wasted'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[label_to_index['wasted-sigmoid']])/ num_of_rows)
-                    #
-                    # key_to_rows['f-score'][all_similarities_values[j]][all_similarities_values[k]] += (float(row[label_to_index['f-score-sigmoid']])/ num_of_rows)
-
-
 
 
         for key in key_to_rows:
@@ -406,80 +422,6 @@ class Experiment2(Experiment):
                 self.x[key].append(test)
                 self.y[key].append(key_to_rows[key][test])
 
-    # def _run_other(self, file_name):
-    #     with open(join(self.data_path, file_name)) as outfile:
-    #         rows = list(csv.reader(outfile))
-    #
-    #     labels_row, values_rows = rows[0], rows[1:]
-    #     label_to_index = self._label_to_index(labels_row)
-    #     num_of_rows = len(values_rows)
-    #
-    #     key_to_rows = {}
-    #     key_to_rows = defaultdict(lambda:{'precision':0, 'recall':0, 'wasted':0, 'f-score':0}, key_to_rows)
-    #
-    #     for row in tqdm(values_rows):
-    #         technique_name = row[0].split('_')[0]
-    #         key_to_rows[technique_name]['precision'] += (float(row[label_to_index['precision']]) / num_of_rows)
-    #
-    #         key_to_rows[technique_name]['recall'] += (float(row[label_to_index['recall']])/ num_of_rows)
-    #
-    #         key_to_rows[technique_name]['wasted'] += (float(row[label_to_index['wasted']])/ num_of_rows)
-    #
-    #         key_to_rows[technique_name]['f-score'] += (float(row[label_to_index['f-score']])/ num_of_rows)
-    #
-    #
-    #     for key in key_to_rows:
-    #         for test in key_to_rows[key]:
-    #             self.x[test].append(key)
-    #             self.y[test].append(key_to_rows[key][test])
-    #
-    # def _run_topic(self, file_name):
-    #     with open(join(self.data_path, file_name)) as outfile:
-    #         rows = list(csv.reader(outfile))
-    #
-    #     labels_row, values_rows = rows[0], rows[1:]
-    #     label_to_index = self._label_to_index(labels_row)
-    #     num_of_rows = len(values_rows) / 11
-    #
-    #     key_to_rows = {}
-    #     #key_to_rows = defaultdict(lambda:{'original':0 ,'comp':0, 'tests':0, 'both':0}, key_to_rows)
-    #     key_to_rows = defaultdict(lambda:{'original':0 ,'sigmuid':0 ,'multiply':0}, key_to_rows)
-    #     for i in tqdm(range(0,len(values_rows),11)):
-    #
-    #         maxx = max([values_rows[j][4] for j in range(i,i+11)])
-    #         for j in range(i,i+11):
-    #             if values_rows[j][4] == maxx:
-    #                 row = values_rows[j]
-    #                 key_to_rows['precision']['original'] += (float(row[label_to_index['original precision']]) / num_of_rows)
-    #                 key_to_rows['precision']['sigmuid'] += (float(row[label_to_index['precision-sigmoid']])/ num_of_rows)
-    #                 #key_to_rows['precision']['tests'] += (float(row[7])/ num_of_rows)
-    #                 key_to_rows['precision']['multiply'] += (float(row[label_to_index['precision-multiply']])/ num_of_rows)
-    #
-    #                 key_to_rows['recall']['original'] += (float(row[label_to_index['original recall']])/ num_of_rows)
-    #                 key_to_rows['recall']['sigmuid'] += (float(row[label_to_index['recall-sigmoid']])/ num_of_rows)
-    #                 #key_to_rows['recall']['tests'] += (float(row[8])/ num_of_rows)
-    #                 key_to_rows['recall']['multiply'] += (float(row[label_to_index['recall-multiply']])/ num_of_rows)
-    #
-    #                 key_to_rows['wasted']['original'] += (float(row[label_to_index['original wasted']])/ num_of_rows)
-    #                 key_to_rows['wasted']['sigmuid'] += (float(row[label_to_index['wasted-sigmoid']])/ num_of_rows)
-    #                 #key_to_rows['wasted']['tests'] += (float(row[9])/ num_of_rows)
-    #                 key_to_rows['wasted']['multiply'] += (float(row[label_to_index['wasted-multiply']])/ num_of_rows)
-    #
-    #
-    #                 # f_score_original = (float(row[1]) * float(row[2]) * 2) / (float(row[1]) + float(row[2])) if (float(row[1]) + float(row[2])) != 0 else 0
-    #                 # f_score_sigmuid = (float(row[4]) * float(row[5]) * 2) / (float(row[4]) + float(row[5])) if (float(row[4]) + float(row[5])) != 0 else 0
-    #                 # f_score_multiply = (float(row[10]) * float(row[11]) * 2) / (float(row[10]) + float(row[11])) if (float(row[10]) + float(row[11])) != 0 else 0
-    #
-    #                 key_to_rows['f-score']['original'] += (float(row[label_to_index['f-score-original']])/ num_of_rows)
-    #                 key_to_rows['f-score']['sigmuid'] += (float(row[label_to_index['f-score-sigmoid']])/ num_of_rows)
-    #                 key_to_rows['f-score']['multiply'] += (float(row[label_to_index['f-score-multiply']])/ num_of_rows)
-    #
-    #                 break
-    #
-    #     for key in key_to_rows:
-    #         for test in key_to_rows[key]:
-    #             self.x[key].append(test)
-    #             self.y[key].append(key_to_rows[key][test])
 
     def _run_all_methods(self, file_name):
         with open(join(self.data_path, file_name)) as outfile:
@@ -514,11 +456,14 @@ class Experiment2(Experiment):
 
         key_to_rows_MRR = {}
         key_to_rows_sim = {}
+        key_to_rows_all ={}
         key_to_rows_MRR = defaultdict(lambda:{f"{topic}_topics_MRR":0 for topic in self.best_topics['MRR']}, key_to_rows_MRR)
         key_to_rows_sim = defaultdict(lambda:{f"{topic}_topics_avg_sim":0 for topic in self.best_topics['average similarity']}, key_to_rows_sim)
+        key_to_rows_all = defaultdict(lambda:{f"{topic}":0 for topic in self.topics}, key_to_rows_all)
 
         average_metrics_values = {'using MRR':{metric:0 for metric in self.tested_metrics},
                                   'using avg sim':{metric:0 for metric in self.tested_metrics}}
+
 
         for i in tqdm(range(0,len(values_rows),NUM_TOPICS)):
             #
@@ -526,6 +471,10 @@ class Experiment2(Experiment):
             for j in range(i,i+NUM_TOPICS):
                 row = values_rows[j]
                 topic = row[label_to_index['technique']].split('_')[0]
+
+                for metric in self.tested_metrics:
+                    key_to_rows_all[metric][f"{topic}"] += (float(row[label_to_index[metric]]) / num_of_rows)
+
                 if topic in self.best_topics['MRR'] :
                     for metric in self.tested_metrics:
                         key_to_rows_MRR[metric][f"{topic}_topics_MRR"] += (float(row[label_to_index[metric]]) / num_of_rows)
@@ -535,16 +484,27 @@ class Experiment2(Experiment):
                     for metric in self.tested_metrics:
                         key_to_rows_sim[metric][f"{topic}_topics_avg_sim"] += (float(row[label_to_index[metric]]) / num_of_rows)
                         average_metrics_values['using avg sim'][metric] += (float(row[label_to_index[metric]]) / (num_of_rows * len(self.best_topics['average similarity'])))
-                 #   break
 
-        for key in key_to_rows_MRR:
-            for test in key_to_rows_MRR[key]:
-                self.x[key].append(test)
-                self.y[key].append(key_to_rows_MRR[key][test])
 
-            for test in key_to_rows_sim[key]:
+        self.find_best_topics(key_to_rows_all)
+        path_to_save_into = join(self.results_path, f"best_topics.txt")
+        with open(path_to_save_into, "w", newline="") as f:
+            json.dump(self.best_topics, f, indent=4)
+
+
+        for key in key_to_rows_all:
+            for test in key_to_rows_all[key]:
                 self.x[key].append(test)
-                self.y[key].append(key_to_rows_sim[key][test])
+                self.y[key].append(key_to_rows_all[key][test])
+
+        # for key in key_to_rows_MRR:
+        #     for test in key_to_rows_MRR[key]:
+        #         self.x[key].append(test)
+        #         self.y[key].append(key_to_rows_MRR[key][test])
+        #
+        #     for test in key_to_rows_sim[key]:
+        #         self.x[key].append(test)
+        #         self.y[key].append(key_to_rows_sim[key][test])
 
         rows_average = [['project', 'technique'] + [metric for metric in self.tested_metrics]]
         rows_average.append([self.project_name,'using MRR'] + [average_metrics_values['using MRR'][metric] for metric in self.tested_metrics])
@@ -740,7 +700,7 @@ class Experiment3(Experiment):
 
 import sys
 if __name__ == '__main__':
-    project = 'Lang'
+    project = 'Codec'
     if len(sys.argv) == 2:
         project = str(sys.argv[1])
 
