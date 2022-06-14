@@ -59,6 +59,7 @@ class BarinelTester:
         self.experiment5_path = join(self.project_path,'Experiments', 'Experiment_5')
 
         self.mapping = {}
+        self.mapping_hash_to_index = {}
         self.matrixes_details = {}
         self.bad_matrixes_indexes = {}
 
@@ -146,6 +147,7 @@ class BarinelTester:
                     m.append(bug["fix_hash"])
                     all_matrixes_in_dir_filtered.append(m)
                     self.mapping[m[2]] = m[1]
+                    self.mapping_hash_to_index[m[2]] = m[0]
                     break
             else:
                 counter_no_mapping += 1
@@ -203,6 +205,8 @@ class BarinelTester:
         self.matrixes_details['good matrixes'] = self.matrixes_details['number of generated matrixes'] -\
                                                  counter_empty_bug_list - counter_empty - counter_duplicated_matrixes - counter_no_mapping
         self.matrixes_details['precision 0 in original'] = 0
+        self.bad_matrixes_indexes['precision 0'] = []
+
 
     def write_rows(self):
         if self.type_of_exp == 'old':
@@ -610,6 +614,7 @@ class BarinelTesterOriginalMethod(BarinelTester):
         # original_fscore = diagnoses["fscore"]
         if diagnoses["precision"] == 0.0:
             self.matrixes_details['precision 0 in original'] += 1
+            self.bad_matrixes_indexes['precision 0'].append(self.mapping_hash_to_index[matrix_name])
         row = self._fill_row(diagnoses, matrix_name, 1, False, "original")
         self.rows.append(row)
         rows_combined_methods.append(row)
