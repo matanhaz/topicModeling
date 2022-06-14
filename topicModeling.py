@@ -772,9 +772,12 @@ class TopicModeling:
 
 
 if __name__ == "__main__":
-    project_name = "Codec"
+    project_name = "Imaging"
     functions = 0
     if len(sys.argv) == 3:
         project_name = str(sys.argv[1])
         functions = int(int(sys.argv[2]))
-    TopicModeling(project_name,functions).run()
+        TopicModeling(project_name,functions).run()
+    else:
+        for i in range(4):
+            TopicModeling(project_name,i).run()

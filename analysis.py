@@ -229,6 +229,8 @@ class analyzer:
                 version = id[4][-1]
             else:
                 version = id[2][-1]
+            version = self.filter_tag(version)
+
             for v in versions:
                 if versions[v]['filtered name'] == version and id[0] in bug_id_to_changed_functions.keys():
                     commit_hash = versions[v]['hash']
@@ -370,6 +372,20 @@ class analyzer:
     #     # save_into_file('commitId to hexsha',
     #     #                commit_id_to_hexsha, 'commit id')
 
+    def filter_tag(self, tag):
+        i = -1
+        for index, chr in enumerate(tag):
+            if chr.isdigit():
+                i = index
+                break
+        new_tag = ''
+        while i < len(tag) and (tag[i].isdigit() or tag[i] in ('.', '_')):
+            if tag[i] == '_':
+                new_tag += '.'
+            else:
+                new_tag += tag[i]
+            i += 1
+        return new_tag
 
     def get_methods_from_tree(self, tree):
         types = tree.types
@@ -406,4 +422,4 @@ class analyzer:
 
 
 if __name__ == "__main__":
-    analyzer("Csv").run()
+    analyzer("Imaging").run()

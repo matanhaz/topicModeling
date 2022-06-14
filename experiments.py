@@ -361,7 +361,7 @@ class Experiment2(Experiment):
         for metric in self.best_topics:
             for topic in self.best_topics[metric]:
                 self.best_topics[metric][topic] = topic_to_average[topic]
-            
+
 
         best_topics.sort(key=lambda x:x[1],reverse=True)
         self.best_topics['regular'] = {topics[0]:topics[1] for topics in best_topics}
@@ -700,7 +700,7 @@ class Experiment3(Experiment):
 
 import sys
 if __name__ == '__main__':
-    project = 'Codec'
+    project = 'Imaging'
     if len(sys.argv) == 2:
         project = str(sys.argv[1])
 

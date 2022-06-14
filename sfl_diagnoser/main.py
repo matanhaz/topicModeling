@@ -692,10 +692,10 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 
 
 if __name__ == "__main__":
-    project_name = "Compress"
+    project_name = "Imaging"
     local = True
-    type_of_exp = 'old'
-    methods = 'others'
+    type_of_exp = 'new'
+    methods = 'local'
     #, 'BLUiR', 'AmaLgam'
     technique = [ "BugLocator", "BRTracer" , 'Locus']
     if len(sys.argv) == 5:
@@ -748,10 +748,10 @@ if __name__ == "__main__":
         sim = [0.8, 0.9, 1]
         sanity3 = BarinelTesterSanity(project_name,local, type_of_exp, sim, methods)
         topics = list(range(20,601,20))
-        multiply = BarinelTesterMultiply(project_name, topics, local, type_of_exp)
+      #  multiply = BarinelTesterMultiply(project_name, topics, local, type_of_exp)
         original = BarinelTesterOriginalMethod(project_name, local, type_of_exp)
         topicModeling = BarinelTesterTopicModeling(project_name, topics, local, type_of_exp)
-        all_methods = [original, topicModeling, multiply, sanity1, sanity2, sanity3]
+        all_methods = [original, topicModeling, sanity1, sanity2, sanity3]
         for t in technique:
             all_methods.append(BarinelTesterOtherAlgorithm(project_name, t, local, type_of_exp))
 
