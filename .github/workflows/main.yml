@@ -449,8 +449,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-       type: [old, new]
-       #type: [old]
+       #type: [old, new]
+       type: [old]
        #methods: [Sanity1, Sanity2, Sanity3, multiply, topic]
        methods: [Sanity1, Sanity2, Sanity3, others, topic]
     steps:
