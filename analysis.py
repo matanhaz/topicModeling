@@ -226,9 +226,9 @@ class analyzer:
 
         for id in bugs_id_list:
             if id[4] != []:
-                version = id[4][-1]
+                version = max(id[4][-1])
             else:
-                version = id[2][-1]
+                version = max(id[2][-1])
             version = self.filter_tag(version)
 
             for v in versions:
@@ -422,4 +422,4 @@ class analyzer:
 
 
 if __name__ == "__main__":
-    analyzer("Imaging").run()
+    analyzer("Codec").run()
