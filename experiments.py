@@ -313,6 +313,7 @@ class Experiment2(Experiment):
         first_sanity = True
         all_rows = []
         all_rows_sanity = []
+        all_rows_positive_precision = []
         for file in listdir(self.data_path):
             if 'Sanity' not in file:
                 with open(join(self.data_path, file)) as outfile:
@@ -342,6 +343,18 @@ class Experiment2(Experiment):
         with open(path_to_save_into, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerows(all_rows_sanity)
+
+        with open(join(self.project_path, 'barinel', 'bad matrixes indexes.txt'), 'r', newline='') as file:
+            bad_bug_id_list = json.load(file)['precision 0 bug id']
+
+        for row in all_rows:
+            bug_id = row[5]
+            if bug_id not in bad_bug_id_list:
+                all_rows_positive_precision.append(row)
+        path_to_save_into = join(self.data_path, f"data_all_methods_combined_positive_precision.csv")
+        with open(path_to_save_into, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerows(all_rows_positive_precision)
 
     def find_best_topics(self, key_to_rows):
         # key_to_rows => metric to a dict of topic to average
@@ -700,7 +713,7 @@ class Experiment3(Experiment):
 
 import sys
 if __name__ == '__main__':
-    project = 'Lang'
+    project = 'Codec'
     if len(sys.argv) == 2:
         project = str(sys.argv[1])
 

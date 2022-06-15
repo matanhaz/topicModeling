@@ -98,11 +98,14 @@ class ModifyOtherMethods:
             path=join(self.analysis_path, "commitId to all functions")
         )
         commit_to_exist_functions = df.to_dict()["commit id"]
-
-        for bug in bugs:
-            bugs_to_funcs[bug] = []
+        bad_matrixes = {'not in other methods':[]}
+        for bug in bugs_to_hex:
+            if bug['bug id'] not in bugs:
+                bad_matrixes['not in other methods'].append(bug['bug index'])
+                continue
+            bugs_to_funcs[bug['bug index']] = []
             try:
-                commit_hex = [b['hexsha'] for b in bugs_to_hex if b['bug id'] == bug][0]
+                commit_hex = bug['fix_hash']
             except:
                 print(bug)
                 continue
@@ -115,14 +118,14 @@ class ModifyOtherMethods:
                     exist_files_filtered[f.split('\\')[-1].split('/')[-1]] = exist_files[f].tolist()
 
             counter = 0
-            for file in bugs[bug]:
+            for file in bugs[bug['bug id']]:
                 file_name = file[0] + '.java'
                 sim = file[1] if float(file[1]) <1 else '1'
                 try:
                     for func in exist_files_filtered[file_name]:
-                        bugs_to_funcs[bug].append([func,sim, str(counter), file[0] ])
+                        bugs_to_funcs[bug['bug index']].append([func,sim, str(counter), file[0] ])
                         counter += 1
-                except:
+                except Exception as e:
                     print()
         final_dict_funcs['bugs'] = bugs_to_funcs
         path_to_save = join("projects", self.project_folder,"topicModeling","bug to functions and similarity",f"bug_to_function_and_similarity_{self.method_folder_name}")
@@ -131,8 +134,9 @@ class ModifyOtherMethods:
         data2.to_parquet(
             path=path_to_save
         )
-        print()
-
+        path_to_save = join("projects", self.project_folder,"barinel",'bad matrixes indexes.txt')
+        with open(path_to_save, "w", newline="") as f:
+            json.dump(bad_matrixes, f, indent=4)
     # write final dict to a json file
 
 
@@ -153,13 +157,14 @@ class ModifyOtherMethods:
 
                 functions_that_changed_no_tests = [func.split('\\')[-1].split('/')[-1] for func in bug["files that changed"] if ('test' not in func and 'Test' not in func)]
 
-                commit_id = [commit for commit in commit_to_exist_functions if commit_to_exist_functions[commit]['hexsha'] == bug['hexsha']][0]
+                commit_id = [commit for commit in commit_to_exist_functions if commit_to_exist_functions[commit]['hexsha'] == bug['fix_hash']][0]
 
                 exists_functions = [func.split('\\')[-1].split('/')[-1] for func in list(commit_to_exist_functions[commit_id]['file to functions'].keys())]
 
                 exists_functions_no_tests = [func for func in exists_functions if ('test' not in func and 'Test' not in func)]
 
-                exist_bugs_and_changed_functions[bug['bug id']] = {'function that changed':functions_that_changed,
+                exist_bugs_and_changed_functions[bug['bug index']] = {'id': bug['bug id'],
+                                                                    'function that changed':functions_that_changed,
                                                                    'function that changed no tests':functions_that_changed_no_tests,
                                                                    'exists functions': exists_functions,
                                                                    'exists functions no tests': exists_functions_no_tests}
@@ -169,27 +174,25 @@ class ModifyOtherMethods:
             for bug in all_bugs:
                 for file_and_sim in all_bugs[bug]:
                     file_and_sim[0] += '.java'
-            exists_bugs = exist_bugs_and_changed_functions.keys()
             bug_to_miss = {}
             for bug in tqdm.tqdm(all_bugs):
-                if bug not in exists_bugs:
-                    continue
+                for exist_bug in exist_bugs_and_changed_functions:
+                    if bug == exist_bug:
+                        functions_that_changed = exist_bugs_and_changed_functions[exist_bug]['function that changed']
+                        exists_functions = exist_bugs_and_changed_functions[exist_bug]['exists functions']
+                        min_index, max_index, num_functions, all_indexes, tmp, average_sim = \
+                            self.find_indexes_exist_functions(functions_that_changed, all_bugs[exist_bug], exists_functions)
 
-                functions_that_changed = exist_bugs_and_changed_functions[bug]['function that changed']
-                exists_functions = exist_bugs_and_changed_functions[bug]['exists functions']
-                min_index, max_index, num_functions, all_indexes, tmp, average_sim = \
-                    self.find_indexes_exist_functions(functions_that_changed, all_bugs[bug], exists_functions)
+                        functions_that_changed_no_tests = exist_bugs_and_changed_functions[exist_bug]['function that changed no tests']
+                        exists_functions_no_tests = exist_bugs_and_changed_functions[exist_bug]['exists functions no tests']
+                        min_index_no_tests, max_index_no_tests, num_functions_no_tests, all_indexes_no_tests, miss, average_sim_no_test = \
+                            self.find_indexes_exist_functions(functions_that_changed_no_tests, all_bugs[exist_bug], exists_functions_no_tests)
 
-                functions_that_changed_no_tests = exist_bugs_and_changed_functions[bug]['function that changed no tests']
-                exists_functions_no_tests = exist_bugs_and_changed_functions[bug]['exists functions no tests']
-                min_index_no_tests, max_index_no_tests, num_functions_no_tests, all_indexes_no_tests, miss, average_sim_no_test = \
-                    self.find_indexes_exist_functions(functions_that_changed_no_tests, all_bugs[bug], exists_functions_no_tests)
+                        bug_to_miss[exist_bug] = miss
 
-                bug_to_miss[bug] = miss
-
-                self.rows.append([self.technique,bug,len(functions_that_changed),len(functions_that_changed_no_tests),
-                                  min_index,max_index,num_functions,all_indexes,
-                                 min_index_no_tests,max_index_no_tests,num_functions_no_tests,all_indexes_no_tests,average_sim_no_test ])
+                        self.rows.append([self.technique,bug,len(functions_that_changed),len(functions_that_changed_no_tests),
+                                          min_index,max_index,num_functions,all_indexes,
+                                         min_index_no_tests,max_index_no_tests,num_functions_no_tests,all_indexes_no_tests,average_sim_no_test ])
 
             with open(join(self.project_path, "Experiments", "Experiment_1", "data", f"{self.method_folder_name}_indexes.csv"), 'w', newline='') as file:
                 writer = csv.writer(file)
@@ -247,7 +250,7 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         selected_project = sys.argv[1]
     else:
-        selected_project = "Imaging"
+        selected_project = "Codec"
 
     with open("project_info.txt", 'r') as outfile:
         data = json.load(outfile)

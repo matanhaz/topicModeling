@@ -61,7 +61,10 @@ class BarinelTester:
         self.mapping = {}
         self.mapping_hash_to_index = {}
         self.matrixes_details = {}
-        self.bad_matrixes_indexes = {}
+
+        with open(join(self.project_path, 'barinel', 'bad matrixes indexes.txt'), 'r', newline='') as file:
+            self.bad_matrixes_indexes = json.load(file)
+
 
         self.prepare_dir()
         self.prepare_matrixes()
@@ -124,37 +127,62 @@ class BarinelTester:
                       (new_path_matrixes, file), join
             (new_path_matrixes, new_name))
 
+        """remove empty matrixes & empty bugs list"""
+        counter_empty, counter_empty_bug_list = 0, 0
+        self.bad_matrixes_indexes['empty matrixes | empty bug list'] = []
+        for file in listdir(new_path_matrixes):
+            index = file
+            with open(join(new_path_matrixes,file), "r") as f:
+                instance = json.loads(f.read())
+            for key in instance:
+                if instance[key] != []:
+                    break
+            else:
+                counter_empty += 1
+                remove(join(new_path_matrixes, file))
 
+                self.bad_matrixes_indexes['empty matrixes | empty bug list'].append(index)
+                continue
+            if instance['bugs'] == []:
+                counter_empty_bug_list += 1
+                remove(join(new_path_matrixes, file))
+                self.bad_matrixes_indexes['empty matrixes | empty bug list'].append(index)
 
         """read csv"""
         df = pd.read_csv(join(self.project_path, "barinel",'active-bugs.csv')).to_dict()
         all_matrixes_in_dir = []
         for i in range(len(df["bug.id"])):
             if str(df["bug.id"][i]) in listdir(new_path_matrixes):
-                all_matrixes_in_dir.append([str(df["bug.id"][i]), str(df["report.id"][i].split("-")[1])])  # (bug file index, bug actual id in jira)
+                all_matrixes_in_dir.append([str(df["bug.id"][i]), str(df["report.id"][i].split("-")[1]), str(df["revision.id.fixed"][i])])  # (bug file index, bug actual id in jira)
 
         self.matrixes_details['lines in active bugs'] = len(df["bug.id"])
 
-        counter_no_mapping = 0
-
-        """add to each matrix his hexsha"""
+        # counter_no_mapping = 0
+        #
+        # """add to each matrix his hexsha"""
         all_matrixes_in_dir_filtered = []
-        self.bad_matrixes_indexes['bad mapping matrixes'] = []
+        # self.bad_matrixes_indexes['bad mapping matrixes'] = []
         for m in all_matrixes_in_dir:
-
-            for bug in data:
-                if bug["bug id"].split("-")[1] == m[1]:
-                    m.append(bug["fix_hash"])
-                    all_matrixes_in_dir_filtered.append(m)
-                    self.mapping[m[2]] = m[1]
-                    self.mapping_hash_to_index[m[2]] = m[0]
-                    break
-            else:
-                counter_no_mapping += 1
+            if m[0] in self.bad_matrixes_indexes['not in other methods']:
                 remove(join(new_path_matrixes, m[0]))
-                self.bad_matrixes_indexes['bad mapping matrixes'].append(m[0])
-
-        self.matrixes_details['no existing mapping in active bugs'] = counter_no_mapping
+            else:
+                all_matrixes_in_dir_filtered.append(m)
+                self.mapping[m[2]] = m[1]
+                self.mapping_hash_to_index[m[2]] = m[0]
+        #
+        #     for bug in data:
+        #         if bug["bug id"].split("-")[1] == m[1]:
+        #             m.append(bug["fix_hash"])
+        #             all_matrixes_in_dir_filtered.append(m)
+        #             self.mapping[m[2]] = m[1]
+        #             self.mapping_hash_to_index[m[2]] = m[0]
+        #             break
+        #     else:
+        #         counter_no_mapping += 1
+        #         remove(join(new_path_matrixes, m[0]))
+        #         self.bad_matrixes_indexes['bad mapping matrixes'].append(m[0])
+        #
+        # self.matrixes_details['no existing mapping in active bugs'] = counter_no_mapping
 
 
 
@@ -180,33 +208,14 @@ class BarinelTester:
 
         self.matrixes_details['duplicated matrixes'] = counter_duplicated_matrixes
 
-        """remove empty matrixes & empty bugs list"""
-        counter_empty, counter_empty_bug_list = 0, 0
-        self.bad_matrixes_indexes['empty matrixes | empty bug list'] = []
-        for file in listdir(new_path_matrixes):
-            index = [m[0] for m in all_matrixes_in_dir_filtered if m[2] == file][0]
-            with open(join(new_path_matrixes,file), "r") as f:
-                instance = json.loads(f.read())
-            for key in instance:
-                if instance[key] != []:
-                    break
-            else:
-                counter_empty += 1
-                remove(join(new_path_matrixes, file))
 
-                self.bad_matrixes_indexes['empty matrixes | empty bug list'].append(index)
-                continue
-            if instance['bugs'] == []:
-                counter_empty_bug_list += 1
-                remove(join(new_path_matrixes, file))
-                self.bad_matrixes_indexes['empty matrixes | empty bug list'].append(index)
         self.matrixes_details['empty matrixes'] = counter_empty
         self.matrixes_details['empty bugs list'] = counter_empty_bug_list
         self.matrixes_details['good matrixes'] = self.matrixes_details['number of generated matrixes'] -\
-                                                 counter_empty_bug_list - counter_empty - counter_duplicated_matrixes - counter_no_mapping
+                                                 counter_empty_bug_list - counter_empty - counter_duplicated_matrixes - len(self.bad_matrixes_indexes['not in other methods'])
         self.matrixes_details['precision 0 in original'] = 0
         self.bad_matrixes_indexes['precision 0'] = []
-
+        self.bad_matrixes_indexes['precision 0 bug id'] = []
 
     def write_rows(self):
         if self.type_of_exp == 'old':
@@ -614,7 +623,8 @@ class BarinelTesterOriginalMethod(BarinelTester):
         # original_fscore = diagnoses["fscore"]
         if diagnoses["precision"] == 0.0:
             self.matrixes_details['precision 0 in original'] += 1
-            self.bad_matrixes_indexes['precision 0'].append(self.mapping_hash_to_index[matrix_name])
+            self.bad_matrixes_indexes['precision 0'].append(self.mapping_hash_to_index[matrix_name.split('\\')[-1].split('/')[-1]])
+            self.bad_matrixes_indexes['precision 0 bug id'].append(self.mapping[matrix_name.split('\\')[-1].split('/')[-1]])
         row = self._fill_row(diagnoses, matrix_name, 1, False, "original")
         self.rows.append(row)
         rows_combined_methods.append(row)
@@ -697,12 +707,12 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 
 
 if __name__ == "__main__":
-    project_name = "Imaging"
+    project_name = "Codec"
     local = True
-    type_of_exp = 'new'
+    type_of_exp = 'old'
     methods = 'local'
-    #, 'BLUiR', 'AmaLgam'
-    technique = [ "BugLocator", "BRTracer" , 'Locus']
+    #, 'BLUiR', 'AmaLgam', 'Locus'
+    technique = [ "BugLocator", "BRTracer" ]
     if len(sys.argv) == 5:
         project_name = sys.argv[1]
         if sys.argv[2] == 'git':
@@ -756,10 +766,10 @@ if __name__ == "__main__":
       #  multiply = BarinelTesterMultiply(project_name, topics, local, type_of_exp)
         original = BarinelTesterOriginalMethod(project_name, local, type_of_exp)
         topicModeling = BarinelTesterTopicModeling(project_name, topics, local, type_of_exp)
-        all_methods = [original, topicModeling, sanity1, sanity2, sanity3]
+        all_methods = [original, topicModeling]
+        #all_methods.extend([sanity1, sanity2, sanity3])
         for t in technique:
             all_methods.append(BarinelTesterOtherAlgorithm(project_name, t, local, type_of_exp))
-
     path = join\
         (str(Path(__file__).parents[1]),'projects',project_name,"barinel","matrixes")
     print('start')
@@ -774,7 +784,7 @@ if __name__ == "__main__":
         except Exception as e:
             failed.append((matrix, e))
             #print(matrix)
-           # raise e
+            raise e
             #errors.append(e)
 
         count -= 1

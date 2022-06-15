@@ -1,12 +1,12 @@
 from datetime import datetime
-
+import csv
 import javalang
 from git import Repo
 from os.path import exists, join
 from os import mkdir
 import json
 import pandas
-
+from zipfile import ZipFile
 #PROJECT_PATH = os.getcwd() + "\\projects\\"
 
 
@@ -16,8 +16,14 @@ class analyzer:
         self.project_path = join("projects", project_name)
         self.data_path = join(self.project_path, "data")
         self.analysis_path = join(self.project_path, "analysis")
+        self.matrices_path = join(self.project_path, "barinel")
         if not (exists(self.analysis_path)):
             mkdir(self.analysis_path)
+        if not (exists(join(self.data_path,'active-bugs.csv'))):
+            with ZipFile(join('matrixes',f'{project_name}.zip'), 'r') as zipObj:
+                zipObj.extract('active-bugs.csv', path=self.data_path)
+
+
 
     def run(self):
         self.function_to_all_messages()
@@ -167,6 +173,13 @@ class analyzer:
         with open(join(self.analysis_path, "tag_to_commit_hexsha.txt")) as outfile:
             versions = json.load(outfile)
 
+        with open(join(self.data_path,"active-bugs.csv")) as csvfile:
+            bugs = list(csv.reader(csvfile, delimiter=' '))
+            active_bugs = []
+            for row in bugs:
+                active_bugs.append(row[0].split(','))
+            avtive_bugs_labels, active_bugs_values = active_bugs[0], active_bugs[1:]
+
        # with open(join()(self.analysis_path,"commitId to all functions.txt" )) as outfile:
         #    commitId_to_hexsha = json.load(outfile)['commit id']
 
@@ -175,8 +188,12 @@ class analyzer:
 
         bugs = data['bugs info']['bugs']
         bugs_id_list = []
-        for bug in bugs:
-            bugs_id_list.append((bug['issue_id'], bug['description'], bug['versions'], datetime.strptime(bug['resolved'], '%Y-%m-%d'), bug['fixVersions']))
+
+        for row in active_bugs_values:
+
+            for bug in bugs:
+                if row[3].split('-')[1] == bug['issue_id'].split('-')[1]:
+                    bugs_id_list.append((bug['issue_id'], bug['description'], bug['versions'], datetime.strptime(bug['resolved'], '%Y-%m-%d'), bug['fixVersions'], row[0]))
 
         counter = 0
         commits = {}
@@ -211,38 +228,57 @@ class analyzer:
         bug_id_to_fix_hash = {}
 
         bugs_id_list_copy = bugs_id_list.copy()
+
+
         for commit_id in commits_reversed:
             if bugs_id_list_copy == []:
                 break
-            for id in bugs_id_list_copy:
-                if id[0] in commits[commit_id]['commit_summary'] and self.not_followed_by_a_number(id[0], commits[commit_id]['commit_summary'])\
-                        and datetime.strptime(commits[commit_id]['date'], '%Y-%m-%d')>=id[3] and id [0] not in bug_id_to_fix_hash:
+
+            for row in active_bugs_values:
+                if commit_id == row[2]:
+
                     desc = commits[commit_id]['commit_summary']
-                    bug_id_to_changed_functions[id[0]] = commits[commit_id]['functions']
-                    bug_id_to_changed_files[id[0]] = commits[commit_id]['files']
-                    bug_id_to_fix_hash[id[0]] = commit_id
+                    bug_id_to_changed_functions[row[0]] = commits[commit_id]['functions']
+                    bug_id_to_changed_files[row[0]] = commits[commit_id]['files']
+                    bug_id_to_fix_hash[row[0]] = commit_id
                   #  bugs_id_list_copy.remove(id)
                   #  break
 
+
+
+        # for commit_id in commits_reversed:
+        #     if bugs_id_list_copy == []:
+        #         break
+        #     for id in bugs_id_list_copy:
+        #         if id[0] in commits[commit_id]['commit_summary'] and self.not_followed_by_a_number(id[0], commits[commit_id]['commit_summary'])\
+        #                 and datetime.strptime(commits[commit_id]['date'], '%Y-%m-%d')>=id[3] and id [0] not in bug_id_to_fix_hash:
+        #             desc = commits[commit_id]['commit_summary']
+        #             bug_id_to_changed_functions[id[0]] = commits[commit_id]['functions']
+        #             bug_id_to_changed_files[id[0]] = commits[commit_id]['files']
+        #             bug_id_to_fix_hash[id[0]] = commit_id
+        #           #  bugs_id_list_copy.remove(id)
+        #           #  break
+
         for id in bugs_id_list:
             if id[4] != []:
-                version = max(id[4][-1])
+                version = max(id[4])
             else:
-                version = max(id[2][-1])
+                version = max(id[2])
             version = self.filter_tag(version)
 
             for v in versions:
-                if versions[v]['filtered name'] == version and id[0] in bug_id_to_changed_functions.keys():
+                if versions[v]['filtered name'] == version and id[5] in bug_id_to_changed_functions.keys():
                     commit_hash = versions[v]['hash']
                     bug_to_commit_that_solved.append({
+                        'bug index':id[5],
                         'bug id': id[0],
                         'hexsha': commit_hash,
-                        'fix_hash': bug_id_to_fix_hash[id[0]],
+                        'fix_hash': bug_id_to_fix_hash[id[5]],
                         'description': id[1],
                         'commit number version hash': commits[commit_hash]['id'],
-                        'commit number': commits[bug_id_to_fix_hash[id[0]]]['id'],
-                        'function that changed': bug_id_to_changed_functions[id[0]],
-                        'files that changed': bug_id_to_changed_files[id[0]]
+                        'commit number': commits[bug_id_to_fix_hash[id[5]]]['id'],
+                        'function that changed': bug_id_to_changed_functions[id[5]],
+                        'files that changed': bug_id_to_changed_files[id[5]]
                     })
                     #bugs_id_list.remove(id)
 
@@ -256,8 +292,6 @@ class analyzer:
         self.save_into_file("bug_to_commit_that_solved",
                        bug_to_commit_that_solved, 'bugs to commit')
         print(len(bugs_id_list))
-
-
     # def bug_to_commit_that_solved(self):
     #     if not (exists( join(self.analysis_path,"bugs.txt"))):
     #         print("missing bugs data to analyse")
@@ -273,6 +307,9 @@ class analyzer:
     #     with open(join(self.analysis_path, "bugs.txt")) as outfile:
     #         data = json.load(outfile)
     #
+    #     with open(join(self.analysis_path, "tag_to_commit_hexsha.txt")) as outfile:
+    #         versions = json.load(outfile)
+    #
     #    # with open(join()(self.analysis_path,"commitId to all functions.txt" )) as outfile:
     #     #    commitId_to_hexsha = json.load(outfile)['commit id']
     #
@@ -282,95 +319,89 @@ class analyzer:
     #     bugs = data['bugs info']['bugs']
     #     bugs_id_list = []
     #     for bug in bugs:
-    #         bugs_id_list.append((bug['issue_id'], bug['description']))
+    #         bugs_id_list.append((bug['issue_id'], bug['description'], bug['versions'], datetime.strptime(bug['resolved'], '%Y-%m-%d'), bug['fixVersions']))
     #
     #     counter = 0
     #     commits = {}
     #     bug_to_commit_that_solved = []
-    #     join(self.analysis_path,f"data{counter}.txt")
+    #     #join(self.analysis_path,f"data{counter}.txt")
     #     while (exists(join(self.data_path,f"data{counter}.txt"))):
     #         with open(join(self.data_path,f"data{counter}.txt")) as outfile:
     #             data = json.load(outfile)
     #         data = data['changes']
     #         for commit in data:
-    #             if not commit['commit_id'] in commits.keys():
-    #                 commits[commit['commit_id']] = {
+    #             if not commit['hash'] in commits.keys():
+    #                 commits[commit['hash']] = {
+    #                     'id':commit['commit_id'],
     #                     'commit_summary': commit['commit_summary'],
-    #                     'functions': commit['functions']
+    #                     'files': commit['modified_files'],
+    #                     'functions': commit['functions'],
+    #                     'date': commit['date']
     #                 }
     #             else:
-    #                 commits[commit['commit_id']]['functions'].extend(
+    #                 commits[commit['hash']]['functions'].extend(
     #                     commit['functions'])
+    #                 commits[commit['hash']]['files'].extend(
+    #                     commit['modified_files'])
     #         counter += 1
     #
+    #
+    #
     #     commits_reversed = list(commits.keys())
-    #     commits_reversed.reverse()
+    #     #commits_reversed.reverse()
+    #     bug_id_to_changed_functions = {}
+    #     bug_id_to_changed_files = {}
+    #     bug_id_to_fix_hash = {}
+    #
+    #     bugs_id_list_copy = bugs_id_list.copy()
     #     for commit_id in commits_reversed:
-    #         for id in bugs_id_list:
-    #             if id[0] in commits[commit_id]['commit_summary'] and self.not_followed_by_a_number(id[0], commits[commit_id]['commit_summary']):
+    #         if bugs_id_list_copy == []:
+    #             break
+    #         for id in bugs_id_list_copy:
+    #             if id[0] in commits[commit_id]['commit_summary'] and self.not_followed_by_a_number(id[0], commits[commit_id]['commit_summary'])\
+    #                     and datetime.strptime(commits[commit_id]['date'], '%Y-%m-%d')>=id[3] and id [0] not in bug_id_to_fix_hash:
+    #                 desc = commits[commit_id]['commit_summary']
+    #                 bug_id_to_changed_functions[id[0]] = commits[commit_id]['functions']
+    #                 bug_id_to_changed_files[id[0]] = commits[commit_id]['files']
+    #                 bug_id_to_fix_hash[id[0]] = commit_id
+    #               #  bugs_id_list_copy.remove(id)
+    #               #  break
+    #
+    #     for id in bugs_id_list:
+    #         if id[4] != []:
+    #             version = max(id[4][-1])
+    #         else:
+    #             version = max(id[2][-1])
+    #         version = self.filter_tag(version)
+    #
+    #         for v in versions:
+    #             if versions[v]['filtered name'] == version and id[0] in bug_id_to_changed_functions.keys():
+    #                 commit_hash = versions[v]['hash']
     #                 bug_to_commit_that_solved.append({
     #                     'bug id': id[0],
-    #                     'hexsha': commitId_to_hexsha[commit_id]['hexsha'],
+    #                     'hexsha': commit_hash,
+    #                     'fix_hash': bug_id_to_fix_hash[id[0]],
     #                     'description': id[1],
-    #                     'commit number': commit_id,
-    #                     'function that changed': commits[commit_id]['functions']
+    #                     'commit number version hash': commits[commit_hash]['id'],
+    #                     'commit number': commits[bug_id_to_fix_hash[id[0]]]['id'],
+    #                     'function that changed': bug_id_to_changed_functions[id[0]],
+    #                     'files that changed': bug_id_to_changed_files[id[0]]
     #                 })
-    #                 bugs_id_list.remove(id)
+    #                 #bugs_id_list.remove(id)
     #
     #                 break
+    #
+    #
+    #
+    #
+    #
     #
     #     self.save_into_file("bug_to_commit_that_solved",
     #                    bug_to_commit_that_solved, 'bugs to commit')
     #     print(len(bugs_id_list))
 
 
-    # def get_all_functions_on_commit_and_id_to_hexsha(git_url):
-    #     try:
-    #         if not (exists(PROJECT_PATH + "\\Project")):
-    #             Repo.clone_from(
-    #                 git_url, PROJECT_PATH + "\\Project")
-    #         repo = Repo(PROJECT_PATH + "\\Project")
-    #     except Exception as e:
-    #         print("bad Git URL")
-    #         return
-    #
-    #     with open(PROJECT_PATH + "\\analysis\\commitId to all functions2.txt") as outfile:
-    #         data = json.load(outfile)['commit id']
-    #
-    #     all_commits = list(repo.iter_commits('master'))  # list of commits
-    #
-    #     git = repo.git
-    #
-    #     cur_commit = 0
-    #
-    #     commitId_to_all_functions = {}
-    #     commit_id_to_hexsha = {}
-    #     while cur_commit <= len(all_commits) - 1:
-    #         print(cur_commit)
-    #         git.checkout('-f', all_commits[cur_commit].hexsha)
-    #         # existing_files_in_commit = git.execute(['git','ls-tree','--name-only','-r',all_commits[cur_commit].hexsha ]).split()
-    #         # all_functions = []
-    #         # for file in existing_files_in_commit:
-    #         #     if ".java" in file and exists(os.getcwd() + "\\Project\\"+file):
-    #         #         try:
-    #         #             tmp_tree = javalang.parse.parse(open(os.path.normpath(join()(repo._working_tree_dir, file))).read())
-    #         #             all_functions.extend(get_methods_from_tree(tmp_tree))
-    #         #         except Exception as e:
-    #         #             continue
-    #         commitId_to_all_functions[str(len(all_commits)-cur_commit)] = {
-    #             'hexsha': all_commits[cur_commit].hexsha,
-    #             'all functions': data[str(len(all_commits)-cur_commit)]}
-    #         # commit_id_to_hexsha[str(len(all_commits)-cur_commit)] = {
-    #         #     'hexsha': all_commits[cur_commit].hexsha
-    #         # }
-    #
-    #         cur_commit += 1
-    #         print(cur_commit)
-    #
-    #     save_into_file('commitId to all functions',
-    #                    commitId_to_all_functions, 'commit id')
-    #     # save_into_file('commitId to hexsha',
-    #     #                commit_id_to_hexsha, 'commit id')
+
 
     def filter_tag(self, tag):
         i = -1

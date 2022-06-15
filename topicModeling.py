@@ -381,7 +381,7 @@ class TopicModeling:
                 for tup in topic_to_chances:
                     chances.append(tup[1])
                 bugs_filtered_and_document_topics.append(
-                    {"bug id": bug["bug id"], "chances": chances}
+                    {"bug id": bug["bug index"], "chances": chances}
                 )
 
             func_filtered_and_document_topics = []
@@ -584,7 +584,7 @@ class TopicModeling:
         max_index_smaller_list = -1
 
         func_and_similarity_of_bug = (
-            bug_to_func_and_similarity[bug["bug id"]].tolist().copy()
+            bug_to_func_and_similarity[bug["bug index"]].tolist().copy()
         )
         for i in range(len(func_and_similarity_of_bug)):
             func_and_similarity_of_bug[i] = func_and_similarity_of_bug[i].tolist(
@@ -630,7 +630,7 @@ class TopicModeling:
         max_index_smaller_list_no_tests = -1
 
         func_and_similarity_of_bug = (
-            bug_to_func_and_similarity[bug["bug id"]].tolist().copy()
+            bug_to_func_and_similarity[bug["bug index"]].tolist().copy()
         )
         for i in range(len(func_and_similarity_of_bug)):
             func_and_similarity_of_bug[i] = func_and_similarity_of_bug[i].tolist(
@@ -727,7 +727,7 @@ class TopicModeling:
         with open(join(self.project_path, "analysis", "bug_to_commit_that_solved.txt")) as outfile:
             bugs_to_hex = json.load(outfile)["bugs to commit"]
 
-        bugs = [bug['bug id'] for bug in bugs_to_hex]
+        bugs = [{'id': bug['bug id'], 'index':bug['bug index']} for bug in bugs_to_hex]
 
         df = read_parquet(
             path=join(self.analysis_path, "commitId to all functions")
@@ -735,9 +735,9 @@ class TopicModeling:
         commit_to_exist_functions = df.to_dict()["commit id"]
 
         for bug in bugs:
-            bugs_to_funcs[bug] = []
+            bugs_to_funcs[bug['index']] = []
             try:
-                commit_hex = [b['fix_hash'] for b in bugs_to_hex if b['bug id'] == bug][0]
+                commit_hex = [b['fix_hash'] for b in bugs_to_hex if b['bug index'] == bug['index']][0]
             except:
                 print(bug)
                 continue
@@ -749,7 +749,7 @@ class TopicModeling:
                 if exist_files[f] is not None:
                     exist_files_filtered[f.split('\\')[-1].split('/')[-1]] = exist_files[f].tolist()
 
-            file_to_sim= list(bug_to_func_and_similarity[bug])
+            file_to_sim= list(bug_to_func_and_similarity[bug['index']])
 
             counter = 0
             for file in file_to_sim:
@@ -772,7 +772,7 @@ class TopicModeling:
 
 
 if __name__ == "__main__":
-    project_name = "Imaging"
+    project_name = "Codec"
     functions = 0
     if len(sys.argv) == 3:
         project_name = str(sys.argv[1])
