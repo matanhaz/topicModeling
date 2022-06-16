@@ -62,7 +62,8 @@ class BarinelTester:
         self.mapping_hash_to_index = {}
         self.matrixes_details = {}
 
-        with open(join(self.project_path, 'barinel', 'bad matrixes indexes.txt'), 'r', newline='') as file:
+
+        with open(join(self.project_path, 'barinel', 'missing matrixes indexes.txt'), 'r', newline='') as file:
             self.bad_matrixes_indexes = json.load(file)
 
 
@@ -784,7 +785,7 @@ if __name__ == "__main__":
         except Exception as e:
             failed.append((matrix, e))
             #print(matrix)
-            raise e
+            #raise e
             #errors.append(e)
 
         count -= 1

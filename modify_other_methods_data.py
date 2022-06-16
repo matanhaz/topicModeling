@@ -134,7 +134,7 @@ class ModifyOtherMethods:
         data2.to_parquet(
             path=path_to_save
         )
-        path_to_save = join("projects", self.project_folder,"barinel",'bad matrixes indexes.txt')
+        path_to_save = join("projects", self.project_folder,"barinel",'missing matrixes indexes.txt')
         with open(path_to_save, "w", newline="") as f:
             json.dump(bad_matrixes, f, indent=4)
     # write final dict to a json file
