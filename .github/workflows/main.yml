@@ -346,6 +346,10 @@ jobs:
       - name: modify
         run: |
               cd `git rev-parse --show-toplevel`
+              cd projects
+              cd ${{github.event.inputs.repo_name}}
+              mkdir barinel
+              cd `git rev-parse --show-toplevel`
               python modify_other_methods_data.py ${{github.event.inputs.repo_name}} 
               
       - name: Upload data
@@ -489,7 +493,6 @@ jobs:
               cd `git rev-parse --show-toplevel`
               cd projects
               cd ${{github.event.inputs.repo_name}}
-              mkdir barinel
               cd barinel
               mkdir matrixes_before_change
               mkdir matrixes
