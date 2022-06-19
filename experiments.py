@@ -11,6 +11,7 @@ import pandas
 from tqdm import tqdm
 from abc import ABC, abstractmethod
 import numpy as np
+import scipy.stats as stats
 
 NUM_TOPICS = 30
 
@@ -23,6 +24,8 @@ class Experiment(ABC):
         self.experiment_path = join('projects', project_name, 'Experiments', experiment_name)
         self.data_path = join(self.experiment_path, 'data')
         self.results_path = join(self.experiment_path, 'results')
+        self.tested_metrics_diagnosis = ["precision", "recall", "wasted" , "f-score", "expense", "t-score", "cost", "exam-score"]
+
         self.percentage_metrics = ["expense","t-score","exam-score"]
 
         if exists(join(self.data_path, f"data_all_methods_combined.csv")):
@@ -85,7 +88,8 @@ class Experiment1(Experiment):
         self.y = {'TOP-K': [], 'MAP': [], 'MRR': [], 'average similarity': []}
 
         self.relevant_bugs = set()
-        self.best_topics = {}
+        self.best_topics = {'MRR':{} ,'average similarity':{}, 'regular':{} }
+
 
         self.combined_rows = [['method','project',  'MAP', 'MRR', 'TOP-K', 'average similarity']]
 
@@ -162,7 +166,7 @@ class Experiment1(Experiment):
         self.x['MRR'].extend(percentages.keys()), self.y['MRR'].extend([p['MRR'] for p in percentages.values()])
         self.x['average similarity'].extend(percentages.keys()), self.y['average similarity'].extend([p['average similarity'] for p in percentages.values()])
 
-    def find_best_topics(self, percentages, metric):
+    def find_best_topics(self, percentages, metric_localization):
         # max_val = 0
         # best_topics = []
         # i=0
@@ -175,19 +179,19 @@ class Experiment1(Experiment):
         #         best_topics = keys[i:i+5]
         #     i+=1
         # self.best_topics[metric] = best_topics
+        for metric in self.tested_metrics_diagnosis:
+            best_topics = []
+            for topic in percentages:
+                if len(best_topics) < 15:
+                    best_topics.append((topic, percentages[topic][metric_localization]))
+                else:
+                    min_topic = min(best_topics, key=lambda x:x[1])
+                    if percentages[topic][metric_localization] > min_topic[1]:
+                        best_topics.remove((min_topic[0], min_topic[1]))
+                        best_topics.append((topic, percentages[topic][metric_localization]))
 
-        best_topics = []
-        for topic in percentages:
-            if len(best_topics) < 5:
-                best_topics.append((topic, percentages[topic][metric]))
-            else:
-                min_topic = min(best_topics, key=lambda x:x[1])
-                if percentages[topic][metric] > min_topic[1]:
-                    best_topics.remove((min_topic[0], min_topic[1]))
-                    best_topics.append((topic, percentages[topic][metric]))
-
-        best_topics.sort(key=lambda x:x[1],reverse=True)
-        self.best_topics[metric] = {topics[0]:topics[1] for topics in best_topics}
+            best_topics.sort(key=lambda x:x[1],reverse=True)
+            self.best_topics[metric_localization][metric] = {topics[0]:topics[1] for topics in best_topics}
 
     def get_relevant_bugs(self):
         first = True
@@ -299,7 +303,6 @@ class Experiment2(Experiment):
 
 
         self.is_sanity = is_sanity
-        self.tested_metrics = ["precision", "recall", "wasted" , "f-score","expense","t-score", "cost", "exam-score"]
         self.best_topics = best_topics
 
     def __call__(self):
@@ -359,25 +362,43 @@ class Experiment2(Experiment):
     def find_best_topics(self, key_to_rows):
         # key_to_rows => metric to a dict of topic to average
         # for now i will use only precision
-
-        best_topics = []
-        topic_to_average = key_to_rows['precision']
-        for topic in topic_to_average:
-            if len(best_topics) < 5:
-                best_topics.append((topic, topic_to_average[topic]))
-            else:
-                min_topic = min(best_topics, key=lambda x:x[1])
-                if topic_to_average[topic] > min_topic[1]:
-                    best_topics.remove((min_topic[0], min_topic[1]))
+        for metric in self.tested_metrics_diagnosis:
+            best_topics = []
+            topic_to_average = key_to_rows[metric]
+            for topic in topic_to_average:
+                if len(best_topics) < 15:
                     best_topics.append((topic, topic_to_average[topic]))
+                else:
+                    min_topic = min(best_topics, key=lambda x:x[1])
+                    if topic_to_average[topic] > min_topic[1]:
+                        best_topics.remove((min_topic[0], min_topic[1]))
+                        best_topics.append((topic, topic_to_average[topic]))
 
-        for metric in self.best_topics:
-            for topic in self.best_topics[metric]:
-                self.best_topics[metric][topic] = topic_to_average[topic]
+            for method_name in self.best_topics:
+                for topic in self.best_topics[method_name][metric]:
+                    self.best_topics[method_name][metric][topic] = topic_to_average[topic]
 
 
-        best_topics.sort(key=lambda x:x[1],reverse=True)
-        self.best_topics['regular'] = {topics[0]:topics[1] for topics in best_topics}
+            best_topics.sort(key=lambda x:x[1],reverse=True)
+            self.best_topics['regular'][metric] = {topics[0]:topics[1] for topics in best_topics}
+
+    def compare_best_topics(self):
+        rows = [['project', 'method', 'method topics', 'metric', 'metric regular topics', 'Kendall Tau value']]
+        for method in self.best_topics:
+            if method =='regular':
+                continue
+            for metric in self.tested_metrics_diagnosis:
+                x1 = self.best_topics['regular'][metric].keys()
+                x2 = self.best_topics[method][metric].keys()
+                rows.append([self.project_name, method, x2, metric, x1, stats.kendalltau(x1, x2)[0]])
+
+        path_to_save_into = join(self.data_path, f"data_topic_list_comparison.csv")
+        with open(path_to_save_into, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerows(rows)
+
+
+
 
     def run_sanity(self):
         for file in listdir(self.data_path):
@@ -425,7 +446,7 @@ class Experiment2(Experiment):
             for j in range(len(all_similarities_values)):
                 for k in range(len(all_similarities_values)):
                     row = values_rows[i+j*11+k]
-                    for metric in self.tested_metrics:
+                    for metric in self.tested_metrics_diagnosis:
                         key_to_rows[metric][all_similarities_values[j]][all_similarities_values[k]] += (float(row[label_to_index[metric]]) / num_of_rows)
 
 
@@ -449,7 +470,7 @@ class Experiment2(Experiment):
         num_of_rows = len(values_rows)
 
         for row in tqdm(values_rows):
-            for metric in self.tested_metrics:
+            for metric in self.tested_metrics_diagnosis:
                 key_to_rows[metric][file_name] += (float(row[label_to_index[metric]]) / num_of_rows)
 
 
@@ -474,8 +495,8 @@ class Experiment2(Experiment):
         key_to_rows_sim = defaultdict(lambda:{f"{topic}_topics_avg_sim":0 for topic in self.best_topics['average similarity']}, key_to_rows_sim)
         key_to_rows_all = defaultdict(lambda:{f"{topic}":0 for topic in self.topics}, key_to_rows_all)
 
-        average_metrics_values = {'using MRR':{metric:0 for metric in self.tested_metrics},
-                                  'using avg sim':{metric:0 for metric in self.tested_metrics}}
+        average_metrics_values = {'using MRR':{metric:0 for metric in self.tested_metrics_diagnosis},
+                                  'using avg sim':{metric:0 for metric in self.tested_metrics_diagnosis}}
 
 
         for i in tqdm(range(0,len(values_rows),NUM_TOPICS)):
@@ -485,16 +506,16 @@ class Experiment2(Experiment):
                 row = values_rows[j]
                 topic = row[label_to_index['technique']].split('_')[0]
 
-                for metric in self.tested_metrics:
+                for metric in self.tested_metrics_diagnosis:
                     key_to_rows_all[metric][f"{topic}"] += (float(row[label_to_index[metric]]) / num_of_rows)
 
                 if topic in self.best_topics['MRR'] :
-                    for metric in self.tested_metrics:
+                    for metric in self.tested_metrics_diagnosis:
                         key_to_rows_MRR[metric][f"{topic}_topics_MRR"] += (float(row[label_to_index[metric]]) / num_of_rows)
                         average_metrics_values['using MRR'][metric] += (float(row[label_to_index[metric]]) / (num_of_rows * len(self.best_topics['MRR'])))
 
                 if topic in self.best_topics['average similarity'] :
-                    for metric in self.tested_metrics:
+                    for metric in self.tested_metrics_diagnosis:
                         key_to_rows_sim[metric][f"{topic}_topics_avg_sim"] += (float(row[label_to_index[metric]]) / num_of_rows)
                         average_metrics_values['using avg sim'][metric] += (float(row[label_to_index[metric]]) / (num_of_rows * len(self.best_topics['average similarity'])))
 
@@ -519,9 +540,9 @@ class Experiment2(Experiment):
         #         self.x[key].append(test)
         #         self.y[key].append(key_to_rows_sim[key][test])
 
-        rows_average = [['project', 'technique'] + [metric for metric in self.tested_metrics]]
-        rows_average.append([self.project_name,'using MRR'] + [average_metrics_values['using MRR'][metric] for metric in self.tested_metrics])
-        rows_average.append([self.project_name,'using avg sim'] + [average_metrics_values['using avg sim'][metric] for metric in self.tested_metrics])
+        rows_average = [['project', 'technique'] + [metric for metric in self.tested_metrics_diagnosis]]
+        rows_average.append([self.project_name,'using MRR'] + [average_metrics_values['using MRR'][metric] for metric in self.tested_metrics_diagnosis])
+        rows_average.append([self.project_name,'using avg sim'] + [average_metrics_values['using avg sim'][metric] for metric in self.tested_metrics_diagnosis])
         path_to_save_into = join(self.data_path, f"average_results.csv")
         with open(path_to_save_into, "w", newline="") as f:
             writer = csv.writer(f)
@@ -708,6 +729,8 @@ class Experiment3(Experiment):
             for test in key_to_rows[key]:
                 tmp = self.x[key]
                 self.y[key][test][technique_name] = key_to_rows[key][test][technique_name]
+
+
 
 
 
