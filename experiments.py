@@ -1,7 +1,7 @@
 import json
 from os.path import join, exists, isdir
 from os import mkdir, listdir, remove
-
+import math
 import csv
 from collections import defaultdict
 import matplotlib.pyplot as plt
@@ -375,29 +375,44 @@ class Experiment2(Experiment):
                         best_topics.append((topic, topic_to_average[topic]))
 
             for method_name in self.best_topics:
+                if method_name == 'regular':
+                    continue
                 for topic in self.best_topics[method_name][metric]:
                     self.best_topics[method_name][metric][topic] = topic_to_average[topic]
 
-
-            best_topics.sort(key=lambda x:x[1],reverse=True)
+            reverse = True if metric in ['f-score', 'precision', 'recall'] else False
+            best_topics.sort(key=lambda x:x[1],reverse=reverse)
             self.best_topics['regular'][metric] = {topics[0]:topics[1] for topics in best_topics}
 
     def compare_best_topics(self):
-        rows = [['project', 'method', 'method topics', 'metric', 'metric regular topics', 'Kendall Tau value']]
+        rows = [['project', 'method', 'method topics', 'metric', 'metric regular topics', 'Kendall Tau value', 'RBO']]
         for method in self.best_topics:
             if method =='regular':
                 continue
             for metric in self.tested_metrics_diagnosis:
-                x1 = self.best_topics['regular'][metric].keys()
-                x2 = self.best_topics[method][metric].keys()
-                rows.append([self.project_name, method, x2, metric, x1, stats.kendalltau(x1, x2)[0]])
+                x1 = list(self.best_topics['regular'][metric].keys())
+                x2 = list(self.best_topics[method][metric].keys())
+                rows.append([self.project_name, method, x2, metric, x1, stats.kendalltau(x1, x2)[0], self.rbo(x1,x2)])
 
         path_to_save_into = join(self.data_path, f"data_topic_list_comparison.csv")
         with open(path_to_save_into, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerows(rows)
 
-
+    def rbo(self, list1, list2, p=0.9):
+   # tail recursive helper function
+       def helper(ret, i, d):
+           l1 = set(list1[:i]) if i < len(list1) else set(list1)
+           l2 = set(list2[:i]) if i < len(list2) else set(list2)
+           a_d = len(l1.intersection(l2))/i
+           term = math.pow(p, i) * a_d
+           if d == i:
+               return ret + term
+           return helper(ret + term, i + 1, d)
+       k = max(len(list1), len(list2))
+       x_k = len(set(list1).intersection(set(list2)))
+       summation = helper(0, 1, k)
+       return ((float(x_k)/k) * math.pow(p, k)) + ((1-p)/p * summation)
 
 
     def run_sanity(self):
@@ -742,8 +757,11 @@ if __name__ == '__main__':
 
     exp1 = Experiment1(project)
     exp1()
-    Experiment2(project,True,0, 'old')()
-    Experiment2(project,False, exp1.best_topics, 'old')()
+    exp2_sanity = Experiment2(project,True,0, 'old')
+    exp2_sanity()
+    exp2 = Experiment2(project,False, exp1.best_topics, 'old')
+    exp2()
+    exp2.compare_best_topics()
   #  Experiment2(project,False, exp1.best_topics, 'new')()
 
     # Experiment3(project,False)()
