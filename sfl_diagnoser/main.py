@@ -38,8 +38,8 @@ class BarinelTester:
 
         self.test_type = test_type
         self.optimal_original_score_percentage = 0.2
-        self.percentages = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
-
+        #self.percentages = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+        self.percentages = [0.2]
 
         if local:
             self.project_path = join(str(Path(__file__).parents[1]),"projects",project_name)
