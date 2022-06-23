@@ -163,8 +163,11 @@ class BarinelTester:
         # """add to each matrix his hexsha"""
         all_matrixes_in_dir_filtered = []
         # self.bad_matrixes_indexes['bad mapping matrixes'] = []
+        counter_not_in_other_methods = 0
         for m in all_matrixes_in_dir:
             if m[0] in self.bad_matrixes_indexes['not in other methods']:
+                counter_not_in_other_methods += 1
+
                 remove(join(new_path_matrixes, m[0]))
             else:
                 all_matrixes_in_dir_filtered.append(m)
@@ -212,8 +215,9 @@ class BarinelTester:
 
         self.matrixes_details['empty matrixes'] = counter_empty
         self.matrixes_details['empty bugs list'] = counter_empty_bug_list
+        self.matrixes_details['not in other methods'] = counter_not_in_other_methods
         self.matrixes_details['good matrixes'] = self.matrixes_details['number of generated matrixes'] -\
-                                                 counter_empty_bug_list - counter_empty - counter_duplicated_matrixes - len(self.bad_matrixes_indexes['not in other methods'])
+                                                 counter_empty_bug_list - counter_empty - counter_duplicated_matrixes - counter_not_in_other_methods
         self.matrixes_details['precision 0 in original'] = 0
         self.bad_matrixes_indexes['precision 0'] = []
         self.bad_matrixes_indexes['precision 0 bug id'] = []
@@ -708,10 +712,10 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 
 
 if __name__ == "__main__":
-    project_name = "Codec"
+    project_name = "Collections"
     local = True
     type_of_exp = 'old'
-    methods = 'local'
+    methods = 'Sanity3'
     #, 'BLUiR', 'AmaLgam', 'Locus'
     technique = [ "BugLocator", "BRTracer" ]
     if len(sys.argv) == 5:

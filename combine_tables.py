@@ -11,6 +11,7 @@ path3 = os.path.join('Experiments', 'Experiment_4', 'data', file_name)
 path4 = os.path.join('barinel', 'matrixes_details.csv')
 path5 = os.path.join('Experiments','Experiment_2', 'data', 'average_results.csv')
 path6 = os.path.join('Experiments','Experiment_2', 'results', 'best_topics.txt')
+path7 = os.path.join('Experiments','Experiment_2', 'data', 'data_topic_list_comparison.csv')
 
 
 def combine(path, file_name):
@@ -49,3 +50,4 @@ combine(path2, "data_all_projects_diagnosis.csv")
 combine(path4, "data_all_projects_matrixes_details.csv")
 combine(path5, "data_all_projects_MRR_or_avg_sim.csv")
 combine_JSON(path6, 'best_topics_all_projects.txt')
+combine(path7, 'data_all_topic_list_comparison.csv')
