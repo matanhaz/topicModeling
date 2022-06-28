@@ -31,10 +31,10 @@ class BarinelTester:
         self.epsilon = 0.01
         self.rows = []
         self.rows.append(["project", "technique","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
-                              "t-score", "cost", "exam-score", ])
+                              "t-score", "cost", "exam-score", 'bug index', 'changed files', 'changed functions' ])
         self.rows_all_divisions = []
         self.rows_all_divisions.append(["project", "technique","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
-                              "t-score", "cost", "exam-score", ])
+                              "t-score", "cost", "exam-score", 'bug index', 'changed files', 'changed functions' ])
 
         self.test_type = test_type
         self.optimal_original_score_percentage = 0.2
@@ -60,7 +60,8 @@ class BarinelTester:
 
         self.mapping = {}
         self.mapping_hash_to_index = {}
-        self.matrix_index_to_changed_dunctions ={}
+        self.matrix_index_to_changed_functions ={}
+        self.matrix_index_to_changed_files ={}
         self.matrixes_details = {}
 
 
@@ -70,8 +71,10 @@ class BarinelTester:
         with open(join(self.project_path, 'analysis', 'bug_to_commit_that_solved.txt'), 'r', newline='') as file:
             data = json.load(file)['bugs to commit']
             for bug in data:
-                functions = [func for func in bug['function that changed'] if 'test' not in func['function name'] and 'Test' not in func['function name']]
-                self.matrix_index_to_changed_dunctions[bug['bug index']] = len(functions)
+                functions = [func for func in bug['function that changed'] if 'test' not in func['file name'] and 'Test' not in func['file name']]
+                files = [file for file in bug['files that changed'] if 'test' not in file and 'Test' not in file]
+                self.matrix_index_to_changed_files[bug['bug index']] = len(files)
+                self.matrix_index_to_changed_functions[bug['bug index']] = len(functions)
 
         self.prepare_dir()
         self.prepare_matrixes()
@@ -287,6 +290,7 @@ class BarinelTester:
                 writer.writerows(self.rows_all_divisions)
 
     def _fill_row(self, diagnosis, matrix_name, percentage, is_sanity, *args):
+        index = self.mapping_hash_to_index[matrix_name.replace('/', '\\').split('\\')[-1]]
         if is_sanity:
             return [
                             self.project_name,
@@ -302,7 +306,9 @@ class BarinelTester:
                             diagnosis["tscore"],
                             diagnosis["cost"],
                             diagnosis["exam_score"],
-                            self.mapping_hash_to_index[matrix_name.replace('/', '\\').split('\\')[-1]]
+                            index,
+                            self.matrix_index_to_changed_files[index],
+                            self.matrix_index_to_changed_functions[index]
                         ]
         else:
             return [
@@ -318,7 +324,9 @@ class BarinelTester:
                             diagnosis["tscore"],
                             diagnosis["cost"],
                             diagnosis["exam_score"],
-                            self.mapping_hash_to_index[matrix_name.replace('/', '\\').split('\\')[-1]]
+                            index,
+                            self.matrix_index_to_changed_files[index],
+                            self.matrix_index_to_changed_functions[index]
                         ]
 
     def label_to_index(self, labels_row):
@@ -388,11 +396,11 @@ class BarinelTesterSanity(BarinelTester):
         self.rows_all_divisions = []
         self.rows.append(
             ["project","real bug diagnose sim", "unreal bug diagnose sim","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
-                              "t-score", "cost", "exam-score", 'bug index' ]
+                              "t-score", "cost", "exam-score", 'bug index', 'changed files', 'changed functions' ]
         )
         self.rows_all_divisions.append(
             ["project","real bug diagnose sim", "unreal bug diagnose sim","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
-                              "t-score", "cost", "exam-score", 'bug index' ]
+                              "t-score", "cost", "exam-score", 'bug index' , 'changed files', 'changed functions']
         )
 
 
