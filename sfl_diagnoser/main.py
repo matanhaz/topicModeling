@@ -60,12 +60,18 @@ class BarinelTester:
 
         self.mapping = {}
         self.mapping_hash_to_index = {}
+        self.matrix_index_to_changed_dunctions ={}
         self.matrixes_details = {}
 
 
         with open(join(self.project_path, 'barinel', 'missing matrixes indexes.txt'), 'r', newline='') as file:
             self.bad_matrixes_indexes = json.load(file)
 
+        with open(join(self.project_path, 'analysis', 'bug_to_commit_that_solved.txt'), 'r', newline='') as file:
+            data = json.load(file)['bugs to commit']
+            for bug in data:
+                functions = [func for func in bug['function that changed'] if 'test' not in func['function name'] and 'Test' not in func['function name']]
+                self.matrix_index_to_changed_dunctions[bug['bug index']] = len(functions)
 
         self.prepare_dir()
         self.prepare_matrixes()
@@ -296,6 +302,7 @@ class BarinelTester:
                             diagnosis["tscore"],
                             diagnosis["cost"],
                             diagnosis["exam_score"],
+                            self.mapping_hash_to_index[matrix_name.replace('/', '\\').split('\\')[-1]]
                         ]
         else:
             return [
@@ -311,6 +318,7 @@ class BarinelTester:
                             diagnosis["tscore"],
                             diagnosis["cost"],
                             diagnosis["exam_score"],
+                            self.mapping_hash_to_index[matrix_name.replace('/', '\\').split('\\')[-1]]
                         ]
 
     def label_to_index(self, labels_row):
@@ -380,11 +388,11 @@ class BarinelTesterSanity(BarinelTester):
         self.rows_all_divisions = []
         self.rows.append(
             ["project","real bug diagnose sim", "unreal bug diagnose sim","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
-                              "t-score", "cost", "exam-score", ]
+                              "t-score", "cost", "exam-score", 'bug index' ]
         )
         self.rows_all_divisions.append(
             ["project","real bug diagnose sim", "unreal bug diagnose sim","precision", "recall", "wasted","bug id","original score percentage","f-score","expense",
-                              "t-score", "cost", "exam-score", ]
+                              "t-score", "cost", "exam-score", 'bug index' ]
         )
 
 
@@ -712,10 +720,10 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 
 
 if __name__ == "__main__":
-    project_name = "Collections"
+    project_name = "Codec"
     local = True
     type_of_exp = 'old'
-    methods = 'Sanity3'
+    methods = 'local'
     #, 'BLUiR', 'AmaLgam', 'Locus'
     technique = [ "BugLocator", "BRTracer" ]
     if len(sys.argv) == 5:

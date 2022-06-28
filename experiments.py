@@ -385,14 +385,17 @@ class Experiment2(Experiment):
             self.best_topics['regular'][metric] = {topics[0]:topics[1] for topics in best_topics}
 
     def compare_best_topics(self):
-        rows = [['project', 'method', 'method topics', 'metric', 'metric regular topics', 'Kendall Tau value', 'RBO']]
+        rows = [['project', 'method', 'method topics','method topics values', 'metric', 'metric regular topics','regular topics values', 'Kendall Tau value', 'RBO']]
         for method in self.best_topics:
             if method =='regular':
                 continue
             for metric in self.tested_metrics_diagnosis:
                 x1 = list(self.best_topics['regular'][metric].keys())
+                y1 = [round(x,3) for x in list(self.best_topics['regular'][metric].values())]
                 x2 = list(self.best_topics[method][metric].keys())
-                rows.append([self.project_name, method, x2, metric, x1, stats.kendalltau(x1, x2)[0], self.rbo(x1,x2)])
+                y2 = [round(x,3) for x in list(self.best_topics[method][metric].values())]
+
+                rows.append([self.project_name, method, x2, y2, metric, x1, y1, stats.kendalltau(x1, x2)[0], self.rbo(x1,x2)])
 
         path_to_save_into = join(self.data_path, f"data_topic_list_comparison.csv")
         with open(path_to_save_into, "w", newline="") as f:
@@ -751,7 +754,7 @@ class Experiment3(Experiment):
 
 import sys
 if __name__ == '__main__':
-    project = 'Collections'
+    project = 'Codec'
     if len(sys.argv) == 2:
         project = str(sys.argv[1])
 
