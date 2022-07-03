@@ -151,11 +151,17 @@ class TopicModeling:
             self.path_to_commit_messages = join(self.analysis_path,"file to commits message.txt")
         else:
             if functions == 1:
-                self.topics = list(range(20,201,20))
+                self.topics = list(range(20,101,20))
             elif functions == 2:
-                self.topics = list(range(220,401,20))
+                self.topics = list(range(120,201,20))
+            elif functions == 3:
+                self.topics = list(range(220,301,20))
+            elif functions == 4:
+                self.topics = list(range(320,401,20))
+            elif functions == 5:
+                self.topics = list(range(420,501,20))
             else:
-                self.topics = list(range(420,601,20))
+                self.topics = list(range(520,601,20))
             self.topicModeling_path = join(self.project_path, "topicModeling")
             self.bug_to_sim_name = "bug to functions and similarity"
             self.bug_to_sim_path = join(self.topicModeling_path, "bug to functions and similarity")
