@@ -385,7 +385,8 @@ class Experiment2(Experiment):
             self.best_topics['regular'][metric] = {topics[0]:topics[1] for topics in best_topics}
 
     def compare_best_topics(self):
-        rows = [['project', 'method', 'method topics','method topics values', 'metric', 'metric regular topics','regular topics values', 'Kendall Tau value', 'RBO']]
+        rows = [['project', 'method', 'method topics','method topics values', 'metric', 'metric regular topics',
+                 'regular topics values','diff between first method and regular first','Kendall Tau value', 'RBO']]
         for method in self.best_topics:
             if method =='regular':
                 continue
@@ -395,7 +396,7 @@ class Experiment2(Experiment):
                 x2 = list(self.best_topics[method][metric].keys())
                 y2 = [round(x,3) for x in list(self.best_topics[method][metric].values())]
 
-                rows.append([self.project_name, method, x2, y2, metric, x1, y1, stats.kendalltau(x1, x2)[0], self.rbo(x1,x2)])
+                rows.append([self.project_name, method, x2, y2, metric, x1, y1, y1[0] - y2[0], stats.kendalltau(x1, x2)[0], self.rbo(x1,x2)])
 
         path_to_save_into = join(self.data_path, f"data_topic_list_comparison.csv")
         with open(path_to_save_into, "w", newline="") as f:
