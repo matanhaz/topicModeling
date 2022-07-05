@@ -26,8 +26,7 @@ class analyzer:
 
 
     def run(self):
-        self.function_to_all_messages()
-        self.file_to_all_messages()
+        self.function_files_to_all_messages()
         self.count_bugs()
         self.bug_to_commit_that_solved()
 
@@ -64,7 +63,34 @@ class analyzer:
 
             self.save_into_file("file to fails", file_to_fails, 'files')
 
-    def file_to_all_messages(self):
+    # def file_to_all_messages(self):
+    #     if not (exists(join(self.data_path,"funcToCommits.txt"))):
+    #         print("missing funcToCommits data to analyse")
+    #         return
+    #
+    #     file_to_commits_message = {}
+    #
+    #     with open(join(self.data_path,"fileToCommits.txt")) as outfile:
+    #         data = json.load(outfile)
+    #
+    #     files = data['files']
+    #
+    #     for file in files:
+    #
+    #         name = file['file name']
+    #
+    #         exist = file_to_commits_message.get(name)
+    #         if exist == None:
+    #             file_to_commits_message[name] = {'message': []}
+    #         for commit in file["commits that changed in"]:
+    #             file_to_commits_message[name]['message'].append(
+    #                 commit["commit message"])
+    #
+    #     self.save_into_file("file to commits message", file_to_commits_message, 'files')
+
+
+    def function_files_to_all_messages(self):
+
         if not (exists(join(self.data_path,"funcToCommits.txt"))):
             print("missing funcToCommits data to analyse")
             return
@@ -90,7 +116,6 @@ class analyzer:
         self.save_into_file("file to commits message", file_to_commits_message, 'files')
 
 
-    def function_to_all_messages(self):
         if not (exists(join(self.data_path,"funcToCommits.txt"))):
             print("missing funcToCommits data to analyse")
             return
@@ -130,7 +155,19 @@ class analyzer:
             'num of functions': counter,
             'num of functions no tests': counter_no_tests
         }
-        self.save_into_file("functions counters", dict, 'counters')
+
+        counter = 0
+        counter_no_tests = 0
+
+        for file in file_to_commits_message.keys():
+            counter += 1
+            if 'test' not in file and 'Test' not in file:
+                counter_no_tests += 1
+
+        dict['num of files'] = counter
+        dict['num of files no tests'] = counter_no_tests
+
+        self.save_into_file("counters", dict, 'counters')
 
 
     def count_bugs(self):
@@ -453,4 +490,4 @@ class analyzer:
 
 
 if __name__ == "__main__":
-    analyzer("Codec").run()
+    analyzer("Compress").run()
