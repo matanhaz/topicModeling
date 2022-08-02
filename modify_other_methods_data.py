@@ -126,7 +126,7 @@ class ModifyOtherMethods:
                         bugs_to_funcs[bug['bug index']].append([func,sim, str(counter), file[0] ])
                         counter += 1
                 except Exception as e:
-                    print()
+                    pass
         final_dict_funcs['bugs'] = bugs_to_funcs
         path_to_save = join("projects", self.project_folder,"topicModeling","bug to functions and similarity",f"bug_to_function_and_similarity_{self.method_folder_name}")
 
@@ -176,17 +176,18 @@ class ModifyOtherMethods:
                     file_and_sim[0] += '.java'
             bug_to_miss = {}
             for bug in tqdm.tqdm(all_bugs):
+                bug_id = bug.split('-')[1]
                 for exist_bug in exist_bugs_and_changed_functions:
-                    if bug == exist_bug:
+                    if bug_id == exist_bug:
                         functions_that_changed = exist_bugs_and_changed_functions[exist_bug]['function that changed']
                         exists_functions = exist_bugs_and_changed_functions[exist_bug]['exists functions']
                         min_index, max_index, num_functions, all_indexes, tmp, average_sim = \
-                            self.find_indexes_exist_functions(functions_that_changed, all_bugs[exist_bug], exists_functions)
+                            self.find_indexes_exist_functions(functions_that_changed, all_bugs[bug], exists_functions)
 
                         functions_that_changed_no_tests = exist_bugs_and_changed_functions[exist_bug]['function that changed no tests']
                         exists_functions_no_tests = exist_bugs_and_changed_functions[exist_bug]['exists functions no tests']
                         min_index_no_tests, max_index_no_tests, num_functions_no_tests, all_indexes_no_tests, miss, average_sim_no_test = \
-                            self.find_indexes_exist_functions(functions_that_changed_no_tests, all_bugs[exist_bug], exists_functions_no_tests)
+                            self.find_indexes_exist_functions(functions_that_changed_no_tests, all_bugs[bug], exists_functions_no_tests)
 
                         bug_to_miss[exist_bug] = miss
 

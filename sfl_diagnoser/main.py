@@ -731,7 +731,7 @@ if __name__ == "__main__":
     project_name = "Codec"
     local = True
     type_of_exp = 'old'
-    methods = 'local'
+    methods = 'topic'
     #, 'BLUiR', 'AmaLgam', 'Locus'
     technique = [ "BugLocator", "BRTracer" ]
     if len(sys.argv) == 5:

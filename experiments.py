@@ -30,10 +30,17 @@ class Experiment(ABC):
 
         if exists(join(self.data_path, f"data_all_methods_combined.csv")):
             remove(join(self.data_path, f"data_all_methods_combined.csv"))
+        if exists(join(self.data_path, f"data_all_methods_combined_positive_precision.csv")):
+            remove(join(self.data_path, f"data_all_methods_combined_positive_precision.csv"))
+        if exists(join(self.data_path, f"data_topic_list_comparison.csv")):
+            remove(join(self.data_path, f"data_topic_list_comparison.csv"))
         if exists(join(self.data_path, f"Sanity_combined.csv")):
             remove(join(self.data_path, f"Sanity_combined.csv"))
         if exists(join(self.data_path, f"average_results.csv")):
             remove(join(self.data_path, f"average_results.csv"))
+        if exists(join(self.data_path, f"data_all_methods_combined_best_topics.csv")):
+            remove(join(self.data_path, f"data_all_methods_combined_best_topics.csv"))
+
 
     def label_to_index(self, labels_row):
         indexes = {}
@@ -182,15 +189,17 @@ class Experiment1(Experiment):
         for metric in self.tested_metrics_diagnosis:
             best_topics = []
             for topic in percentages:
-                if len(best_topics) < 15:
+                if len(best_topics) < 30:
                     best_topics.append((topic, percentages[topic][metric_localization]))
                 else:
                     min_topic = min(best_topics, key=lambda x:x[1])
                     if percentages[topic][metric_localization] > min_topic[1]:
                         best_topics.remove((min_topic[0], min_topic[1]))
                         best_topics.append((topic, percentages[topic][metric_localization]))
-
-            best_topics.sort(key=lambda x:x[1],reverse=True)
+            reverse = True
+            if metric_localization == 'MRR':
+                reverse = False
+            best_topics.sort(key=lambda x:x[1],reverse=reverse)
             self.best_topics[metric_localization][metric] = {topics[0]:topics[1] for topics in best_topics}
 
     def get_relevant_bugs(self):
@@ -293,7 +302,7 @@ class Experiment2(Experiment):
     def __init__(self, project_name, is_sanity, best_topics, type_of_exp):
         exp = 'Experiment_2' if type_of_exp == 'old' else 'Experiment_4'
         super().__init__(project_name, exp)
-        self.combine_tables()
+
         self.x = {}
         self.x = defaultdict(lambda:[], self.x)
         self.y = {}
@@ -304,6 +313,7 @@ class Experiment2(Experiment):
 
         self.is_sanity = is_sanity
         self.best_topics = best_topics
+        self.combine_tables()
 
     def __call__(self):
         if self.is_sanity:
@@ -317,6 +327,7 @@ class Experiment2(Experiment):
         all_rows = []
         all_rows_sanity = []
         all_rows_positive_precision = []
+        all_rows_best_topics = []
         for file in listdir(self.data_path):
             if 'Sanity' not in file:
                 with open(join(self.data_path, file)) as outfile:
@@ -334,13 +345,26 @@ class Experiment2(Experiment):
                         all_rows_sanity.append(labels_row)
                         first_sanity = False
                     all_rows_sanity.extend(values_rows)
-
-
+        # adding index in best topics
+        best_topics_mrr = list(self.best_topics['MRR']['precision'].keys())
+        best_topics_similarity = list(self.best_topics['average similarity']['precision'].keys())
+        first_row = True
+        for row in all_rows:
+            if first_row:
+                first_row = False
+                all_rows_best_topics.append(row+["ranked name MRR", "ranked name avg similarity"])
+            else:
+                name = row[1]
+                if 'sigmuid' not in name:
+                    all_rows_best_topics.append(row + [name,name])
+                else:
+                    name = name.split('_')[0]
+                    all_rows_best_topics.append(row + [f'ranked {best_topics_mrr.index(name) + 1}',f'ranked {best_topics_similarity.index(name) + 1}'])
 
         path_to_save_into = join(self.data_path, f"data_all_methods_combined.csv")
         with open(path_to_save_into, "w", newline="") as f:
             writer = csv.writer(f)
-            writer.writerows(all_rows)
+            writer.writerows(all_rows_best_topics)
 
         path_to_save_into = join(self.data_path, f"Sanity_combined.csv")
         with open(path_to_save_into, "w", newline="") as f:
@@ -350,7 +374,7 @@ class Experiment2(Experiment):
         with open(join(self.project_path, 'barinel', 'bad matrixes indexes.txt'), 'r', newline='') as file:
             bad_bug_id_list = json.load(file)['precision 0 bug id']
 
-        for row in all_rows:
+        for row in all_rows_best_topics:
             bug_id = row[5]
             if bug_id not in bad_bug_id_list:
                 all_rows_positive_precision.append(row)
@@ -359,6 +383,28 @@ class Experiment2(Experiment):
             writer = csv.writer(f)
             writer.writerows(all_rows_positive_precision)
 
+        # # TODO
+        # best_topics = list(self.best_topics['MRR']['precision'].keys())
+        # first_row = True
+        # for row in all_rows:
+        #     if first_row:
+        #         first_row = False
+        #         all_rows_best_topics.append(row+["ranked name"])
+        #     else:
+        #         name = row[1]
+        #         if 'sigmuid' not in name:
+        #             all_rows_best_topics.append(row + [name])
+        #         else:
+        #             name = name.split('_')[0]
+        #             if name in best_topics:
+        #                 all_rows_best_topics.append(row + [f'ranked {best_topics.index(name) + 1}'])
+        #
+        #
+        # path_to_save_into = join(self.data_path, f"data_all_methods_combined_best_topics.csv")
+        # with open(path_to_save_into, "w", newline="") as f:
+        #     writer = csv.writer(f)
+        #     writer.writerows(all_rows_best_topics)
+
     def find_best_topics(self, key_to_rows):
         # key_to_rows => metric to a dict of topic to average
         # for now i will use only precision
@@ -366,7 +412,7 @@ class Experiment2(Experiment):
             best_topics = []
             topic_to_average = key_to_rows[metric]
             for topic in topic_to_average:
-                if len(best_topics) < 15:
+                if len(best_topics) < 30:
                     best_topics.append((topic, topic_to_average[topic]))
                 else:
                     min_topic = min(best_topics, key=lambda x:x[1])
@@ -386,7 +432,11 @@ class Experiment2(Experiment):
 
     def compare_best_topics(self):
         rows = [['project', 'method', 'method topics','method topics values', 'metric', 'metric regular topics',
-                 'regular topics values','diff between first method and regular first','Kendall Tau value', 'RBO']]
+                 'regular topics values','Kendall Tau value', 'RBO',
+                 'diff between first method and regular first','diff between first method and regular second','diff between first method and regular third',
+                'diff between second method and regular first','diff between third method and regular first',
+                 'diff between forth method and regular first','diff between fifth method and regular first']]
+
         for method in self.best_topics:
             if method =='regular':
                 continue
@@ -396,7 +446,9 @@ class Experiment2(Experiment):
                 x2 = list(self.best_topics[method][metric].keys())
                 y2 = [round(x,3) for x in list(self.best_topics[method][metric].values())]
 
-                rows.append([self.project_name, method, x2, y2, metric, x1, y1, y1[0] - y2[0], stats.kendalltau(x1, x2)[0], self.rbo(x1,x2)])
+                rows.append([self.project_name, method, x2, y2, metric, x1, y1, stats.kendalltau(x1, x2)[0], self.rbo(x1,x2),
+                             y1[0] - y2[0],y1[1] - y2[0],y1[2] - y2[0],
+                             y1[0] - y2[1],y1[0] - y2[2],y1[0] - y2[3],y1[0] - y2[4]])
 
         path_to_save_into = join(self.data_path, f"data_topic_list_comparison.csv")
         with open(path_to_save_into, "w", newline="") as f:
@@ -759,13 +811,14 @@ if __name__ == '__main__':
     if len(sys.argv) == 2:
         project = str(sys.argv[1])
 
-    exp1 = Experiment1(project)
-    exp1()
-    exp2_sanity = Experiment2(project,True,0, 'old')
-    exp2_sanity()
-    exp2 = Experiment2(project,False, exp1.best_topics, 'old')
-    exp2()
-    exp2.compare_best_topics()
-  #  Experiment2(project,False, exp1.best_topics, 'new')()
+    for project in ['Cli', 'Codec','Collections', 'Compress', 'Csv', 'Io', 'Lang', 'Net']:
+        exp1 = Experiment1(project)
+        exp1()
+        exp2_sanity = Experiment2(project,True,exp1.best_topics, 'old')
+        exp2_sanity()
+        exp2 = Experiment2(project,False, exp1.best_topics, 'old')
+        exp2()
+        exp2.compare_best_topics()
+   #Experiment2(project,False, exp1.best_topics, 'new')()
 
     # Experiment3(project,False)()
