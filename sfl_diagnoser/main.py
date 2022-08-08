@@ -728,7 +728,7 @@ class BarinelTesterOtherAlgorithm(BarinelTester):
 
 
 if __name__ == "__main__":
-    project_name = "Codec"
+    project_name = "Csv"
     local = True
     type_of_exp = 'old'
     methods = 'topic'

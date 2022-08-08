@@ -339,10 +339,13 @@ def __get_real_comp_similarity(instance,matrix_path,Project_name,similarities_pa
 
     for comp in instance["components_names"]:
         func_name = (comp[1].replace("$", ".").split("(")[0])
+        split_on = func_name.split(".")[0]
         file_name = comp[1].replace("$", ".").split(".")[-2]# keep name only
-        for l in bug_to_sim:
-            if func_name in l[0].lower() and (type_of_exp == 'old' or file_name == l[3].lower()):
-                similarities.append(l[1])
+
+        possible_funcs = [l for l in bug_to_sim if func_name in l[0].lower() and (type_of_exp == 'old' or file_name == l[3].lower())]
+        for p in possible_funcs:
+            if split_on + p[0].lower().split(split_on)[1] == func_name:
+                similarities.append(p[1])
                 break
         else:
             similarities.append(average)
