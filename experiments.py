@@ -807,11 +807,11 @@ class Experiment3(Experiment):
 
 import sys
 if __name__ == '__main__':
-    project = 'Cli'
+    projects = ['Cli', 'Codec','Collections', 'Compress', 'Csv', 'Io', 'Lang', 'Net']
     if len(sys.argv) == 2:
-        project = str(sys.argv[1])
+        projects = [str(sys.argv[1])]
 
-    for project in ['Cli', 'Codec','Collections', 'Compress', 'Csv', 'Io', 'Lang', 'Net']:
+    for project in projects:
         exp1 = Experiment1(project)
         exp1()
         exp2_sanity = Experiment2(project,True,exp1.best_topics, 'old')
