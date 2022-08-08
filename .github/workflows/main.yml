@@ -182,6 +182,7 @@ jobs:
               
     - name: Install Indri
       run: |
+          sudo yum install -y ca-certificates
           mkdir depots
           cd depots
           wget https://excellmedia.dl.sourceforge.net/project/lemur/lemur/indri-5.15/indri-5.15.tar.gz
