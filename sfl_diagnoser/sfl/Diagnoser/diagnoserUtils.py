@@ -333,15 +333,15 @@ def __get_real_comp_similarity(instance,matrix_path,Project_name,similarities_pa
     average = sum(list(func[1] for func in bug_to_sim)) / len(bug_to_sim)
 
     similarities = []
-    bugs = instance["bugs"]
+    bugs = [bug.split('(')[0] for bug in instance["bugs"]]
     if bugs == []:
         raise Exception("no buggy components in matrix")
 
     for comp in instance["components_names"]:
-        func_name = (comp[1].replace("$", ".").split(".")[-1].split("(")[0])
+        func_name = (comp[1].replace("$", ".").split("(")[0])
         file_name = comp[1].replace("$", ".").split(".")[-2]# keep name only
         for l in bug_to_sim:
-            if func_name == l[0].lower() and (type_of_exp == 'old' or file_name == l[3].lower()):
+            if func_name in l[0].lower() and (type_of_exp == 'old' or file_name == l[3].lower()):
                 similarities.append(l[1])
                 break
         else:

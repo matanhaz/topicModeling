@@ -785,5 +785,5 @@ if __name__ == "__main__":
         functions = int(int(sys.argv[2]))
         TopicModeling(project_name,functions).run()
     else:
-        for i in range(4):
+        for i in range(7):
             TopicModeling(project_name,i).run()

@@ -90,7 +90,7 @@ class GatherCommitsData:
 
                 # data0, data1 ....
                 modified_functions = self.extract_modified_functions(commit.modified_files)
-                modified_files = [file.new_path for file in commit.modified_files if file.change_type.name in ['MODIFY', 'ADD'] and '.java' in file.filename]
+                modified_files = [file.new_path for file in commit.modified_files if file.change_type.name in ['MODIFY'] and '.java' in file.filename]
                 self.gather_commit_changes(commit, modified_functions, modified_files)
 
                 # func to commits
@@ -104,7 +104,8 @@ class GatherCommitsData:
 
                 self.commit_index += 1
 
-            except e:
+            except Exception as e:
+                raise e
                 print("blat")
                 continue
 
@@ -192,16 +193,24 @@ class GatherCommitsData:
 
     def gather_func_to_commits(self, commit, modified_functions, modified_files):
         for method in modified_functions:
-            method_name = method['function name']
+            method_name = method['full name']
             file_name = method['file name']
+            old_method_name = None if method['file old path'] is None else self.merge_name(method['file old path'], method["function name"] )
             if method_name in self.func_name_to_params_and_commits.keys():
                 self.func_name_to_params_and_commits[method_name]['commits that changed in'].append({
                     'commit index': self.commit_index,
                     'commit message': commit.msg + f" {method_name} {file_name}"})
             else:
-                self.func_name_to_params_and_commits[method_name] = {
-                    'params': method['function params'],
-                    'commits that changed in': [{'commit index': self.commit_index, 'commit message':commit.msg + f" {method_name} {file_name}"}] }
+                if old_method_name is not None and old_method_name in self.func_name_to_params_and_commits.keys():
+                    old_name_data = self.func_name_to_params_and_commits[old_method_name]['commits that changed in'].copy()
+                    self.func_name_to_params_and_commits[method_name] = {
+                        'params': method['function params'],
+                        'commits that changed in': old_name_data + [{'commit index': self.commit_index, 'commit message':commit.msg + f" {method_name} {file_name}"}] }
+
+                else:
+                    self.func_name_to_params_and_commits[method_name] = {
+                        'params': method['function params'],
+                        'commits that changed in': [{'commit index': self.commit_index, 'commit message':commit.msg + f" {method_name} {file_name}"}] }
 
         for file in modified_files:
             if file in self.file_name_to_commits.keys():
@@ -250,7 +259,8 @@ class GatherCommitsData:
                     break
             method_name = self.clear_name(method.name)
             if not exist_before:
-                add_functions.append(method_name)
+
+                add_functions.append(self.merge_name(modified_file.new_path, method_name))
                 exist_now = False
                 exist_before = False
                 continue
@@ -260,7 +270,7 @@ class GatherCommitsData:
                     exist_now = True
                     break
             if not exist_now:
-                delete_functions.append(method_name)
+                delete_functions.append(self.merge_name(modified_file.old_path, method_name))
                 exist_now = False
                 exist_before = False
                 continue
@@ -303,10 +313,15 @@ class GatherCommitsData:
             for method in modified_file.changed_methods:
                 for new_method in modified_file.methods:
                     if method.name == new_method.name:
+                        name = self.clear_name(method.name)
+                        path = modified_file.new_path if modified_file.new_path is not None else modified_file.old_path
                         list_of_modified_functions.append(
-                        {'function name': self.clear_name(method.name),
+                        {'function name': name,
                         'function params': method.parameters,
-                        'file name' : modified_file.filename})
+                        'file name' : modified_file.filename,
+                        'file old path' : modified_file.old_path,
+                        'file new path' : modified_file.new_path,
+                        'full name' : self.merge_name(path, name)})
                         break
 
 
@@ -343,6 +358,9 @@ class GatherCommitsData:
             return name.split("::")[1]
         else:
             return name
+    def merge_name(self, old_path, method_name):
+        path = old_path.replace('/','\\').replace('\\','.')[0:-5] # deletes .java
+        return f'{path}.{method_name}'
 
 
 if __name__ == "__main__":

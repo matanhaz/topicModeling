@@ -490,4 +490,4 @@ class analyzer:
 
 
 if __name__ == "__main__":
-    analyzer("Compress").run()
+    analyzer("Codec").run()
