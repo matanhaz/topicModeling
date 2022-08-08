@@ -106,8 +106,6 @@ class GatherCommitsData:
 
             except Exception as e:
                 raise e
-                print("blat")
-                continue
 
         file_number = self.get_file_number()
 
@@ -206,7 +204,7 @@ class GatherCommitsData:
                     self.func_name_to_params_and_commits[method_name] = {
                         'params': method['function params'],
                         'commits that changed in': old_name_data + [{'commit index': self.commit_index, 'commit message':commit.msg + f" {method_name} {file_name}"}] }
-
+                    self.func_name_to_params_and_commits.pop(old_method_name)
                 else:
                     self.func_name_to_params_and_commits[method_name] = {
                         'params': method['function params'],
