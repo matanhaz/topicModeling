@@ -461,8 +461,8 @@ class TopicModeling:
         # with open(join()(self.project_path ,"analysis","commitId to all functions.txt")) as outfile:
         #     commit_to_exist_functions = json.load(outfile)['commit id']
 
-        if not self.functions:
-            self.extract_functions_similarity_from_files(NUM_TOPICS, bug_to_func_and_similarity)
+        # if not self.functions:
+        #     self.extract_functions_similarity_from_files(NUM_TOPICS, bug_to_func_and_similarity)
 
         return self.fill_table(
             NUM_TOPICS, bugs, bug_to_func_and_similarity, commit_to_exist_functions
