@@ -32,6 +32,7 @@ jobs:
       - name: download requirements
         run: |
               cd `git rev-parse --show-toplevel`
+              pip install --upgrade pip
               pip install pipreqs
               pipreqs --ignore diagnoser,sfl_diagnoser .
               pip install -r requirements.txt
@@ -78,6 +79,7 @@ jobs:
       - name: download requirements
         run: |
               cd `git rev-parse --show-toplevel`
+              pip install --upgrade pip
               pip install pipreqs
               pipreqs --ignore diagnoser,sfl_diagnoser .
               pip install -r requirements.txt
@@ -198,6 +200,7 @@ jobs:
           cd `git rev-parse --show-toplevel`
           virtualenv venv -p `which python2`
           # source venv/bin/activate
+          pip install --upgrade pip
           pip install -r requirements.txt
     - name: Build JAR
       run: |
@@ -320,6 +323,7 @@ jobs:
       - name: download requirements
         run: |
               cd `git rev-parse --show-toplevel`
+              pip install --upgrade pip
               pip install pipreqs
               pipreqs --ignore diagnoser,sfl_diagnoser .
               pip install -r requirements.txt
@@ -380,6 +384,7 @@ jobs:
       - name: download requirements
         run: |
               cd `git rev-parse --show-toplevel`
+              pip install --upgrade pip
               pip install pipreqs
               pipreqs --ignore diagnoser,sfl_diagnoser .
               pip install -r requirements.txt
@@ -470,6 +475,7 @@ jobs:
       - name: download requirements
         run: |
               cd `git rev-parse --show-toplevel`
+              pip install --upgrade pip
               pip install pipreqs
               pipreqs --ignore diagnoser,sfl_diagnoser .
               pip install -r requirements.txt
@@ -536,6 +542,7 @@ jobs:
       - name: download requirements
         run: |
               cd `git rev-parse --show-toplevel`
+              pip install --upgrade pip
               pip install pipreqs
               pipreqs --ignore diagnoser,sfl_diagnoser .
               pip install -r requirements.txt
