@@ -17,7 +17,7 @@ jobs:
   
   steps_1-3_gathering_data:
     # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -59,7 +59,7 @@ jobs:
   
     needs: steps_1-3_gathering_data
     
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -113,7 +113,7 @@ jobs:
 
   step_5_other_methods:
     # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     
     strategy:
       fail-fast: false
@@ -308,7 +308,7 @@ jobs:
   step_6_modify_other_methods_data:
     needs: [step_5_other_methods,step_4_topic_modeling, steps_1-3_gathering_data]
     
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -454,7 +454,7 @@ jobs:
   step_8_barinel:
     needs: [step_5_other_methods,step_4_topic_modeling, steps_1-3_gathering_data, step_6_modify_other_methods_data, step_7_download_matrixes]
     
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -527,7 +527,7 @@ jobs:
   step_9_Experiments:
     needs: [step_8_barinel]
     
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
