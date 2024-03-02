@@ -14,7 +14,7 @@ on:
           default: 'Codec'
 
 jobs:
-  
+
   steps_1-3_gathering_data:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -114,7 +114,6 @@ jobs:
   step_5_other_methods:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    
     strategy:
       fail-fast: false
       matrix:
@@ -129,7 +128,7 @@ jobs:
  
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    
+    - uses: actions/setup-node@v4
     - uses: actions/checkout@v2
       with:
         repository: matanhaz/Bench4BL
