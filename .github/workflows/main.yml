@@ -145,21 +145,21 @@ jobs:
         java-version: '11'
 
     # Runs a set of commands using the runners shell
-#     - name: Download subjects’ archives
-#       run: |
-#             pip install virtualenv
-#             pip install jq
+    - name: Download subjects’ archives
+      run: |
+            pip install virtualenv
+            pip install jq
             
-#             cd `git rev-parse --show-toplevel`
-#             bootstrap/downloads.sh
-#     # Runs a set of commands using the runners shell
-#     - name: Download subjects’ archives
-#       run: |
-#             mkdir data
-#             name=${{github.event.inputs.repo_name}}
-#             project=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
-#             group=$(echo $(jq ".$name.group" project_info.txt) | tr -d '\"')
-#             bootstrap/unpacking.sh ./archives ./data $group $project
+            cd `git rev-parse --show-toplevel`
+            bootstrap/downloads.sh
+    # Runs a set of commands using the runners shell
+    - name: Download subjects’ archives
+      run: |
+            mkdir data
+            name=${{github.event.inputs.repo_name}}
+            project=$(echo $(jq ".$name.project" project_info.txt) | tr -d '\"')
+            group=$(echo $(jq ".$name.group" project_info.txt) | tr -d '\"')
+            bootstrap/unpacking.sh ./archives ./data $group $project
 
 
     - name: Download subjects’ archives
