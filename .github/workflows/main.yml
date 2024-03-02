@@ -180,19 +180,19 @@ jobs:
               cd gitrepo
               git clone $url .
               
-    - name: Install Indri
-      run: |
-          mkdir depots
-          cd depots
-          wget https://excellmedia.dl.sourceforge.net/project/lemur/lemur/indri-5.21/indri-5.21.tar.gz --no-check-certificate
-          tar -xzf indri-5.21.tar.gz
-          cd indri-5.21
-          ./configure --prefix=`pwd`/../install
-          make
-          make install
-    - name: Generate Settings.txt file
-      run: |
-          echo indripath=`git rev-parse --show-toplevel`/depots/install/bin/ > `git rev-parse --show-toplevel`/techniques/Settings.txt
+    # - name: Install Indri
+    #   run: |
+    #       mkdir depots
+    #       cd depots
+    #       wget https://excellmedia.dl.sourceforge.net/project/lemur/lemur/indri-5.21/indri-5.21.tar.gz --no-check-certificate
+    #       tar -xzf indri-5.21.tar.gz
+    #       cd indri-5.21
+    #       ./configure --prefix=`pwd`/../install
+    #       make
+    #       make install
+    # - name: Generate Settings.txt file
+    #   run: |
+    #       echo indripath=`git rev-parse --show-toplevel`/depots/install/bin/ > `git rev-parse --show-toplevel`/techniques/Settings.txt
     - name: Create virtual environment
       run: |
           cd `git rev-parse --show-toplevel`
