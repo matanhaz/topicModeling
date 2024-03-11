@@ -22,7 +22,7 @@ jobs:
         folder_name: ${{matrix.project_folder_name}}
  
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: build essentials
         run: sudo apt install build-essential
@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: build essentials
         run: sudo apt install build-essential
