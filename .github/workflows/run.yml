@@ -139,7 +139,7 @@ jobs:
           run: |
                 cd `git rev-parse --show-toplevel`
                 sudo apt install unzip
-                unzip matrixes/${{matrix.project_folder_name}}.zip -d matrixes/${{matrix.project_folder_name}}
+                unzip matrixes/${{ matrix.project_folder_name }}.zip -d matrixes/${{ matrix.project_folder_name }}
   
   
                 
@@ -166,7 +166,7 @@ jobs:
           run: |
                 import os
                 active_bugs = False
-                path = os.path.join('.','matrixes',"${{matrix.project_folder_name}}")
+                path = os.path.join('.','matrixes',"${{ matrix.project_folder_name }}")
                 a= os.listdir(path)
                 print(a)
                 for file in a:
@@ -233,7 +233,7 @@ jobs:
           run: |
                 cd `git rev-parse --show-toplevel`
                 cd projects
-                cd ${{matrix.project_folder_name}}
+                cd ${{ matrix.project_folder_name }}
                 cd barinel
                 mkdir matrixes_before_change
                 mkdir matrixes
@@ -242,7 +242,7 @@ jobs:
           uses: actions/download-artifact@v2
           with:
             name: step_7_artifact
-            path: ./projects/${{matrix.project_folder_name}}/barinel/matrixes_before_change
+            path: ./projects/${{ matrix.project_folder_name }}/barinel/matrixes_before_change
             
         - name: barinel
           run: |
