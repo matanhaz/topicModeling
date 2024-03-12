@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project_folder_name: [Compress]
+        project_folder_name: [Codec]
         
     outputs:
         folder_name: ${{matrix.project_folder_name}}
@@ -104,3 +104,220 @@ jobs:
           name: step_4_artifact
           # A file, directory or wildcard pattern that describes what to upload
           path: ./projects
+
+    
+  step_7_download_matrixes:
+      runs-on: ubuntu-latest
+  
+      # Steps represent a sequence of tasks that will be executed as part of the job
+      steps:
+        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+        - uses: actions/checkout@v2
+  
+        - name: build essentials
+          run: sudo apt install build-essential
+        - name: Set up Python
+          uses: actions/setup-python@v2
+          with:
+           python-version: 3.9
+  
+        - name: download requirements
+          run: |
+                cd `git rev-parse --show-toplevel`
+                pip install --upgrade pip
+                pip install pipreqs
+                pipreqs --mode no-pin --ignore diagnoser,sfl_diagnoser .
+                pip install -r requirements.txt
+                pip install pyarrow
+                pip install fastparquet
+        - name: create dir matrixes
+          run: |
+                cd `git rev-parse --show-toplevel`
+                mkdir matrixes_before_change
+                
+        - name: unzip matrixes
+          run: |
+                cd `git rev-parse --show-toplevel`
+                sudo apt install unzip
+                unzip matrixes/${{github.event.inputs.repo_name}}.zip -d matrixes/${{github.event.inputs.repo_name}}
+  
+  
+                
+  #      - name: Script
+   #       run: |
+    #            import os
+     #           active_bugs = False
+      #          path = os.path.join('.','matrixes',"${{github.event.inputs.repo_name}}")
+       #         a= os.listdir(path)
+        #        print(a)
+         #       for file in a:
+          #          if 'bug-mining' in file:
+           #             p = os.path.join(path,file)
+            #            old = os.path.join(p,'framework', 'projects',"${{github.event.inputs.repo_name}}",f"matrix_{file.split('_')[1]}_full.json")
+             #           new = os.path.join('.',"matrixes_before_change",f"{file.split('_')[1]}.json")
+              #          if os.path.exists(old):
+               #             os.rename(old,new)
+                #        if not active_bugs:
+                 #           active_bugs = True
+                  #          os.rename(os.path.join(p,'framework', 'projects',"${{github.event.inputs.repo_name}}","active-bugs.csv"),os.path.join('.',"matrixes_before_change","active-bugs.csv"))
+         # shell: python
+                
+        - name: Script
+          run: |
+                import os
+                active_bugs = False
+                path = os.path.join('.','matrixes',"${{github.event.inputs.repo_name}}")
+                a= os.listdir(path)
+                print(a)
+                for file in a:
+                    if 'tracer_info' in file:
+                        p = os.path.join(path,file)
+                        old = os.path.join(p,f"matrix_{file.split('_')[2]}_full.json")
+                        new = os.path.join('.',"matrixes_before_change",f"{file.split('_')[2]}.json")
+                        if os.path.exists(old):
+                            os.rename(old,new)
+                        if not active_bugs:
+                            active_bugs = True
+                            os.rename(os.path.join(path, "active-bugs.csv"),os.path.join('.',"matrixes_before_change","active-bugs.csv"))
+          shell: python
+        
+        - name: Upload bug-mining
+          if: ${{ always() }}
+          uses: actions/upload-artifact@v2
+          with:
+            # Artifact name
+            name: step_7_artifact
+            # A file, directory or wildcard pattern that describes what to upload
+            path: ./matrixes_before_change
+          
+  
+  step_8_barinel:
+      needs: [step_4_topic_modeling, steps_1-3_gathering_data, step_7_download_matrixes]
+      
+      runs-on: ubuntu-latest
+      strategy:
+        fail-fast: false
+        matrix:
+         #type: [old, new]
+         type: [old]
+         #methods: [Sanity1, Sanity2, Sanity3, multiply, topic, others]
+         methods: [Sanity1, Sanity2, Sanity3, topic]
+      steps:
+        - uses: actions/checkout@v2
+  
+        - name: build essentials
+          run: sudo apt install build-essential
+        - name: Set up Python
+          uses: actions/setup-python@v2
+          with:
+            python-version: 3.9
+            
+        - name: download requirements
+          run: |
+                cd `git rev-parse --show-toplevel`
+                pip install --upgrade pip
+                pip install pipreqs
+                pipreqs --mode no-pin --ignore diagnoser,sfl_diagnoser .
+                pip install -r requirements.txt
+                pip install pyarrow
+                pip install fastparquet
+                
+        
+        - name: create folder "projects"
+          run: |
+                cd `git rev-parse --show-toplevel`
+                mkdir projects
+
+        
+        - name: create folder "barinel"
+          run: |
+                cd `git rev-parse --show-toplevel`
+                cd projects
+                cd ${{github.event.inputs.repo_name}}
+                cd barinel
+                mkdir matrixes_before_change
+                mkdir matrixes
+        
+        - name: Download results step 7
+          uses: actions/download-artifact@v2
+          with:
+            name: step_7_artifact
+            path: ./projects/${{github.event.inputs.repo_name}}/barinel/matrixes_before_change
+            
+        - name: barinel
+          run: |
+                cd `git rev-parse --show-toplevel`
+                python sfl_diagnoser/main.py ${{github.event.inputs.repo_name}} git ${{matrix.type}} ${{matrix.methods}}
+                
+        - name: Upload data
+          if: ${{ always() }}
+          uses: actions/upload-artifact@v2
+          with:
+            # Artifact name
+            name: step_8_artifact
+            # A file, directory or wildcard pattern that describes what to upload
+            path: ./projects
+  
+            
+  step_9_Experiments:
+      needs: [step_8_barinel]
+      
+      runs-on: ubuntu-latest
+  
+      steps:
+        - uses: actions/checkout@v2
+  
+        - name: build essentials
+          run: sudo apt install build-essential
+        - name: Set up Python
+          uses: actions/setup-python@v2
+          with:
+            python-version: 3.9
+            
+        - name: download requirements
+          run: |
+                cd `git rev-parse --show-toplevel`
+                pip install --upgrade pip
+                pip install pipreqs
+                pipreqs --mode no-pin --ignore diagnoser,sfl_diagnoser .
+                pip install -r requirements.txt
+                pip install pyarrow
+                pip install fastparquet
+                
+        
+        - name: create folder "projects"
+          run: |
+                cd `git rev-parse --show-toplevel`
+                mkdir projects
+                
+        - name: Download results step 8
+          uses: actions/download-artifact@v2
+          with:
+            name: step_8_artifact
+            path: ./projects
+        
+            
+        - name: experiments
+          run: |
+                cd `git rev-parse --show-toplevel`
+                python experiments.py ${{github.event.inputs.repo_name}}
+                
+        - name: Upload data
+          if: ${{ always() }}
+          uses: actions/upload-artifact@v2
+          with:
+            # Artifact name
+            name: step_9_artifact
+            # A file, directory or wildcard pattern that describes what to upload
+            path: ./projects
+            
+            
+              
+        - name: Upload results only
+          if: ${{ always() }}
+          uses: actions/upload-artifact@v2
+          with:
+            # Artifact name
+            name: results_only
+            # A file, directory or wildcard pattern that describes what to upload
+            path: ./projects/${{github.event.inputs.repo_name}}/Experiments
