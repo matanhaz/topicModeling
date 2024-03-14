@@ -272,7 +272,7 @@ jobs:
          #type: [old, new]
          type: [old]
          #methods: [Sanity1, Sanity2, Sanity3, multiply, topic, others]
-         methods: [Sanity1, Sanity2, Sanity3, topic]
+         methods: [Sanity1, Sanity2, Sanity3, topic, Original]
       steps:
         - uses: actions/checkout@v2
   
