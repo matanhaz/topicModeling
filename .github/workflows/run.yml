@@ -305,6 +305,7 @@ jobs:
                 cd `git rev-parse --show-toplevel`
                 cd projects
                 cd ${{needs.steps_1-3_gathering_data.outputs.folder_name}}
+                mkdir barinel
                 cd barinel
                 mkdir matrixes_before_change
                 mkdir matrixes
