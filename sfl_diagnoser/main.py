@@ -68,7 +68,7 @@ class BarinelTester:
             with open(join(self.project_path, 'barinel', 'missing matrixes indexes.txt'), 'r', newline='') as file:
                 self.bad_matrixes_indexes = json.load(file)
         else:
-            self.bad_matrixes_indexes = {}
+            self.bad_matrixes_indexes = {'not in other methods':[]}
 
         with open(join(self.project_path, 'analysis', 'bug_to_commit_that_solved.txt'), 'r', newline='') as file:
             data = json.load(file)['bugs to commit']
