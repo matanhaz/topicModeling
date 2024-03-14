@@ -64,9 +64,11 @@ class BarinelTester:
         self.matrix_index_to_changed_files ={}
         self.matrixes_details = {}
 
-
-        with open(join(self.project_path, 'barinel', 'missing matrixes indexes.txt'), 'r', newline='') as file:
-            self.bad_matrixes_indexes = json.load(file)
+        if exists(join(self.project_path, 'barinel', 'missing matrixes indexes.txt')):
+            with open(join(self.project_path, 'barinel', 'missing matrixes indexes.txt'), 'r', newline='') as file:
+                self.bad_matrixes_indexes = json.load(file)
+        else:
+            self.bad_matrixes_indexes = {}
 
         with open(join(self.project_path, 'analysis', 'bug_to_commit_that_solved.txt'), 'r', newline='') as file:
             data = json.load(file)['bugs to commit']
