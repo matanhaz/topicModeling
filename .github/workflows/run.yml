@@ -61,7 +61,12 @@ jobs:
     needs: steps_1-3_gathering_data
     
     runs-on: ubuntu-latest
-    
+    strategy:
+      fail-fast: false
+      matrix:
+       files: [0, 1, 2, 3, 4, 5, 6]
+      # files: [1, 2, 3]
+      
     steps:
       - uses: actions/checkout@v4
 
@@ -95,7 +100,7 @@ jobs:
       - name: topic modeling
         run: |
               cd `git rev-parse --show-toplevel`
-              python topicModeling.py ${{needs.steps_1-3_gathering_data.outputs.folder_name}}
+              python topicModeling.py ${{needs.steps_1-3_gathering_data.outputs.folder_name}} ${{matrix.files}}
       - name: Upload data
         if: ${{ always() }}
         uses: actions/upload-artifact@v2
