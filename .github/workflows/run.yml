@@ -152,10 +152,10 @@ jobs:
         run: |
               cd `git rev-parse --show-toplevel`
               cd projects
-              cd ${{github.event.inputs.repo_name}}
+              cd ${{needs.steps_1-3_gathering_data.outputs.folder_name}}
               mkdir barinel
               cd `git rev-parse --show-toplevel`
-              python modify_other_methods_data.py ${{github.event.inputs.repo_name}} 
+              python modify_other_methods_data.py ${{needs.steps_1-3_gathering_data.outputs.folder_name}}
               
       - name: Upload data
         if: ${{ always() }}
