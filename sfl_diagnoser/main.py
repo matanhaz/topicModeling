@@ -760,7 +760,10 @@ if __name__ == "__main__":
         sim = [0.8, 0.9, 1]
         sanity = BarinelTesterSanity(project_name,local, type_of_exp, sim, methods)
         all_methods = [sanity]
-
+        
+    elif methods == 'Original':
+        original = BarinelTesterOriginalMethod(project_name, local, type_of_exp)
+        all_methods = [original]
     # elif methods == 'multiply':
     #     topics = list(range(20,601,20))
     #     multiply = BarinelTesterMultiply(project_name, topics, local, type_of_exp)
