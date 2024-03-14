@@ -293,7 +293,12 @@ jobs:
           run: |
                 cd `git rev-parse --show-toplevel`
                 mkdir projects
-
+              
+        - name: Download results step 6
+          uses: actions/download-artifact@v2
+          with:
+            name: step_6_artifact
+            path: ./projects
         
         - name: create folder "barinel"
           run: |
