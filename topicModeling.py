@@ -127,7 +127,7 @@ def clean_list_of_strings(unfiltered):
         filtered = list(map(lambda x: re.sub("\r+", " ", x), filtered))
 
         filtered = list(map(lambda x: re.sub(" +", " ", x), filtered))
-        filtered = list(map(lambda x: re.sub(" +", " ", x), filtered))
+        filtered = list(map(lambda x: re.sub("\t", " ", x), filtered))
 
         filtered = list(map(lambda x: x.lower(), filtered))
         filtered = list(map(lambda x: x.split(sep="git-svn")[0], filtered))
@@ -325,7 +325,9 @@ class TopicModeling:
                 ]
             ]
             for NUM_TOPICS in self.topics:
-                ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=NUM_TOPICS, id2word=dictionary, passes=15)
+                ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=NUM_TOPICS, id2word=dictionary, passes=15, per_word_topics=True )
+              #  from pprint import pprint
+               # pprint(ldamodel.print_topics())
                 # returns the table of bug to max index for NUM TOPICS
                 num_topics_to_table.extend(
                     self.bug_to_func_and_similarity(
