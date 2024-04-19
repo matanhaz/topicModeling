@@ -133,6 +133,7 @@ def create_matrixes(base_project_path, project_matrixes_final_path):
 
         final_matrix = str(matrix)
         final_matrix = final_matrix.replace('\'', '\"')
+        final_matrix = final_matrix.lower()
        # json_object = json.dumps(matrix, indent=4)
         with open(os.path.join(project_matrixes_final_path, f"tracer_info_{folder}", f'matrix_{folder}_full.json'), 'w') as f:
             f.write(final_matrix)
