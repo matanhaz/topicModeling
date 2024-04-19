@@ -131,7 +131,7 @@
        	"project": "WICKET",
 	"group":"Apache"
     },
-    "Jxpath": {
+    "JxPath": {
         "git_url": "https://github.com/apache/commons-jxpath.git",
        	"jira_url": "http://issues.apache.org/jira",
        	"project": "JXPATH",
