@@ -130,5 +130,11 @@
        	"jira_url": "http://issues.apache.org/jira",
        	"project": "WICKET",
 	"group":"Apache"
-    }    
+    },
+    "Jxpath": {
+        "git_url": "https://github.com/apache/commons-jxpath.git",
+       	"jira_url": "http://issues.apache.org/jira",
+       	"project": "JXPATH",
+	"group":"Commons"
+    }      
 }
