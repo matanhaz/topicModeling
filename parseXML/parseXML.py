@@ -84,7 +84,7 @@ def create_matrixes(base_project_path, project_matrixes_final_path):
         if folder.endswith('.ini'):
             continue
         matrix = {"bugs": [], "components_names": [], "tests_details": [], "initial_tests": []}
-
+        os.mkdir(os.path.join(project_matrixes_final_path, f"tracer_info_{folder}"))
         failed_tests = []
         with open(os.path.join(base_project_path, folder, "failed_tests.txt"), 'r') as f:
             while True:
@@ -132,7 +132,7 @@ def create_matrixes(base_project_path, project_matrixes_final_path):
         matrix['initial_tests'] = list(test_to_functions.keys())
 
        # json_object = json.dumps(matrix, indent=4)
-        with open(os.path.join(project_matrixes_final_path, folder + '.json'), 'w') as f:
+        with open(os.path.join(project_matrixes_final_path, f"tracer_info_{folder}", f'matrix_{folder}_full.json'), 'w') as f:
             f.write(str(matrix))
 
 
