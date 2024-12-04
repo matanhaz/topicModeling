@@ -95,7 +95,7 @@ jobs:
               mkdir projects
               
       - name: Download results for - 
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: steps_1-3_artifact
           path: ./projects
@@ -146,13 +146,13 @@ jobs:
               mkdir projects
               
       - name: Download results step 4
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: step_4_artifact
           path: ./projects
           
       # - name: Download results step 5
-      #   uses: actions/download-artifact@v2
+      #   uses: actions/download-artifact@v4
       #   with:
       #     name: step_5_artifact
       #     path: ./projects/${{github.event.inputs.repo_name}}
@@ -305,7 +305,7 @@ jobs:
                 mkdir projects
               
         - name: Download results step 6
-          uses: actions/download-artifact@v2
+          uses: actions/download-artifact@v4
           with:
             name: step_6_artifact
             path: ./projects
@@ -321,7 +321,7 @@ jobs:
                 mkdir matrixes
         
         - name: Download results step 7
-          uses: actions/download-artifact@v2
+          uses: actions/download-artifact@v4
           with:
             name: step_7_artifact
             path: ./projects/${{needs.steps_1-3_gathering_data.outputs.folder_name}}/barinel/matrixes_before_change
@@ -373,7 +373,7 @@ jobs:
                 mkdir projects
                 
         - name: Download results step 8
-          uses: actions/download-artifact@v2
+          uses: actions/download-artifact@v4
           with:
             name: step_8_artifact
             path: ./projects
