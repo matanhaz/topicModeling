@@ -51,7 +51,7 @@ jobs:
 
       - name: Upload data
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           # Artifact name
           name: steps_1-3_artifact
@@ -107,7 +107,7 @@ jobs:
               python topicModeling.py ${{needs.steps_1-3_gathering_data.outputs.folder_name}} ${{matrix.files}}
       - name: Upload data
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           # Artifact name
           name: step_4_artifact
@@ -169,7 +169,7 @@ jobs:
               
       - name: Upload data
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           # Artifact name
           name: step_6_artifact
@@ -259,7 +259,7 @@ jobs:
         
         - name: Upload bug-mining
           if: ${{ always() }}
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v3
           with:
             # Artifact name
             name: step_7_artifact
@@ -334,7 +334,7 @@ jobs:
                 
         - name: Upload data
           if: ${{ always() }}
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v3
           with:
             # Artifact name
             name: step_8_artifact
@@ -387,7 +387,7 @@ jobs:
                 
         - name: Upload data
           if: ${{ always() }}
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v3
           with:
             # Artifact name
             name: step_9_artifact
@@ -398,7 +398,7 @@ jobs:
               
         - name: Upload results only
           if: ${{ always() }}
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v3
           with:
             # Artifact name
             name: results_only
