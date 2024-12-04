@@ -36,11 +36,12 @@ jobs:
               cd `git rev-parse --show-toplevel`
               pip install pipreqs
               pipreqs --ignore diagnoser,sfl_diagnoser .
+              pip install numpy==1.18.5
               pip install -r requirements.txt
               pip install pyarrow
               pip install fastparquet
               pip install scipy==1.10.1
-              pip install numpy==1.18.5
+              
       
       - name: gathering
         run: |
