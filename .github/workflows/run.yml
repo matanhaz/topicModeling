@@ -84,7 +84,8 @@ jobs:
         run: |
               cd `git rev-parse --show-toplevel`
               pip install pipreqs
-              pipreqs --ignore diagnoser,sfl_diagnoser .
+              pipreqs --ignore diagnoser,sfl_diagnoser . --mode no-pin
+              pip install gensim==4.3.3
               pip install -r requirements.txt
               pip install pyarrow
               pip install fastparquet
