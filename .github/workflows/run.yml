@@ -364,7 +364,7 @@ jobs:
   
             
   step_9_Experiments:
-      needs: [ steps_1-3_gathering_data, step_8_barinel ]
+      needs: [ steps_1-3_gathering_data, step_8_barinel , merge8]
       
       runs-on: ubuntu-latest
   
