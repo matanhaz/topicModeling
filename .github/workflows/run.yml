@@ -40,6 +40,7 @@ jobs:
               pip install pyarrow
               pip install fastparquet
               pip install scipy==1.10.1
+              pip install numpy==1.18.5
       
       - name: gathering
         run: |
