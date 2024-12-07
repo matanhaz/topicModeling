@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project_folder_name: [Cli, JxPath]
+        project_folder_name: [Cli]
         
     outputs:
         folder_name: ${{matrix.project_folder_name}}
