@@ -11,7 +11,8 @@ jobs:
   
   steps_1-3_gathering_data:
     # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
+    runs-on:
+      labels: ubuntu-20.04-16core
     
     strategy:
       fail-fast: false
